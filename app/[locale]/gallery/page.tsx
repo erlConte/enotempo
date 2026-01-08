@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
@@ -11,16 +9,10 @@ export default async function GalleryPage({
   await params; // Per evitare warning unused
   const t = await getTranslations("gallery");
 
-  const galleryDir = path.join(process.cwd(), "public", "gallery");
-  let files: string[] = [];
-
-  try {
-    files = fs
-      .readdirSync(galleryDir)
-      .filter((file) => file.match(/\.(jpe?g|png|webp)$/i));
-  } catch {
-    files = [];
-  }
+  // Safe mode: non usiamo fs.readdirSync durante il build per evitare
+  // che Next.js tracci e includa asset pesanti nelle serverless functions.
+  // Le immagini verranno caricate via API route o Vercel Blob in futuro.
+  const files: string[] = [];
 
   return (
     <main className="bg-bianco-caldo min-h-screen">
@@ -49,7 +41,7 @@ export default async function GalleryPage({
         </div>
 
         {/* Griglia immagini sotto il video */}
-        {files.length > 0 && (
+        {files.length > 0 ? (
           <section className="mt-10">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {files.map((file) => (
@@ -65,6 +57,34 @@ export default async function GalleryPage({
                   />
                 </div>
               ))}
+            </div>
+          </section>
+        ) : (
+          <section className="mt-10">
+            <div className="max-w-2xl mx-auto text-center py-16 px-4">
+              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-marrone-scuro/10 mb-6">
+                <svg
+                  className="w-12 h-12 text-marrone-scuro/40"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <h2 className="font-serif text-2xl md:text-3xl text-marrone-scuro mb-4">
+                Gallery in arrivo
+              </h2>
+              <p className="text-base md:text-lg text-marrone-scuro/70">
+                Stiamo preparando una selezione delle migliori foto delle nostre cene ENOTEMPO.
+                Torna presto per vedere i momenti più belli delle nostre esperienze enogastronomiche.
+              </p>
             </div>
           </section>
         )}

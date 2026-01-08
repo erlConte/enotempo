@@ -34,3 +34,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# assets pesanti - non committare per evitare problemi con deploy Vercel
+/public/gallery/
+/public/events/
+/public/branding/
+
