@@ -1,0 +1,47 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model FenamMember {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  firstName       String
+  lastName        String
+  phone           String?
+  externalFenamId String?  // ID dal gestionale FENAM, se in futuro vogliamo sincronizzare
+  createdAt       DateTime @default(now())
+
+  reservations Reservation[]
+}
+
+model Event {
+  id              String         @id @default(cuid())
+  slug            String         @unique
+  title           String
+  subtitle        String?
+  date            DateTime
+  locationName    String
+  locationAddress String?
+  description     String?
+  createdAt       DateTime       @default(now())
+
+  reservations Reservation[]
+}
+
+model Reservation {
+  id            String   @id @default(cuid())
+  eventId       String
+  fenamMemberId String
+  guests        Int
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  event         Event       @relation(fields: [eventId], references: [id])
+  fenamMember   FenamMember @relation(fields: [fenamMemberId], references: [id])
+}
+

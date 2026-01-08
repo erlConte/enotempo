@@ -1,0 +1,245 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "Chi siamo",
+    "events": "Eventi",
+    "dinners": "Cene",
+    "gallery": "Galleria",
+    "contact": "Contatti",
+    "fenam": "FENAM",
+    "partners": "Partners",
+    "chefs": "Chef & Collaboratori"
+  },
+  "hero": {
+    "tagline": "Incontri enogastronomici interculturali",
+    "title": "Esperienze che uniscono culture attraverso il cibo e il vino",
+    "subtitle": "Quality food and wine experiences",
+    "ctaPrimary": "Scopri le cene",
+    "ctaSecondary": "Scopri di più"
+  },
+  "home": {
+    "howItWorks": {
+      "title": "Come funziona",
+      "step1": {
+        "title": "Iscriviti alla FENAM",
+        "description": "Diventa membro della Federazione Nazionale di Associazioni Multiculturali per accedere alle nostre esperienze."
+      },
+      "step2": {
+        "title": "Prenota la tua cena",
+        "description": "Scegli tra le cene disponibili e prenota il tuo posto per un'esperienza enogastronomica unica."
+      },
+      "step3": {
+        "title": "Fai una donazione",
+        "description": "Completa la tua partecipazione con una donazione volontaria a sostegno delle attività associative."
+      }
+    },
+    "spirit": {
+      "title": "Lo spirito delle cene ENOTEMPO",
+      "description": "Le nostre cene sono momenti di convivialità autentica, dove tradizione e innovazione si incontrano. Un'atmosfera calda e accogliente, vini selezionati e piatti preparati con cura, per creare esperienze indimenticabili che celebrano la cultura enogastronomica italiana."
+    },
+    "donationBox": {
+      "title": "Importante: Donazioni volontarie",
+      "description": "Tutte le somme versate sul sito ENOTEMPO sono donazioni volontarie collegate ad attività associative. Non si tratta di pagamenti per servizi commerciali, ma di contributi a sostegno della Federazione Nazionale di Associazioni Multiculturali (FENAM) e delle sue iniziative culturali."
+    },
+    "nextDinner": {
+      "title": "Prossima cena in programma",
+      "cta": "Scopri di più",
+      "close": "Chiudi"
+    },
+    "newsletter": {
+      "title": "Iscriviti alla newsletter",
+      "description": "Ricevi aggiornamenti su eventi futuri, novità e progetti di Enotempo.",
+      "placeholder": "Inserisci la tua email",
+      "submit": "Iscriviti",
+      "submitting": "Invio in corso...",
+      "success": "Grazie per esserti iscritto!",
+      "privacyNotice": "Iscrivendoti accetti la nostra <link>privacy policy</link>.",
+      "privacyLink": "privacy policy",
+      "error": {
+        "invalidEmail": "Inserisci un indirizzo email valido.",
+        "generic": "Si è verificato un errore. Riprova più tardi."
+      }
+    }
+  },
+  "fenam": {
+    "title": "FENAM – Federazione Nazionale di Associazioni Multiculturali",
+    "description": "La FENAM è la Federazione Nazionale di Associazioni Multiculturali, un'organizzazione che promuove l'incontro tra culture diverse attraverso iniziative culturali, eventi e cene tematiche. L'iscrizione alla FENAM è obbligatoria per partecipare alle cene ENOTEMPO.",
+    "requirement": "Per partecipare alle cene ENOTEMPO è obbligatoria l'iscrizione alla FENAM (Federazione Nazionale di Associazioni Multiculturali). Senza registrazione FENAM non è possibile completare la prenotazione.",
+    "registerButton": "Iscriviti alla FENAM",
+    "form": {
+      "title": "Iscrizione FENAM",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "email": "Email",
+      "phone": "Telefono",
+      "taxCode": "Codice fiscale (opzionale)",
+      "privacy": "Ho letto e accetto l'informativa privacy e autorizzo il trattamento dei miei dati.",
+      "dataConsentLabel": "Ho letto e accetto l'",
+      "dataConsentLink": "informativa sul trattamento dei dati personali",
+      "dataConsentError": "Per procedere è necessario accettare l'informativa sul trattamento dei dati.",
+      "submit": "Invia iscrizione",
+      "donationNote": "Dopo aver inviato i dati ti verrà richiesto di completare una DONAZIONE VOLONTARIA per l'affiliazione alla FENAM. Si tratta di un contributo a sostegno delle attività associative, non di un pagamento per servizi commerciali. Senza donazione l'iscrizione non sarà valida.",
+      "success": "Iscrizione inviata. Ora procedi alla donazione.",
+      "goToDonation": "Vai alla donazione"
+    }
+  },
+  "events": {
+    "title": "Le nostre cene",
+    "availableSeats": "Posti disponibili",
+    "soldOut": "Sold out",
+    "details": "Dettagli e prenotazione",
+    "price": "Prezzo",
+    "chef": "Chef",
+    "fenamRequired": "Per partecipare alla cena è obbligatoria l'iscrizione alla FENAM. Se non sei ancora iscritto, registrati prima di completare la prenotazione.",
+    "registerFenam": "Registrati alla FENAM",
+    "reservation": {
+      "title": "Prenotazione",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "email": "Email",
+      "phone": "Telefono",
+      "participants": "Numero di partecipanti",
+      "notes": "Note (opzionale)",
+      "fenamConfirm": "Confermo di essere iscritto alla FENAM.",
+      "dataConsentLabel": "Accetto il trattamento dei miei dati per la gestione della prenotazione e delle comunicazioni relative all'evento. Ho letto l'",
+      "dataConsentLink": "informativa sul trattamento dei dati personali",
+      "dataConsentError": "Per procedere è necessario accettare il trattamento dei dati.",
+      "submit": "Conferma prenotazione",
+      "success": "Prenotazione inviata! Per completare la partecipazione, effettua ora la donazione relativa alla cena.",
+      "goToDonation": "Procedi alla donazione per la cena"
+    }
+  },
+  "reservations": {
+    "title": "Prenotazione"
+  },
+  "donation": {
+    "fenam": {
+      "title": "Donazione per affiliazione FENAM",
+      "description": "Questa è una donazione a sostegno dell'associazione FENAM. Non è un pagamento di servizio commerciale.",
+      "button": "Effettua la donazione con PayPal",
+      "body": "La tua iscrizione alla FENAM è stata registrata correttamente. La donazione è volontaria e serve a sostenere le attività dell'associazione.",
+      "paypalButton": "Dona con PayPal",
+      "skipDonation": "Continua senza donazione",
+      "skipDonationNote": "Puoi partecipare alle attività FENAM anche senza effettuare una donazione in questo momento.",
+      "paypalSuccess": "Grazie! La tua donazione è stata registrata da PayPal.",
+      "paypalCancel": "Hai annullato la donazione. Puoi riprovare più tardi oppure continuare senza donare."
+    },
+    "dinner": {
+      "title": "Donazione per partecipazione alla cena",
+      "description": "Questa è una donazione a sostegno dell'associazione FENAM e dell'evento. Non è un pagamento di servizio commerciale.",
+      "button": "Effettua la donazione con PayPal",
+      "skipDonation": "Continua senza donazione"
+    }
+  },
+  "gallery": {
+    "title": "Gallery",
+    "description": "Rivivi i momenti più belli delle nostre cene ENOTEMPO. Un viaggio attraverso le esperienze enogastronomiche che hanno unito persone e culture.",
+    "videoTitle": "Video Enotempo"
+  },
+  "contact": {
+    "title": "Contatti",
+    "description": "Hai domande o vuoi saperne di più su ENOTEMPO e FENAM? Siamo qui per aiutarti.",
+    "form": {
+      "name": "Nome",
+      "email": "Email",
+      "message": "Messaggio",
+      "submit": "Invia",
+      "success": "Messaggio inviato con successo! Ti risponderemo al più presto.",
+      "error": "Si è verificato un errore. Riprova più tardi."
+    }
+  },
+  "about": {
+    "title": "Chi siamo",
+    "sections": {
+      "whoWeAre": {
+        "title": "Chi siamo"
+      },
+      "whatWeDo": {
+        "title": "Cosa facciamo"
+      },
+      "mission": {
+        "title": "Missione"
+      },
+      "vision": {
+        "title": "Visione"
+      }
+    }
+  },
+  "partners": {
+    "pageTitle": "Partner",
+    "pageSubtitle": "Ristoranti, cantine e realtà che credono nel progetto Enotempo.",
+    "empty": "Stiamo finalizzando le collaborazioni. Torna presto per scoprire i nostri partner.",
+    "ctaBox": {
+      "title": "Sei un ristorante, una cantina o una realtà interessata a collaborare?",
+      "body": "Enotempo costruisce collaborazioni su misura con partner che credono nel valore dell'incontro tra culture, vino e gastronomia.",
+      "button": "Scopri il contratto di collaborazione"
+    },
+    "type": {
+      "restaurant": "Ristorante",
+      "winery": "Cantina",
+      "other": "Partner"
+    },
+    "detail": {
+      "whyTitle": "Perché hai scelto Enotempo",
+      "aboutTitle": "Chi sei",
+      "expectationsTitle": "Cosa ti aspetti da Enotempo",
+      "backToList": "Torna ai partner"
+    },
+    "actions": {
+      "viewDetails": "Scopri di più"
+    },
+    "contract": {
+      "title": "Accordo di collaborazione per partner ENOTEMPO",
+      "intro": "Questo documento descrive in modo sintetico i termini generali della collaborazione tra Enotempo e i suoi partner.",
+      "sections": {
+        "scopeTitle": "1. Oggetto della collaborazione",
+        "scopeBody": "Enotempo collabora con ristoranti, cantine e altre realtà enogastronomiche per organizzare eventi e cene che valorizzano l'incontro tra culture diverse attraverso il vino e la gastronomia. La collaborazione si basa su principi di mutuo rispetto, trasparenza e condivisione di valori culturali.",
+        "enotempoTitle": "2. Impegni di Enotempo",
+        "enotempoBody": "Enotempo si impegna a promuovere i partner attraverso i propri canali di comunicazione, a organizzare eventi di qualità che rispettino l'identità del partner, a garantire una comunicazione chiara e tempestiva su date, orari e aspetti logistici degli eventi, e a valorizzare il lavoro e la storia di ciascun partner.",
+        "partnerTitle": "3. Impegni del partner",
+        "partnerBody": "Il partner si impegna a collaborare in modo attivo e trasparente, a fornire informazioni accurate su prodotti, servizi e disponibilità, a rispettare gli accordi presi in merito a date e modalità degli eventi, e a condividere con Enotempo la propria visione e i propri valori per creare esperienze autentiche e coerenti.",
+        "logisticsTitle": "4. Aspetti logistici e organizzativi",
+        "logisticsBody": "Le date degli eventi vengono concordate con anticipo sufficiente per permettere una pianificazione adeguata. Le comunicazioni avvengono principalmente via email o attraverso i canali concordati. Enotempo si occupa della promozione e della gestione delle prenotazioni, mentre il partner gestisce gli aspetti operativi legati alla propria struttura.",
+        "dataTitle": "5. Trattamento dati e comunicazioni",
+        "dataBody": "I dati personali e le informazioni condivise nell'ambito della collaborazione vengono trattati in conformità con la normativa vigente sulla privacy. Enotempo si impegna a utilizzare i dati solo per finalità legate alla collaborazione e alla comunicazione degli eventi, garantendo la massima riservatezza."
+      },
+      "disclaimer": "Questa pagina ha valore informativo. Il contratto formale verrà condiviso e firmato con ciascun partner.",
+      "backToPartners": "Torna all'elenco dei partner"
+    }
+  },
+  "chefs": {
+    "pageTitle": "Chef & Collaboratori",
+    "pageSubtitle": "Le persone che danno un volto, un sapore e una storia alle esperienze Enotempo.",
+    "empty": "Stiamo aggiornando il team di chef e collaboratori.",
+    "actions": {
+      "viewProfile": "Scopri il profilo"
+    },
+    "aboutSection": {
+      "title": "I nostri chef e collaboratori",
+      "subtitle": "Un team multiculturale che unisce tecnica, memoria e ricerca per creare esperienze coerenti con la visione di Enotempo.",
+      "cta": "Vedi tutti gli chef"
+    },
+    "detail": {
+      "backToList": "Torna agli chef"
+    }
+  },
+  "privacy": {
+    "title": "Informativa sul trattamento dei dati personali",
+    "intro": "In questa pagina descriviamo come utilizziamo i tuoi dati personali nell'ambito delle attività di Enotempo.",
+    "sections": {
+      "fenam": {
+        "title": "Iscrizione FENAM",
+        "body": "I dati forniti tramite il form di iscrizione FENAM vengono utilizzati per gestire l'affiliazione, le comunicazioni interne e l'organizzazione delle attività collegate."
+      },
+      "events": {
+        "title": "Prenotazione eventi",
+        "body": "I dati forniti per la prenotazione delle cene vengono utilizzati per gestire la partecipazione all'evento e inviarti eventuali comunicazioni logistiche."
+      },
+      "general": {
+        "title": "Trattamento generale dei dati",
+        "body": "I tuoi dati personali vengono trattati in conformità con la normativa vigente sulla privacy. Non utilizziamo tracciamento marketing aggressivo e ci impegniamo a proteggere la tua privacy. I dati vengono conservati solo per il tempo necessario alle finalità per cui sono stati raccolti."
+      }
+    }
+  }
+}
+

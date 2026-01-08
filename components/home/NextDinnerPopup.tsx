@@ -1,0 +1,113 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { getNextUpcomingEvent } from "@/lib/mockEvents";
+import { X } from "lucide-react";
+
+interface NextDinnerPopupProps {
+  locale: string;
+}
+
+export default function NextDinnerPopup({ locale }: NextDinnerPopupProps) {
+  const t = useTranslations("home.nextDinner");
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  const nextEvent = getNextUpcomingEvent();
+
+  useEffect(() => {
+    setIsMounted(true);
+    // Controlla localStorage solo lato client
+    if (typeof window !== "undefined") {
+      const dismissed = localStorage.getItem("enotempo-next-dinner-dismissed");
+      if (!dismissed && nextEvent) {
+        setIsVisible(true);
+      }
+    }
+  }, [nextEvent]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("enotempo-next-dinner-dismissed", "true");
+    }
+  };
+
+  const formatDate = (date: Date, locale: string) => {
+    return new Intl.DateTimeFormat(
+      locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    ).format(date);
+  };
+
+  // Non renderizzare nulla se non c'è un evento futuro o se è stato chiuso
+  if (!nextEvent || !isVisible || !isMounted) {
+    return null;
+  }
+
+  return (
+    <div className="fixed bottom-4 right-4 left-4 md:left-auto z-50 max-w-md md:max-w-sm animate-in slide-in-from-bottom-5 duration-300">
+      <div className="rounded-2xl shadow-lg bg-white/95 backdrop-blur-sm border border-borgogna/20 p-6 space-y-4">
+        {/* Header con titolo e pulsante chiudi */}
+        <div className="flex items-start justify-between">
+          <h3 className="text-sm font-semibold text-borgogna uppercase tracking-wide">
+            {t("title")}
+          </h3>
+          <button
+            onClick={handleClose}
+            className="text-marrone-scuro/60 hover:text-marrone-scuro transition-colors p-1 -mt-1 -mr-1"
+            aria-label={t("close")}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Nome evento */}
+        <h4 className="font-serif text-xl md:text-2xl font-bold text-borgogna">
+          {nextEvent.title}
+        </h4>
+
+        {/* Data formattata */}
+        <p className="text-base text-marrone-scuro/80 font-medium">
+          {formatDate(nextEvent.date, locale)}
+        </p>
+
+        {/* Luogo */}
+        {nextEvent.location && (
+          <p className="text-sm text-marrone-scuro/70 flex items-start gap-2">
+            <span className="shrink-0">📍</span>
+            <span className="line-clamp-2">{nextEvent.location}</span>
+          </p>
+        )}
+
+        {/* Pulsanti */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <Link href={`/${locale}/cene/${nextEvent.slug}`} className="flex-1">
+            <Button
+              className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-2.5 text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+            >
+              {t("cta")}
+            </Button>
+          </Link>
+          <Button
+            onClick={handleClose}
+            variant="outline"
+            className="border border-borgogna/30 text-marrone-scuro hover:bg-borgogna/10 rounded-xl py-2.5 text-sm font-medium"
+          >
+            {t("close")}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
