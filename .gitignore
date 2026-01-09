@@ -39,3 +39,7 @@ next-env.d.ts
 /public/events/
 /public/branding/
 
+# cartelle locali immagini (fuori repo) - aggiungi qui il path della tua cartella locale
+/_assets/
+/_gallery-local/
+/_images-local/

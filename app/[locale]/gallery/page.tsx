@@ -1,5 +1,30 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import fs from "fs";
+import path from "path";
+
+interface GalleryItem {
+  src: string;
+  name: string;
+}
+
+async function getGalleryData(): Promise<GalleryItem[]> {
+  try {
+    const filePath = path.join(process.cwd(), "data", "gallery.json");
+    
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+
+    const fileContents = fs.readFileSync(filePath, "utf-8");
+    const data = JSON.parse(fileContents) as GalleryItem[];
+    
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Errore nel caricamento della gallery:", error);
+    return [];
+  }
+}
 
 export default async function GalleryPage({
   params,
@@ -9,10 +34,8 @@ export default async function GalleryPage({
   await params; // Per evitare warning unused
   const t = await getTranslations("gallery");
 
-  // Safe mode: non usiamo fs.readdirSync durante il build per evitare
-  // che Next.js tracci e includa asset pesanti nelle serverless functions.
-  // Le immagini verranno caricate via API route o Vercel Blob in futuro.
-  const files: string[] = [];
+  // Carica i dati della gallery da data/gallery.json
+  const galleryItems = await getGalleryData();
 
   return (
     <main className="bg-bianco-caldo min-h-screen">
@@ -41,19 +64,20 @@ export default async function GalleryPage({
         </div>
 
         {/* Griglia immagini sotto il video */}
-        {files.length > 0 ? (
+        {galleryItems.length > 0 ? (
           <section className="mt-10">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {files.map((file) => (
+              {galleryItems.map((item) => (
                 <div
-                  key={file}
+                  key={item.src}
                   className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5"
                 >
                   <Image
-                    src={`/gallery/${file}`}
-                    alt="Enotempo dinner"
+                    src={item.src}
+                    alt={`Enotempo dinner - ${item.name}`}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 </div>
               ))}

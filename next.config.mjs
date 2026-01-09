@@ -10,6 +10,16 @@ const nextConfig = {
   images: {
     // Necessario se si usa <Image /> con next export
     unoptimized: false, // impostare a true solo se si usa output: 'export'
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.blob.vercel-storage.com",
+      },
+    ],
   },
 };
 
