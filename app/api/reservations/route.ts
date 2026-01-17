@@ -1,4 +1,4 @@
-// NOTE: Le prenotazioni vengono salvate nella tabella Reservation
+  // NOTE: Le prenotazioni vengono salvate nella tabella Reservation
 // tramite Prisma. Richiede che l'utente sia membro FENAM.
 
 import { NextResponse } from "next/server";

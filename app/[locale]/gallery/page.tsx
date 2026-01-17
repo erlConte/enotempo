@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import fs from "fs";
 import path from "path";
+import VideoShadowbox from "@/components/VideoShadowbox";
 
 interface GalleryItem {
   src: string;
@@ -50,17 +51,12 @@ export default async function GalleryPage({
           </p>
         </div>
 
-        {/* Video Enotempo in evidenza - centrato e grande */}
+        {/* Video Enotempo in evidenza - shadowbox */}
         <div className="mt-10 flex justify-center">
-          <div className="aspect-video w-full max-w-3xl overflow-hidden rounded-2xl shadow-sm">
-            <iframe
-              src="https://www.youtube.com/embed/KR4amxTM1No"
-              title="Enotempo Video"
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
+          <VideoShadowbox
+            videoSrc="https://www.youtube.com/embed/KR4amxTM1No"
+            title="Enotempo Video"
+          />
         </div>
 
         {/* Griglia immagini sotto il video */}
