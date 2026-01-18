@@ -10,11 +10,14 @@
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "upload:gallery": "tsx scripts/upload-gallery.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.19.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-label": "^2.1.8",
     "@vercel/blob": "^0.19.0",
@@ -23,12 +26,14 @@
     "lucide-react": "^0.427.0",
     "next": "^14.2.0",
     "next-intl": "^3.15.0",
+    "pg": "^8.17.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@types/pg": "^8.16.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.0",
@@ -36,14 +41,14 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.0",
     "postcss": "^8.4.0",
-    "prisma": "^5.19.0",
+    "prisma": "^7.2.0",
     "tailwindcss": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.0",
     "typescript": "^5.5.0"
   },
   "overrides": {
-  "glob": "^11.0.0",
-  "undici": "^7.2.0"
-}
+    "glob": "^11.0.0",
+    "undici": "^7.2.0"
+  }
 }

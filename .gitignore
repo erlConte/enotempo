@@ -35,6 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Prisma generated client (v7)
+/generated/
+
 # assets pesanti - non committare per evitare problemi con deploy Vercel
 /public/gallery/
 /public/events/
