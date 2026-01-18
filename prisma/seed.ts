@@ -7,7 +7,7 @@ if (!process.env.DATABASE_URL) {
   throw new Error("❌ DATABASE_URL missing in .env");
 }
 
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 

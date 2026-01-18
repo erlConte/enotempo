@@ -65,16 +65,6 @@ export default async function CenaDetailPage({
                 className="w-full h-64 md:h-80 rounded-2xl object-cover"
               />
             </div>
-          ) : slug === "cena-di-benedizione" ? (
-            <div className="mb-8">
-              <Image
-                src="/events/cena-benizione/hero.jpg"
-                alt="Cena di benedizione Enotempo"
-                width={1200}
-                height={800}
-                className="w-full h-64 md:h-80 rounded-2xl object-cover"
-              />
-            </div>
           ) : null}
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {!event.image && slug !== "cena-di-benedizione" && (

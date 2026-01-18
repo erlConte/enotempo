@@ -1,34 +1,28 @@
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-// Singleton pattern per Prisma Client
-// Previene la creazione di multiple istanze in ambiente serverless (Vercel)
-// Lazy initialization: crea il client solo quando necessario (runtime, non build-time)
 function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
   }
 
-  // Durante build, se DATABASE_URL non è presente, non istanziare il client
-  // Questo permette al build di completarsi anche senza DB configurato
-  // In build-time, le API routes non vengono eseguite, quindi non serve il client
   if (!process.env.DATABASE_URL) {
-    // In build-time senza DATABASE_URL, restituiamo un client "dummy" che non verrà usato
-    // Le API routes (che richiedono DB) non vengono eseguite durante build
-    if (process.env.NEXT_PHASE === "phase-production-build") {
-      // Durante il build, restituiamo un client dummy che non verrà mai usato
-      return {} as PrismaClient;
-    }
     throw new Error(
-      "Prisma Client requires DATABASE_URL. This should only be called at runtime, not during build."
+      "DATABASE_URL is required. Please set it in your environment variables."
     );
   }
 
-  // Prisma 7: usa adapter pg per PostgreSQL
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  // Crea Pool e adapter solo quando necessario (lazy initialization)
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  });
+  
   const adapter = new PrismaPg(pool);
 
   const client = new PrismaClient({

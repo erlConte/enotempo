@@ -18,7 +18,7 @@ interface VideoShadowboxProps {
 export default function VideoShadowbox({
   videoSrc,
   title,
-  poster = "/branding/logo-borgogna.jpg",
+  poster = "https://8ud5gz3z3ejgzjpg.public.blob.vercel-storage.com/gallery/logo-borgogna-UgcW4ZgaHLzDGdpjkjcwqNF67u6TP1.jpg",
 }: VideoShadowboxProps) {
   const [open, setOpen] = useState(false);
 

@@ -4,7 +4,7 @@ export type Partner = {
   type: "restaurant" | "winery" | "other";
   city: string;
   country: string;
-  logoPath: string; // es. "/partners/osteria-del-centro.png"
+  logoPath: string; // URL Vercel Blob o stringa vuota per placeholder
   whyEnotempo: string;
   about: string;
   expectations: string;
@@ -17,7 +17,7 @@ export const partners: Partner[] = [
     type: "restaurant",
     city: "Bologna",
     country: "Italia",
-    logoPath: "/partners/osteria-del-centro.png",
+    logoPath: "", // Placeholder - logo non disponibile su Vercel Blob
     whyEnotempo:
       "Abbiamo scelto Enotempo per portare nel nostro locale un dialogo autentico tra cucina italiana e tradizioni latinoamericane.",
     about:
@@ -31,7 +31,7 @@ export const partners: Partner[] = [
     type: "winery",
     city: "Mendoza",
     country: "Argentina",
-    logoPath: "/partners/bodega-los-andes.png",
+    logoPath: "", // Placeholder - logo non disponibile su Vercel Blob
     whyEnotempo:
       "Enotempo è il partner ideale per raccontare la nostra storia enologica al pubblico italiano.",
     about:
@@ -45,7 +45,7 @@ export const partners: Partner[] = [
     type: "restaurant",
     city: "Roma",
     country: "Italia",
-    logoPath: "/partners/trattoria-romana.png",
+    logoPath: "", // Placeholder - logo non disponibile su Vercel Blob
     whyEnotempo:
       "Crediamo nel valore dell'incontro tra culture diverse attraverso il cibo. Enotempo ci permette di condividere la nostra passione per la cucina romana autentica.",
     about:

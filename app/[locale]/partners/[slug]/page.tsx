@@ -35,14 +35,22 @@ export default async function PartnerDetailPage({
         {/* Header con logo, nome, tipo, città */}
         <div className="bg-white border-b border-border rounded-2xl shadow-sm mb-8 p-8">
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="relative h-24 w-24 md:h-32 md:w-32 rounded-xl bg-bianco-caldo overflow-hidden shrink-0 border border-marrone-scuro/10">
-              <Image
-                src={partner.logoPath}
-                alt={partner.name}
-                fill
-                className="object-contain p-3"
-              />
-            </div>
+            {partner.logoPath ? (
+              <div className="relative h-24 w-24 md:h-32 md:w-32 rounded-xl bg-bianco-caldo overflow-hidden shrink-0 border border-marrone-scuro/10">
+                <Image
+                  src={partner.logoPath}
+                  alt={partner.name}
+                  fill
+                  className="object-contain p-3"
+                />
+              </div>
+            ) : (
+              <div className="h-24 w-24 md:h-32 md:w-32 rounded-xl bg-gradient-to-br from-borgogna/20 via-crema/30 to-verde/20 flex items-center justify-center shrink-0 border border-marrone-scuro/10">
+                <span className="text-2xl md:text-3xl font-serif font-bold text-borgogna/40">
+                  {partner.name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase()}
+                </span>
+              </div>
+            )}
             <div className="flex-1">
               <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-borgogna mb-4">
                 {partner.name}

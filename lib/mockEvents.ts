@@ -23,7 +23,7 @@ export function getMockEvents(): MockEvent[] {
       availableSeats: 30,
       price: 45,
       chef: "Gherson Melgarejo",
-      image: "/events/cena-andina-contemporanea.jpg",
+      image: "https://8ud5gz3z3ejgzjpg.public.blob.vercel-storage.com/gallery/cena-andina-contemporanea-wYzg71VPofSz99v2KIjJJ9E3bKwWJR.jpg",
     },
   ];
 }

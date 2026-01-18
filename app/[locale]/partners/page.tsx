@@ -57,14 +57,22 @@ export default async function PartnersPage({
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 rounded-xl bg-bianco-caldo overflow-hidden shrink-0 border border-marrone-scuro/10">
-                      <Image
-                        src={partner.logoPath}
-                        alt={partner.name}
-                        fill
-                        className="object-contain p-2"
-                      />
-                    </div>
+                    {partner.logoPath ? (
+                      <div className="relative h-16 w-16 rounded-xl bg-bianco-caldo overflow-hidden shrink-0 border border-marrone-scuro/10">
+                        <Image
+                          src={partner.logoPath}
+                          alt={partner.name}
+                          fill
+                          className="object-contain p-2"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-borgogna/20 via-crema/30 to-verde/20 flex items-center justify-center shrink-0 border border-marrone-scuro/10">
+                        <span className="text-xl font-serif font-bold text-borgogna/40">
+                          {partner.name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-marrone-scuro text-lg font-serif">
                         {partner.name}

@@ -17,6 +17,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // Validazione email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
     const member = await prisma.fenamMember.findUnique({
       where: { email },
     });
@@ -25,10 +34,33 @@ export async function POST(req: Request) {
       { isMember: !!member },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("FENAM check error:", error);
+    
+    // Log dettagliato dell'errore per debugging
+    if (error.code) {
+      console.error("Prisma error code:", error.code);
+    }
+    if (error.meta) {
+      console.error("Prisma error meta:", error.meta);
+    }
+    if (error.message) {
+      console.error("Error message:", error.message);
+    }
+
+    // Messaggio di errore più specifico
+    let errorMessage = "Internal server error";
+    if (error.code === "P1001") {
+      errorMessage = "Database connection error";
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? error.message : undefined 
+      },
       { status: 500 }
     );
   }

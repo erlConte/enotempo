@@ -2,7 +2,6 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import fs from "fs";
 import path from "path";
-import VideoShadowbox from "@/components/VideoShadowbox";
 
 interface GalleryItem {
   src: string;
@@ -51,15 +50,7 @@ export default async function GalleryPage({
           </p>
         </div>
 
-        {/* Video Enotempo in evidenza - shadowbox */}
-        <div className="mt-10 flex justify-center">
-          <VideoShadowbox
-            videoSrc="https://www.youtube.com/embed/KR4amxTM1No"
-            title="Enotempo Video"
-          />
-        </div>
-
-        {/* Griglia immagini sotto il video */}
+        {/* Griglia immagini */}
         {galleryItems.length > 0 ? (
           <section className="mt-10">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
