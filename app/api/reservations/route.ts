@@ -3,6 +3,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getEventBySlug } from "@/lib/mockEvents";
 
 export async function POST(req: Request) {
   try {
@@ -60,17 +61,36 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verifica che l'evento esista
-    const event = await prisma.event.findUnique({
-      where: { slug: eventSlug },
-    });
-
-    if (!event) {
+    // Gli eventi lato UI sono mock/locali: li usiamo come source of truth
+    // e garantiamo la presenza dell'evento nel DB tramite upsert.
+    const mockEvent = getEventBySlug(eventSlug);
+    if (!mockEvent) {
       return NextResponse.json(
-        { message: "Event not found" },
+        { message: "Event not found in mock events" },
         { status: 404 }
       );
     }
+
+    const event = await prisma.event.upsert({
+      where: { slug: mockEvent.slug },
+      update: {
+        title: mockEvent.title,
+        subtitle: mockEvent.shortDescription,
+        date: mockEvent.date,
+        locationName: mockEvent.locationName,
+        locationAddress: mockEvent.locationAddress ?? null,
+        description: mockEvent.fullDescription,
+      },
+      create: {
+        slug: mockEvent.slug,
+        title: mockEvent.title,
+        subtitle: mockEvent.shortDescription,
+        date: mockEvent.date,
+        locationName: mockEvent.locationName,
+        locationAddress: mockEvent.locationAddress ?? null,
+        description: mockEvent.fullDescription,
+      },
+    });
 
     // Upsert membro FENAM (crea se non esiste, aggiorna se esiste)
     const fenamMember = await prisma.fenamMember.upsert({

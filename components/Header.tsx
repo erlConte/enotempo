@@ -136,6 +136,7 @@ export default function Header() {
     { href: `/${locale}/about`, label: t("about") },
     { href: `/${locale}/cene`, label: t("dinners") },
     { href: `/${locale}/gallery`, label: t("gallery") },
+    { href: `/${locale}/partners`, label: t("partners") },
     { href: `/${locale}/chefs`, label: t("chefs") },
     { href: `/${locale}/contact`, label: t("contact") },
   ];

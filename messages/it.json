@@ -7,6 +7,7 @@
     "gallery": "Galleria",
     "contact": "Contatti",
     "fenam": "FENAM",
+    "partners": "Partners",
     "chefs": "Chef & Collaboratori"
   },
   "hero": {
@@ -162,6 +163,27 @@
       "vision": {
         "title": "Visione"
       }
+    }
+  },
+  "partners": {
+    "pageTitle": "Partner",
+    "pageSubtitle": "Collaborazioni e realtà che sostengono il progetto Enotempo.",
+    "emptyTitle": "Partner in arrivo",
+    "emptyBody": "Stiamo finalizzando le collaborazioni. Torna presto per scoprire i nostri partner.",
+    "emptyCta": "Contattaci",
+    "type": {
+      "restaurant": "Ristorante",
+      "winery": "Cantina",
+      "other": "Partner"
+    },
+    "actions": {
+      "viewDetails": "Scopri di più"
+    },
+    "detail": {
+      "whyTitle": "Perché hai scelto Enotempo",
+      "aboutTitle": "Chi sei",
+      "expectationsTitle": "Cosa ti aspetti da Enotempo",
+      "backToList": "Torna ai partner"
     }
   },
   "chefs": {

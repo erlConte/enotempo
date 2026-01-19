@@ -7,6 +7,7 @@
     "gallery": "Gallery",
     "contact": "Contact",
     "fenam": "FENAM",
+    "partners": "Partners",
     "chefs": "Chefs & Collaborators"
   },
   "hero": {
@@ -163,6 +164,27 @@
       "vision": {
         "title": "Vision"
       }
+    }
+  },
+  "partners": {
+    "pageTitle": "Partners",
+    "pageSubtitle": "Collaborations and businesses that support the Enotempo project.",
+    "emptyTitle": "Partners coming soon",
+    "emptyBody": "We are finalizing collaborations. Come back soon to discover our partners.",
+    "emptyCta": "Contact us",
+    "type": {
+      "restaurant": "Restaurant",
+      "winery": "Winery",
+      "other": "Partner"
+    },
+    "actions": {
+      "viewDetails": "Learn more"
+    },
+    "detail": {
+      "whyTitle": "Why did you choose Enotempo",
+      "aboutTitle": "Who you are",
+      "expectationsTitle": "What you expect from Enotempo",
+      "backToList": "Back to partners"
     }
   },
   "chefs": {
