@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getMockEvents } from "@/lib/mockEvents";
 
+export const revalidate = 0;
+
 export default async function CenePage({
   params,
 }: {

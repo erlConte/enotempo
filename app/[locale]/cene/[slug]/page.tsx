@@ -10,6 +10,8 @@ import { getEventBySlug, getMockEvents } from "@/lib/mockEvents";
 import ReservationForm from "@/components/events/ReservationForm";
 import { locales } from "@/lib/i18n/config";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   const events = getMockEvents();
   const slugs = events.map((event) => event.slug);

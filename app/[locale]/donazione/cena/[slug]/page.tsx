@@ -6,6 +6,8 @@ import { getEventBySlug, getMockEvents } from "@/lib/mockEvents";
 import Link from "next/link";
 import { locales } from "@/lib/i18n/config";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   const events = getMockEvents();
   const slugs = events.map((event) => event.slug);

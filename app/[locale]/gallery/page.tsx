@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import fs from "fs";
 import path from "path";
 
+export const revalidate = 0;
+
 interface GalleryItem {
   src: string;
   name: string;
