@@ -67,7 +67,7 @@ export default async function CenaDetailPage({
             </div>
           ) : null}
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {!event.image && slug !== "cena-di-benedizione" && (
+            {!event.image && (
               <div className="w-full md:w-32 h-32 md:h-32 rounded-2xl bg-gradient-to-br from-borgogna/20 via-crema/30 to-verde/20 flex items-center justify-center shrink-0">
                 <span className="text-3xl font-serif font-bold text-borgogna/40">
                   {initials}
@@ -85,7 +85,10 @@ export default async function CenaDetailPage({
                 </p>
                 <p className="text-base md:text-lg text-marrone-scuro/80 flex items-center gap-2">
                   <span>📍</span>
-                  <span>{event.location}</span>
+                  <span>
+                    {event.locationName}
+                    {event.locationAddress ? `, ${event.locationAddress}` : ""}
+                  </span>
                 </p>
                 {event.price && (
                   <p className="text-base md:text-lg text-marrone-scuro/80 flex items-center gap-2 font-semibold">

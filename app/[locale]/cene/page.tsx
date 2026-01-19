@@ -93,7 +93,10 @@ export default async function CenePage({
                 <CardContent className="flex-grow space-y-4">
                   <p className="text-base text-marrone-scuro/80 flex items-start gap-2 font-medium">
                     <span className="shrink-0">📍</span>
-                    <span className="line-clamp-2">{event.location}</span>
+                    <span className="line-clamp-2">
+                      {event.locationName}
+                      {event.locationAddress ? `, ${event.locationAddress}` : ""}
+                    </span>
                   </p>
                   {event.price && (
                     <p className="text-base text-marrone-scuro/80 flex items-center gap-2 font-semibold">

@@ -23,21 +23,21 @@ export async function POST(req: Request) {
     // Validazione campi obbligatori
     if (!firstName || !lastName || !email || !phone) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { message: "Missing required fields" },
         { status: 400 }
       );
     }
 
     if (!eventSlug) {
       return NextResponse.json(
-        { error: "Event slug is required" },
+        { message: "Event slug is required" },
         { status: 400 }
       );
     }
 
     if (!fenamConfirmed) {
       return NextResponse.json(
-        { error: "FENAM membership confirmation is required" },
+        { message: "FENAM membership confirmation is required" },
         { status: 400 }
       );
     }
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: "Invalid email format" },
+        { message: "Invalid email format" },
         { status: 400 }
       );
     }
@@ -55,20 +55,8 @@ export async function POST(req: Request) {
     const guests = parseInt(participants, 10);
     if (isNaN(guests) || guests < 1 || guests > 20) {
       return NextResponse.json(
-        { error: "Invalid number of participants (1-20)" },
+        { message: "Invalid number of participants (1-20)" },
         { status: 400 }
-      );
-    }
-
-    // Verifica che l'utente sia membro FENAM
-    const fenamMember = await prisma.fenamMember.findUnique({
-      where: { email },
-    });
-
-    if (!fenamMember) {
-      return NextResponse.json(
-        { error: "User is not a FENAM member. Please register first." },
-        { status: 403 }
       );
     }
 
@@ -79,10 +67,26 @@ export async function POST(req: Request) {
 
     if (!event) {
       return NextResponse.json(
-        { error: "Event not found" },
+        { message: "Event not found" },
         { status: 404 }
       );
     }
+
+    // Upsert membro FENAM (crea se non esiste, aggiorna se esiste)
+    const fenamMember = await prisma.fenamMember.upsert({
+      where: { email },
+      update: {
+        firstName,
+        lastName,
+        phone,
+      },
+      create: {
+        email,
+        firstName,
+        lastName,
+        phone,
+      },
+    });
 
     // Log dataConsent per debugging (non salviamo nel DB)
     console.log("Reservation dataConsent", dataConsent);
@@ -134,7 +138,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { 
-        error: errorMessage, 
+        message: errorMessage, 
         details: process.env.NODE_ENV === "development" ? error.message : undefined 
       },
       { status: 500 }

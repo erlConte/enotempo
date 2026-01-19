@@ -7,7 +7,6 @@
     "gallery": "Galleria",
     "contact": "Contatti",
     "fenam": "FENAM",
-    "partners": "Partners",
     "chefs": "Chef & Collaboratori"
   },
   "hero": {
@@ -163,48 +162,6 @@
       "vision": {
         "title": "Visione"
       }
-    }
-  },
-  "partners": {
-    "pageTitle": "Partner",
-    "pageSubtitle": "Ristoranti, cantine e realtà che credono nel progetto Enotempo.",
-    "empty": "Stiamo finalizzando le collaborazioni. Torna presto per scoprire i nostri partner.",
-    "ctaBox": {
-      "title": "Sei un ristorante, una cantina o una realtà interessata a collaborare?",
-      "body": "Enotempo costruisce collaborazioni su misura con partner che credono nel valore dell'incontro tra culture, vino e gastronomia.",
-      "button": "Scopri il contratto di collaborazione"
-    },
-    "type": {
-      "restaurant": "Ristorante",
-      "winery": "Cantina",
-      "other": "Partner"
-    },
-    "detail": {
-      "whyTitle": "Perché hai scelto Enotempo",
-      "aboutTitle": "Chi sei",
-      "expectationsTitle": "Cosa ti aspetti da Enotempo",
-      "backToList": "Torna ai partner"
-    },
-    "actions": {
-      "viewDetails": "Scopri di più"
-    },
-    "contract": {
-      "title": "Accordo di collaborazione per partner ENOTEMPO",
-      "intro": "Questo documento descrive in modo sintetico i termini generali della collaborazione tra Enotempo e i suoi partner.",
-      "sections": {
-        "scopeTitle": "1. Oggetto della collaborazione",
-        "scopeBody": "Enotempo collabora con ristoranti, cantine e altre realtà enogastronomiche per organizzare eventi e cene che valorizzano l'incontro tra culture diverse attraverso il vino e la gastronomia. La collaborazione si basa su principi di mutuo rispetto, trasparenza e condivisione di valori culturali.",
-        "enotempoTitle": "2. Impegni di Enotempo",
-        "enotempoBody": "Enotempo si impegna a promuovere i partner attraverso i propri canali di comunicazione, a organizzare eventi di qualità che rispettino l'identità del partner, a garantire una comunicazione chiara e tempestiva su date, orari e aspetti logistici degli eventi, e a valorizzare il lavoro e la storia di ciascun partner.",
-        "partnerTitle": "3. Impegni del partner",
-        "partnerBody": "Il partner si impegna a collaborare in modo attivo e trasparente, a fornire informazioni accurate su prodotti, servizi e disponibilità, a rispettare gli accordi presi in merito a date e modalità degli eventi, e a condividere con Enotempo la propria visione e i propri valori per creare esperienze autentiche e coerenti.",
-        "logisticsTitle": "4. Aspetti logistici e organizzativi",
-        "logisticsBody": "Le date degli eventi vengono concordate con anticipo sufficiente per permettere una pianificazione adeguata. Le comunicazioni avvengono principalmente via email o attraverso i canali concordati. Enotempo si occupa della promozione e della gestione delle prenotazioni, mentre il partner gestisce gli aspetti operativi legati alla propria struttura.",
-        "dataTitle": "5. Trattamento dati e comunicazioni",
-        "dataBody": "I dati personali e le informazioni condivise nell'ambito della collaborazione vengono trattati in conformità con la normativa vigente sulla privacy. Enotempo si impegna a utilizzare i dati solo per finalità legate alla collaborazione e alla comunicazione degli eventi, garantendo la massima riservatezza."
-      },
-      "disclaimer": "Questa pagina ha valore informativo. Il contratto formale verrà condiviso e firmato con ciascun partner.",
-      "backToPartners": "Torna all'elenco dei partner"
     }
   },
   "chefs": {

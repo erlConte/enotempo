@@ -82,10 +82,13 @@ export default function NextDinnerPopup({ locale }: NextDinnerPopupProps) {
         </p>
 
         {/* Luogo */}
-        {nextEvent.location && (
+        {nextEvent.locationName && (
           <p className="text-sm text-marrone-scuro/70 flex items-start gap-2">
             <span className="shrink-0">📍</span>
-            <span className="line-clamp-2">{nextEvent.location}</span>
+            <span className="line-clamp-2">
+              {nextEvent.locationName}
+              {nextEvent.locationAddress ? `, ${nextEvent.locationAddress}` : ""}
+            </span>
           </p>
         )}
 

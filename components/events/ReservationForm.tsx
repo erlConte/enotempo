@@ -6,7 +6,6 @@
 
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,6 @@ interface ReservationFormProps {
 export default function ReservationForm({ eventSlug }: ReservationFormProps) {
   const t = useTranslations("events.reservation");
   const locale = useLocale();
-  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -36,17 +34,32 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [dataConsentError, setDataConsentError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isFenamMember, setIsFenamMember] = useState<boolean | null>(null);
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validateEmail = (value: string) => {
+    if (!value) return "Inserisci un indirizzo email valido.";
+    if (!emailRegex.test(value)) return "Inserisci un indirizzo email valido.";
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setEmailError(null);
 
     // Validazione base
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
       setError("Tutti i campi obbligatori devono essere compilati.");
+      return;
+    }
+
+    const emailValidationError = validateEmail(formData.email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
       return;
     }
 
@@ -60,12 +73,6 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
       return;
     }
     setDataConsentError(null);
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError("Inserisci un indirizzo email valido.");
-      return;
-    }
 
     setIsLoading(true);
 
@@ -83,12 +90,20 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Errore durante l&rsquo;invio della richiesta.");
+        let message = "Richiesta non valida.";
+        try {
+          const data = (await response.json()) as { message?: string; error?: string };
+          message = data.message ?? data.error ?? message;
+        } catch {
+          // ignore JSON parse errors
+        }
+        throw new Error(`(${response.status}) ${message}`);
       }
 
       setSuccess(true);
     } catch (err) {
-      setError("Si è verificato un errore. Riprova più tardi.");
+      const message = err instanceof Error ? err.message : "Errore sconosciuto";
+      setError(`Errore prenotazione: ${message}`);
     } finally {
       setIsLoading(false);
     }
@@ -177,10 +192,13 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
               value={formData.email}
               onChange={async (e) => {
                 const emailValue = e.target.value;
-                setFormData({ ...formData, email: emailValue });
+                setFormData((prev) => ({ ...prev, email: emailValue }));
+                if (emailError) {
+                  setEmailError(null);
+                }
                 
                 // Verifica se l'email è già membro FENAM
-                if (emailValue && emailValue.includes("@")) {
+                if (emailValue && emailRegex.test(emailValue)) {
                   try {
                     const res = await fetch("/api/fenam/check", {
                       method: "POST",
@@ -190,7 +208,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
                     const data = await res.json();
                     if (data.isMember) {
                       setIsFenamMember(true);
-                      setFormData({ ...formData, email: emailValue, fenamConfirmed: true });
+                      setFormData((prev) => ({ ...prev, fenamConfirmed: true }));
                     } else {
                       setIsFenamMember(false);
                     }
@@ -199,10 +217,17 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
                   }
                 }
               }}
+              onBlur={() => {
+                const validationError = validateEmail(formData.email);
+                setEmailError(validationError);
+              }}
               required
               className="h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"
               placeholder="nome@esempio.com"
             />
+            {emailError && (
+              <p className="text-sm text-borgogna font-medium">{emailError}</p>
+            )}
             {isFenamMember === true && (
               <p className="text-sm text-verde font-medium flex items-center gap-2">
                 ✓ Sei già iscritto alla FENAM

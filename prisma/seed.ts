@@ -18,31 +18,31 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("🌱 Starting seed...");
 
-  // Calcola data futura (2 mesi da oggi)
-  const futureDate = new Date();
-  futureDate.setMonth(futureDate.getMonth() + 2);
+  const eventDate = new Date("2026-02-05T20:00:00.000Z");
 
-  // Upsert Event by slug "cena-di-benedizione"
+  // Upsert Event by slug "cena-tullpukuna"
   const event = await prisma.event.upsert({
     where: {
-      slug: "cena-di-benedizione",
+      slug: "cena-tullpukuna",
     },
     update: {
-      title: "Cena di Benedizione",
-      subtitle: "Serata speciale con degustazione di vini pregiati",
-      date: futureDate,
-      locationName: "Villa EnoTempo",
-      locationAddress: "Via delle Vigne 42, 20121 Milano, Italia",
-      description: "Una serata esclusiva dedicata alla degustazione di vini pregiati con abbinamenti gastronomici curati.",
+      title: "Cena a Tullpukuna",
+      subtitle: "Cucina andina contemporanea e vini in abbinamento",
+      date: eventDate,
+      locationName: "Tullpukuna",
+      locationAddress: "Piazza Dante 5, Roma",
+      description:
+        "Una serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.",
     },
     create: {
-      slug: "cena-di-benedizione",
-      title: "Cena di Benedizione",
-      subtitle: "Serata speciale con degustazione di vini pregiati",
-      date: futureDate,
-      locationName: "Villa EnoTempo",
-      locationAddress: "Via delle Vigne 42, 20121 Milano, Italia",
-      description: "Una serata esclusiva dedicata alla degustazione di vini pregiati con abbinamenti gastronomici curati.",
+      slug: "cena-tullpukuna",
+      title: "Cena a Tullpukuna",
+      subtitle: "Cucina andina contemporanea e vini in abbinamento",
+      date: eventDate,
+      locationName: "Tullpukuna",
+      locationAddress: "Piazza Dante 5, Roma",
+      description:
+        "Una serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.",
     },
   });
 

@@ -2,7 +2,8 @@ export interface MockEvent {
   slug: string;
   title: string;
   date: Date;
-  location: string;
+  locationName: string;
+  locationAddress?: string;
   shortDescription: string;
   fullDescription: string;
   availableSeats: number;
@@ -14,12 +15,15 @@ export interface MockEvent {
 export function getMockEvents(): MockEvent[] {
   return [
     {
-      slug: "cena-andina-contemporanea",
-      title: "Cena Andina Contemporanea",
-      date: new Date("2026-02-25T20:00:00"),
-      location: "Ristorante Tullpukuna, Piazza Dante 5, Roma",
-      shortDescription: "Un viaggio sensoriale tra le Ande e Roma con piatti creativi, storytelling e vini in abbinamento.",
-      fullDescription: "Un viaggio sensoriale tra le Ande e Roma con piatti creativi, storytelling e vini in abbinamento. Un'esperienza multisensoriale che celebra la cucina andina contemporanea attraverso sapori autentici, presentazioni innovative e la narrazione di storie che uniscono culture lontane.",
+      slug: "cena-tullpukuna",
+      title: "Cena a Tullpukuna",
+      date: new Date("2026-02-05T20:00:00.000Z"),
+      locationName: "Tullpukuna",
+      locationAddress: "Piazza Dante 5, Roma",
+      shortDescription:
+        "Una cena interculturale tra cucina andina contemporanea e vini in abbinamento, nel cuore di Roma.",
+      fullDescription:
+        "Una serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento. Un’esperienza pensata per unire culture e sapori in un’unica tavola.",
       availableSeats: 30,
       price: 45,
       chef: "Gherson Melgarejo",
