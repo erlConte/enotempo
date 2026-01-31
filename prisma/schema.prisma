@@ -1,7 +1,6 @@
+// Prisma 7: url/directUrl vanno in prisma.config.ts, non nello schema
 datasource db {
-  provider  = "postgresql"
-  url       = env("postgresql://postgres.qxuhqfbetljqqcvfsrls:puttanalamadonnastapassworddimerda1237490@aws-1-eu-west-2.pooler.supabase.com:5432/postgres")
-  directUrl = env("postgresql://postgres.qxuhqfbetljqqcvfsrls:puttanalamadonnastapassworddimerda1237490@aws-1-eu-west-2.pooler.supabase.com:6543/postgres)
+  provider = "postgresql"
 }
 
 generator client {

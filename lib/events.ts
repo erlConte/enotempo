@@ -25,6 +25,7 @@ export type EventWithRemaining = {
 
 /** Lista eventi pubblicati con posti rimasti (solo prenotazioni status=confirmed contano) */
 export async function getEvents(): Promise<EventWithRemaining[]> {
+  if (!process.env.DATABASE_URL) return [];
   const events = await prisma.event.findMany({
     where: { status: "published" },
     orderBy: { date: "asc" },
@@ -53,6 +54,7 @@ export async function getEvents(): Promise<EventWithRemaining[]> {
 
 /** Evento per slug con posti rimanenti; null se non trovato o non published */
 export async function getEventBySlug(slug: string): Promise<EventWithRemaining | null> {
+  if (!process.env.DATABASE_URL) return null;
   const event = await prisma.event.findUnique({
     where: { slug, status: "published" },
     include: {
