@@ -32,10 +32,16 @@ Il progetto richiede un database PostgreSQL. Hai due opzioni:
 DATABASE_URL="postgresql://user:password@host:5432/database?schema=public&sslmode=require"
 ```
 
-**Esempio Supabase:**
+**Esempio Supabase (locale / migrate):**
 ```env
 DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT-REF].supabase.co:5432/postgres?schema=public&sslmode=require"
 ```
+
+**Supabase su Vercel (produzione):** usa il **Transaction pooler** (non Session) per evitare "max clients reached - pool_size". In Supabase: Settings → Database → Connection string → **Transaction** (porta 6543). Esempio:
+```env
+DATABASE_URL="postgresql://postgres.[PROJECT]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true"
+```
+Prisma è configurato come singleton con pool ridotto in produzione (`lib/prisma.ts`).
 
 **Esempio Neon:**
 ```env

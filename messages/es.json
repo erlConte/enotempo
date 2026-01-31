@@ -54,7 +54,7 @@
       "submit": "Suscribirse",
       "submitting": "Enviando...",
       "success": "¡Gracias! Te has suscrito a nuestro boletín.",
-      "privacyNote": "Tus datos se procesan de conformidad con la",
+      "privacyNotice": "Al suscribirte aceptas nuestra <link>política de privacidad</link>.",
       "privacyLink": "política de privacidad",
       "error": {
         "invalidEmail": "Por favor, introduce una dirección de correo electrónico válida.",

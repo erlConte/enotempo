@@ -54,7 +54,7 @@
       "submit": "Subscribe",
       "submitting": "Submitting...",
       "success": "Thank you! You have been subscribed to our newsletter.",
-      "privacyNote": "Your data is processed in accordance with the",
+      "privacyNotice": "By subscribing you accept our <link>privacy policy</link>.",
       "privacyLink": "privacy policy",
       "error": {
         "invalidEmail": "Please enter a valid email address.",

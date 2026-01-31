@@ -2,7 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  prismaPool?: Pool;
+};
 
 function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
@@ -15,15 +18,16 @@ function getPrismaClient(): PrismaClient {
     );
   }
 
-  // Crea Pool e adapter solo quando necessario (lazy initialization)
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
-  });
-  
-  const adapter = new PrismaPg(pool);
+  // Singleton: Pool e PrismaClient in globalThis anche in production (evita "max clients reached" su Supabase)
+  if (!globalForPrisma.prismaPool) {
+    globalForPrisma.prismaPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: process.env.NODE_ENV === "production" ? 1 : 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+  }
+  const adapter = new PrismaPg(globalForPrisma.prismaPool);
 
   const client = new PrismaClient({
     adapter,
@@ -32,10 +36,7 @@ function getPrismaClient(): PrismaClient {
         ? ["query", "error", "warn"]
         : ["error"],
   });
-
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
-  }
+  globalForPrisma.prisma = client;
 
   return client;
 }
