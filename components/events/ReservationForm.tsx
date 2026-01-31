@@ -1,7 +1,3 @@
-// NOTE: I dati FENAM vengono salvati nella tabella FenamMember
-// tramite Prisma. Non usiamo sessioni o cookie: la membership
-// viene verificata di volta in volta via API partendo dall'email.
-
 "use client";
 
 import { useState } from "react";
@@ -21,6 +17,7 @@ interface ReservationFormProps {
 
 export default function ReservationForm({ eventSlug }: ReservationFormProps) {
   const t = useTranslations("events.reservation");
+  const tRegole = useTranslations("regole");
   const locale = useLocale();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -29,15 +26,15 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
     phone: "",
     participants: "1",
     notes: "",
-    fenamConfirmed: false,
+    rulesAccepted: false,
     dataConsent: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [dataConsentError, setDataConsentError] = useState<string | null>(null);
+  const [rulesError, setRulesError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [isFenamMember, setIsFenamMember] = useState<boolean | null>(null);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const validateEmail = (value: string) => {
@@ -50,8 +47,8 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
     e.preventDefault();
     setError(null);
     setEmailError(null);
+    setRulesError(null);
 
-    // Validazione base
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
       setError("Tutti i campi obbligatori devono essere compilati.");
       return;
@@ -63,8 +60,8 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
       return;
     }
 
-    if (!formData.fenamConfirmed) {
-      setError("Devi confermare di essere iscritto alla FENAM per procedere.");
+    if (!formData.rulesAccepted) {
+      setRulesError(t("rulesAcceptError"));
       return;
     }
 
@@ -82,8 +79,9 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          ...formData, 
+        credentials: "include",
+        body: JSON.stringify({
+          ...formData,
           eventSlug,
           dataConsent: true,
         }),
@@ -97,7 +95,10 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
         } catch {
           // ignore JSON parse errors
         }
-        // 409 = posti esauriti: mostra solo il messaggio API, senza prefisso status
+        if (response.status === 401) {
+          setError(message);
+          return;
+        }
         if (response.status === 409) {
           setError(message);
           return;
@@ -108,7 +109,6 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
 
       setSuccess(true);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Errore sconosciuto";
       setError(err instanceof Error ? err.message : "Errore sconosciuto. Riprova.");
     } finally {
       setIsLoading(false);
@@ -188,58 +188,27 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <Label htmlFor="email" className="text-base font-semibold text-marrone-scuro">
-              {t("email")} <span className="text-borgogna">*</span>
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={async (e) => {
-                const emailValue = e.target.value;
-                setFormData((prev) => ({ ...prev, email: emailValue }));
-                if (emailError) {
-                  setEmailError(null);
-                }
-                
-                // Verifica se l'email è già membro FENAM
-                if (emailValue && emailRegex.test(emailValue)) {
-                  try {
-                    const res = await fetch("/api/fenam/check", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email: emailValue }),
-                    });
-                    const data = await res.json();
-                    if (data.isMember) {
-                      setIsFenamMember(true);
-                      setFormData((prev) => ({ ...prev, fenamConfirmed: true }));
-                    } else {
-                      setIsFenamMember(false);
-                    }
-                  } catch (err) {
-                    setIsFenamMember(null);
-                  }
-                }
-              }}
-              onBlur={() => {
-                const validationError = validateEmail(formData.email);
-                setEmailError(validationError);
-              }}
-              required
-              className="h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"
-              placeholder="nome@esempio.com"
-            />
-            {emailError && (
-              <p className="text-sm text-borgogna font-medium">{emailError}</p>
-            )}
-            {isFenamMember === true && (
-              <p className="text-sm text-verde font-medium flex items-center gap-2">
-                ✓ Sei già iscritto alla FENAM
-              </p>
-            )}
-          </div>
+            <div className="space-y-3">
+              <Label htmlFor="email" className="text-base font-semibold text-marrone-scuro">
+                {t("email")} <span className="text-borgogna">*</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                onBlur={() => {
+                  const validationError = validateEmail(formData.email);
+                  setEmailError(validationError);
+                }}
+                required
+                className="h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"
+                placeholder="nome@esempio.com"
+              />
+              {emailError && (
+                <p className="text-sm text-borgogna font-medium">{emailError}</p>
+              )}
+            </div>
             <div className="space-y-3">
               <Label htmlFor="phone" className="text-base font-semibold text-marrone-scuro">
                 {t("phone")} <span className="text-borgogna">*</span>
@@ -297,20 +266,32 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
 
           <div className="flex items-start space-x-3 pt-2">
             <Checkbox
-              id="fenamConfirm"
-              checked={formData.fenamConfirmed}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, fenamConfirmed: checked === true })
-              }
+              id="rulesAccept"
+              checked={formData.rulesAccepted}
+              onCheckedChange={(checked) => {
+                setFormData({ ...formData, rulesAccepted: checked === true });
+                setRulesError(null);
+              }}
               className="mt-1 h-5 w-5 rounded-md border-2 border-marrone-scuro/30 data-[state=checked]:bg-borgogna data-[state=checked]:border-borgogna"
             />
             <Label
-              htmlFor="fenamConfirm"
+              htmlFor="rulesAccept"
               className="text-sm leading-relaxed cursor-pointer text-marrone-scuro/80"
             >
-              {t("fenamConfirm")} <span className="text-borgogna">*</span>
+              {t("rulesAcceptLabel")}{" "}
+              <Link
+                href={`/${locale}/regole`}
+                className="underline text-borgogna hover:text-borgogna/80"
+                target="_blank"
+              >
+                {tRegole("title")}
+              </Link>{" "}
+              <span className="text-borgogna">*</span>
             </Label>
           </div>
+          {rulesError && (
+            <p className="text-sm text-borgogna font-medium">{rulesError}</p>
+          )}
 
           <div className="space-y-2 pt-2">
             <div className="flex items-start space-x-3">
@@ -346,7 +327,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
         <CardFooter className="pt-6 pb-8 px-8">
           <Button
             type="submit"
-            disabled={isLoading || !formData.fenamConfirmed}
+            disabled={isLoading || !formData.rulesAccepted}
             className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-7 text-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
           >
             {isLoading ? "Invio in corso..." : t("submit")}
@@ -356,4 +337,3 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
     </Card>
   );
 }
-

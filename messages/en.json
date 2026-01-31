@@ -5,10 +5,33 @@
     "events": "Events",
     "dinners": "Dinners",
     "gallery": "Gallery",
+    "formazione": "Formation",
     "contact": "Contact",
-    "fenam": "FENAM",
     "partners": "Partners",
     "chefs": "Chefs & Collaborators"
+  },
+  "auth": {
+    "fenam": {
+      "title": "Log in or sign up with FENAM",
+      "description": "To book a dinner you must be recognised as a member. You will be redirected to the FeNAM site to log in or sign up; on return you can complete the reservation.",
+      "cta": "Log in / Sign up with FENAM",
+      "backToDinners": "Back to dinners",
+      "gateMessage": "To book you need to log in with FENAM. Click the button to be redirected.",
+      "notConfigured": "FeNAM redirect not configured. Contact the administrator."
+    }
+  },
+  "regole": {
+    "title": "Rules and declarations",
+    "intro": "Before participating in Enotempo dinners, please read the following rules.",
+    "punctualityTitle": "Punctuality",
+    "punctuality": "Arrival at the time indicated for the event is required.",
+    "allergiesTitle": "Allergies and intolerances",
+    "allergies": "Food allergies and intolerances must be communicated in advance to the organisers.",
+    "extraPaidTitle": "Extra",
+    "extraPaid": "Extra food and drinks are paid separately.",
+    "limitedSeatsTitle": "Limited seats",
+    "limitedSeats": "Seats are limited; booking is binding.",
+    "readMore": "Read full text"
   },
   "hero": {
     "title": "EnoTempo",
@@ -22,8 +45,8 @@
     "howItWorks": {
       "title": "How it works",
       "step1": {
-        "title": "Join FENAM",
-        "description": "Become a member of the National Federation of Multicultural Associations to access our experiences."
+        "title": "Log in with FeNAM",
+        "description": "To book you need to log in via FeNAM; you will be redirected to the FeNAM site to log in or sign up."
       },
       "step2": {
         "title": "Book your dinner",
@@ -38,9 +61,10 @@
       "title": "The spirit of ENOTEMPO dinners",
       "description": "Our dinners are moments of authentic conviviality, where tradition and innovation meet. A warm and welcoming atmosphere, selected wines and carefully prepared dishes, to create unforgettable experiences that celebrate Italian gastronomic culture."
     },
+    "formatText": "We organise: one fixed tasting per month at Tullpukuna; one itinerant tasting in the city.",
     "donationBox": {
       "title": "Important: Voluntary donations",
-      "description": "All amounts paid on the ENOTEMPO website are voluntary donations linked to association activities. These are not payments for commercial services, but contributions to support the National Federation of Multicultural Associations (FENAM) and its cultural initiatives."
+      "description": "All amounts paid on the ENOTEMPO website are voluntary donations linked to association activities. These are not payments for commercial services."
     },
     "nextDinner": {
       "title": "Next upcoming dinner",
@@ -62,28 +86,6 @@
       }
     }
   },
-  "fenam": {
-    "title": "FENAM – National Federation of Multicultural Associations",
-    "description": "FENAM is the National Federation of Multicultural Associations, an organization that promotes encounters between different cultures through cultural initiatives, events and themed dinners. FENAM membership is mandatory to participate in ENOTEMPO dinners.",
-    "requirement": "To participate in ENOTEMPO dinners, FENAM (National Federation of Multicultural Associations) membership is mandatory. Without FENAM registration, it is not possible to complete the reservation.",
-    "registerButton": "Register for FENAM",
-    "form": {
-      "title": "FENAM Registration",
-      "firstName": "First Name",
-      "lastName": "Last Name",
-      "email": "Email",
-      "phone": "Phone",
-      "taxCode": "Tax Code (optional)",
-      "privacy": "I have read and accept the privacy policy and authorize the processing of my data.",
-      "dataConsentLabel": "I have read and accept the ",
-      "dataConsentLink": "privacy policy on personal data processing",
-      "dataConsentError": "You must accept the privacy policy to proceed.",
-      "submit": "Submit registration",
-      "donationNote": "After submitting your data, you will be asked to complete a VOLUNTARY DONATION for FENAM affiliation. This is a contribution to support association activities, not a payment for commercial services. Without donation, the registration will not be valid.",
-      "success": "Registration submitted. Now proceed to donation.",
-      "goToDonation": "Go to donation"
-    }
-  },
   "events": {
     "title": "Our dinners",
     "availableSeats": "Available seats",
@@ -91,8 +93,6 @@
     "details": "Details and reservation",
     "price": "Price",
     "chef": "Chef",
-    "fenamRequired": "FENAM membership is mandatory to participate in the dinner. If you are not yet registered, register before completing the reservation.",
-    "registerFenam": "Register for FENAM",
     "reservation": {
       "title": "Reservation",
       "firstName": "First Name",
@@ -101,7 +101,8 @@
       "phone": "Phone",
       "participants": "Number of participants",
       "notes": "Notes (optional)",
-      "fenamConfirm": "I confirm that I am a FENAM member.",
+      "rulesAcceptLabel": "I have read and accept the ",
+      "rulesAcceptError": "You must accept the rules to proceed.",
       "dataConsentLabel": "I accept the processing of my data for reservation management and communications related to the event. I have read the ",
       "dataConsentLink": "privacy policy on personal data processing",
       "dataConsentError": "You must accept the data processing to proceed.",
@@ -114,20 +115,9 @@
     "title": "Reservation"
   },
   "donation": {
-    "fenam": {
-      "title": "Donation for FENAM affiliation",
-      "description": "This is a donation to support the FENAM association. It is not a commercial service payment.",
-      "button": "Make donation with PayPal",
-      "body": "Your FENAM registration has been successfully recorded. The donation is voluntary and helps support the association's activities.",
-      "paypalButton": "Donate with PayPal",
-      "skipDonation": "Continue without donation",
-      "skipDonationNote": "You can participate in FENAM activities even without making a donation at this time.",
-      "paypalSuccess": "Thank you! Your donation has been recorded by PayPal.",
-      "paypalCancel": "You have cancelled the donation. You can try again later or continue without donating."
-    },
     "dinner": {
       "title": "Donation for dinner participation",
-      "description": "This is a donation to support the FENAM association and the event. It is not a commercial service payment.",
+      "description": "This is a donation to support the association and the event. It is not a commercial service payment.",
       "button": "Make donation with PayPal",
       "skipDonation": "Continue without donation"
     }
@@ -139,7 +129,7 @@
   },
   "contact": {
     "title": "Contact",
-    "description": "Do you have questions or want to know more about ENOTEMPO and FENAM? We're here to help.",
+    "description": "Do you have questions or want to know more about ENOTEMPO? We're here to help.",
     "form": {
       "name": "Name",
       "email": "Email",
@@ -187,6 +177,12 @@
       "backToList": "Back to partners"
     }
   },
+  "formazione": {
+    "title": "Enotempo Formation",
+    "intro": "Explanation of the Enotempo Formation project: training and in-depth content on food culture, wine and conviviality.",
+    "pilloleTitle": "Pillole del mestiere",
+    "pillolePlaceholder": "Content coming soon. (No CMS for now.)"
+  },
   "chefs": {
     "pageTitle": "Chefs & Collaborators",
     "pageSubtitle": "The people who give a face, a flavor and a story to Enotempo experiences.",
@@ -207,10 +203,6 @@
     "title": "Privacy Policy on Personal Data Processing",
     "intro": "This page describes how we use your personal data in the context of Enotempo activities.",
     "sections": {
-      "fenam": {
-        "title": "FENAM Registration",
-        "body": "Data provided through the FENAM registration form is used to manage membership, internal communications, and organization of related activities."
-      },
       "events": {
         "title": "Event Reservations",
         "body": "Data provided for dinner reservations is used to manage event participation and send you any logistical communications."

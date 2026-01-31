@@ -1,6 +1,8 @@
 // Prenotazioni: evento da DB, check capienza in transazione (no overbooking).
+// Hard gate: richiede sessione FeNAM valida (cookie da handoff). Senza sessione → 401.
 
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getEventBySlug } from "@/lib/events";
 import { reservationSchema, type ReservationInput } from "@/lib/validation";
@@ -8,12 +10,23 @@ import { handleApiError } from "@/lib/api-error";
 import { sanitizeTextFields } from "@/lib/sanitize";
 import { withRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
+import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 
 const NO_CAPACITY = "NO_CAPACITY";
 const EVENT_NOT_FOUND = "EVENT_NOT_FOUND";
 
 export async function POST(req: Request) {
   try {
+    const cookieStore = await cookies();
+    const cookieValue = cookieStore.get(FENAM_SESSION_COOKIE)?.value;
+    const session = verifySessionToken(cookieValue);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Per prenotare è necessario accedere con FENAM." },
+        { status: 401 }
+      );
+    }
+
     const rateLimitCheck = withRateLimit(5, 60000);
     const { allowed, retryAfter } = rateLimitCheck(req);
     if (!allowed) {
@@ -47,6 +60,16 @@ export async function POST(req: Request) {
       notes: data.notes || null,
     });
 
+    const fenamMemberExisting = await prisma.fenamMember.findUnique({
+      where: { id: session.fenamMemberId },
+    });
+    if (!fenamMemberExisting || fenamMemberExisting.email.toLowerCase() !== sanitizedData.email.toLowerCase()) {
+      return NextResponse.json(
+        { error: "L'email deve corrispondere all'account con cui hai effettuato l'accesso." },
+        { status: 403 }
+      );
+    }
+
     logger.info("Reservation attempt", {
       email: sanitizedData.email,
       eventSlug: data.eventSlug,
@@ -72,15 +95,12 @@ export async function POST(req: Request) {
         err.code = NO_CAPACITY;
         throw err;
       }
-      const fenamMember = await tx.fenamMember.upsert({
-        where: { email: sanitizedData.email },
-        update: {
-          firstName: sanitizedData.firstName,
-          lastName: sanitizedData.lastName,
-          phone: sanitizedData.phone,
-        },
-        create: {
-          email: sanitizedData.email,
+      const fenamMember = await tx.fenamMember.findUniqueOrThrow({
+        where: { id: session.fenamMemberId },
+      });
+      await tx.fenamMember.update({
+        where: { id: fenamMember.id },
+        data: {
           firstName: sanitizedData.firstName,
           lastName: sanitizedData.lastName,
           phone: sanitizedData.phone,

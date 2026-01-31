@@ -136,6 +136,7 @@ export default function Header() {
     { href: `/${locale}/about`, label: t("about") },
     { href: `/${locale}/cene`, label: t("dinners") },
     { href: `/${locale}/gallery`, label: t("gallery") },
+    { href: `/${locale}/formazione`, label: t("formazione") },
     { href: `/${locale}/partners`, label: t("partners") },
     { href: `/${locale}/chefs`, label: t("chefs") },
     { href: `/${locale}/contact`, label: t("contact") },
@@ -154,8 +155,6 @@ export default function Header() {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-
-  if (pathname.includes("/fenam")) return null;
 
   return (
     <>
@@ -181,16 +180,6 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3 shrink-0">
-            <Link href={`/${locale}/fenam`} className="hidden lg:block">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl border-borgogna text-borgogna hover:bg-borgogna hover:text-bianco-caldo whitespace-nowrap"
-              >
-                {t("fenam")}
-              </Button>
-            </Link>
-
             <div className="hidden lg:block">
               <LanguageSwitcher variant="desktop" />
             </div>
@@ -234,16 +223,6 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-
-          <Link href={`/${locale}/fenam`} onClick={closeMobileMenu} className="mt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full rounded-xl border-borgogna text-borgogna hover:bg-borgogna hover:text-bianco-caldo"
-            >
-              {t("fenam")}
-            </Button>
-          </Link>
 
           <div className="mt-4">
             <LanguageSwitcher variant="mobile" />

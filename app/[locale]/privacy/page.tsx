@@ -24,19 +24,6 @@ export default async function PrivacyPage({
         <Card className="border-0 shadow-sm rounded-2xl bg-white">
           <CardHeader className="pb-4">
             <CardTitle className="font-serif text-2xl md:text-3xl text-borgogna">
-              {t("sections.fenam.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-base md:text-lg text-marrone-scuro/80 leading-relaxed">
-              {t("sections.fenam.body")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm rounded-2xl bg-white mt-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="font-serif text-2xl md:text-3xl text-borgogna">
               {t("sections.events.title")}
             </CardTitle>
           </CardHeader>

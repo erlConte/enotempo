@@ -5,10 +5,33 @@
     "events": "Eventi",
     "dinners": "Cene",
     "gallery": "Galleria",
+    "formazione": "Formazione",
     "contact": "Contatti",
-    "fenam": "FENAM",
     "partners": "Partners",
     "chefs": "Chef & Collaboratori"
+  },
+  "auth": {
+    "fenam": {
+      "title": "Accedi o iscriviti con FENAM",
+      "description": "Per prenotare una cena devi essere riconosciuto come membro. Verrai reindirizzato al sito FeNAM per accedere o iscriverti; al ritorno potrai completare la prenotazione.",
+      "cta": "Accedi / Iscriviti con FENAM",
+      "backToDinners": "Torna alle cene",
+      "gateMessage": "Per prenotare è necessario accedere con FENAM. Clicca il pulsante per essere reindirizzato.",
+      "notConfigured": "Redirect FeNAM non configurato. Contatta l'amministratore."
+    }
+  },
+  "regole": {
+    "title": "Regole e dichiarazioni",
+    "intro": "Prima di partecipare alle cene Enotempo, ti chiediamo di prendere visione delle seguenti regole.",
+    "punctualityTitle": "Puntualità",
+    "punctuality": "È richiesto l'arrivo all'orario indicato per l'evento.",
+    "allergiesTitle": "Allergie e intolleranze",
+    "allergies": "Allergie e intolleranze alimentari vanno comunicate in anticipo agli organizzatori.",
+    "extraPaidTitle": "Extra",
+    "extraPaid": "Cibo e bevande extra si pagano a parte.",
+    "limitedSeatsTitle": "Posti limitati",
+    "limitedSeats": "I posti sono limitati; la prenotazione è vincolante.",
+    "readMore": "Leggi il testo completo"
   },
   "hero": {
     "tagline": "Incontri enogastronomici interculturali",
@@ -21,8 +44,8 @@
     "howItWorks": {
       "title": "Come funziona",
       "step1": {
-        "title": "Iscriviti alla FENAM",
-        "description": "Diventa membro della Federazione Nazionale di Associazioni Multiculturali per accedere alle nostre esperienze."
+        "title": "Accedi con FeNAM",
+        "description": "Per prenotare accedi tramite FeNAM; verrai reindirizzato al sito FeNAM per accedere o iscriverti."
       },
       "step2": {
         "title": "Prenota la tua cena",
@@ -37,9 +60,10 @@
       "title": "Lo spirito delle cene ENOTEMPO",
       "description": "Le nostre cene sono momenti di convivialità autentica, dove tradizione e innovazione si incontrano. Un'atmosfera calda e accogliente, vini selezionati e piatti preparati con cura, per creare esperienze indimenticabili che celebrano la cultura enogastronomica italiana."
     },
+    "formatText": "Organizziamo: una degustazione fissa al mese da Tullpukuna; una degustazione itinerante in città.",
     "donationBox": {
       "title": "Importante: Donazioni volontarie",
-      "description": "Tutte le somme versate sul sito ENOTEMPO sono donazioni volontarie collegate ad attività associative. Non si tratta di pagamenti per servizi commerciali, ma di contributi a sostegno della Federazione Nazionale di Associazioni Multiculturali (FENAM) e delle sue iniziative culturali."
+      "description": "Tutte le somme versate sul sito ENOTEMPO sono donazioni volontarie collegate ad attività associative. Non si tratta di pagamenti per servizi commerciali."
     },
     "nextDinner": {
       "title": "Prossima cena in programma",
@@ -61,28 +85,6 @@
       }
     }
   },
-  "fenam": {
-    "title": "FENAM – Federazione Nazionale di Associazioni Multiculturali",
-    "description": "La FENAM è la Federazione Nazionale di Associazioni Multiculturali, un'organizzazione che promuove l'incontro tra culture diverse attraverso iniziative culturali, eventi e cene tematiche. L'iscrizione alla FENAM è obbligatoria per partecipare alle cene ENOTEMPO.",
-    "requirement": "Per partecipare alle cene ENOTEMPO è obbligatoria l'iscrizione alla FENAM (Federazione Nazionale di Associazioni Multiculturali). Senza registrazione FENAM non è possibile completare la prenotazione.",
-    "registerButton": "Iscriviti alla FENAM",
-    "form": {
-      "title": "Iscrizione FENAM",
-      "firstName": "Nome",
-      "lastName": "Cognome",
-      "email": "Email",
-      "phone": "Telefono",
-      "taxCode": "Codice fiscale (opzionale)",
-      "privacy": "Ho letto e accetto l'informativa privacy e autorizzo il trattamento dei miei dati.",
-      "dataConsentLabel": "Ho letto e accetto l'",
-      "dataConsentLink": "informativa sul trattamento dei dati personali",
-      "dataConsentError": "Per procedere è necessario accettare l'informativa sul trattamento dei dati.",
-      "submit": "Invia iscrizione",
-      "donationNote": "Dopo aver inviato i dati ti verrà richiesto di completare una DONAZIONE VOLONTARIA per l'affiliazione alla FENAM. Si tratta di un contributo a sostegno delle attività associative, non di un pagamento per servizi commerciali. Senza donazione l'iscrizione non sarà valida.",
-      "success": "Iscrizione inviata. Ora procedi alla donazione.",
-      "goToDonation": "Vai alla donazione"
-    }
-  },
   "events": {
     "title": "Le nostre cene",
     "availableSeats": "Posti disponibili",
@@ -90,8 +92,6 @@
     "details": "Dettagli e prenotazione",
     "price": "Prezzo",
     "chef": "Chef",
-    "fenamRequired": "Per partecipare alla cena è obbligatoria l'iscrizione alla FENAM. Se non sei ancora iscritto, registrati prima di completare la prenotazione.",
-    "registerFenam": "Registrati alla FENAM",
     "reservation": {
       "title": "Prenotazione",
       "firstName": "Nome",
@@ -100,7 +100,8 @@
       "phone": "Telefono",
       "participants": "Numero di partecipanti",
       "notes": "Note (opzionale)",
-      "fenamConfirm": "Confermo di essere iscritto alla FENAM.",
+      "rulesAcceptLabel": "Ho letto e accetto le",
+      "rulesAcceptError": "Per procedere è necessario accettare le regole.",
       "dataConsentLabel": "Accetto il trattamento dei miei dati per la gestione della prenotazione e delle comunicazioni relative all'evento. Ho letto l'",
       "dataConsentLink": "informativa sul trattamento dei dati personali",
       "dataConsentError": "Per procedere è necessario accettare il trattamento dei dati.",
@@ -113,20 +114,9 @@
     "title": "Prenotazione"
   },
   "donation": {
-    "fenam": {
-      "title": "Donazione per affiliazione FENAM",
-      "description": "Questa è una donazione a sostegno dell'associazione FENAM. Non è un pagamento di servizio commerciale.",
-      "button": "Effettua la donazione con PayPal",
-      "body": "La tua iscrizione alla FENAM è stata registrata correttamente. La donazione è volontaria e serve a sostenere le attività dell'associazione.",
-      "paypalButton": "Dona con PayPal",
-      "skipDonation": "Continua senza donazione",
-      "skipDonationNote": "Puoi partecipare alle attività FENAM anche senza effettuare una donazione in questo momento.",
-      "paypalSuccess": "Grazie! La tua donazione è stata registrata da PayPal.",
-      "paypalCancel": "Hai annullato la donazione. Puoi riprovare più tardi oppure continuare senza donare."
-    },
     "dinner": {
       "title": "Donazione per partecipazione alla cena",
-      "description": "Questa è una donazione a sostegno dell'associazione FENAM e dell'evento. Non è un pagamento di servizio commerciale.",
+      "description": "Questa è una donazione a sostegno dell'associazione e dell'evento. Non è un pagamento di servizio commerciale.",
       "button": "Effettua la donazione con PayPal",
       "skipDonation": "Continua senza donazione"
     }
@@ -138,7 +128,7 @@
   },
   "contact": {
     "title": "Contatti",
-    "description": "Hai domande o vuoi saperne di più su ENOTEMPO e FENAM? Siamo qui per aiutarti.",
+    "description": "Hai domande o vuoi saperne di più su ENOTEMPO? Siamo qui per aiutarti.",
     "form": {
       "name": "Nome",
       "email": "Email",
@@ -186,6 +176,12 @@
       "backToList": "Torna ai partner"
     }
   },
+  "formazione": {
+    "title": "Enotempo Formazione",
+    "intro": "Spiegazione del progetto Enotempo Formazione: formazione e approfondimento su cultura del cibo, vino e convivialità.",
+    "pilloleTitle": "Pillole del mestiere",
+    "pillolePlaceholder": "Contenuti in arrivo. (Nessun CMS per ora.)"
+  },
   "chefs": {
     "pageTitle": "Chef & Collaboratori",
     "pageSubtitle": "Le persone che danno un volto, un sapore e una storia alle esperienze Enotempo.",
@@ -206,10 +202,6 @@
     "title": "Informativa sul trattamento dei dati personali",
     "intro": "In questa pagina descriviamo come utilizziamo i tuoi dati personali nell'ambito delle attività di Enotempo.",
     "sections": {
-      "fenam": {
-        "title": "Iscrizione FENAM",
-        "body": "I dati forniti tramite il form di iscrizione FENAM vengono utilizzati per gestire l'affiliazione, le comunicazioni interne e l'organizzazione delle attività collegate."
-      },
       "events": {
         "title": "Prenotazione eventi",
         "body": "I dati forniti per la prenotazione delle cene vengono utilizzati per gestire la partecipazione all'evento e inviarti eventuali comunicazioni logistiche."

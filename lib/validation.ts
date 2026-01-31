@@ -25,24 +25,6 @@ export const nameSchema = z
   .max(100, "Name too long")
   .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Invalid characters in name");
 
-// Schema per registrazione FENAM
-export const fenamRegisterSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
-  email: emailSchema,
-  phone: phoneSchema,
-  taxCode: z.string().max(20, "Tax code too long").optional(),
-  locale: z.enum(["it", "en", "es"]).optional(),
-  dataConsent: z.boolean().refine((val) => val === true, {
-    message: "Data consent is required",
-  }),
-});
-
-// Schema per check FENAM
-export const fenamCheckSchema = z.object({
-  email: emailSchema,
-});
-
 // Schema per prenotazione evento
 export const reservationSchema = z.object({
   firstName: nameSchema,
@@ -56,15 +38,12 @@ export const reservationSchema = z.object({
     .pipe(z.number().int().min(1, "At least 1 participant").max(20, "Maximum 20 participants")),
   notes: z.string().max(1000, "Notes too long").optional().nullable(),
   eventSlug: z.string().min(1, "Event slug is required"),
-  fenamConfirmed: z.boolean().refine((val) => val === true, {
-    message: "FENAM membership confirmation is required",
+  rulesAccepted: z.boolean().refine((val) => val === true, {
+    message: "Acceptance of rules is required",
   }),
   dataConsent: z.boolean().refine((val) => val === true, {
     message: "Data consent is required",
   }),
 });
 
-// Type inference dagli schemi
-export type FenamRegisterInput = z.infer<typeof fenamRegisterSchema>;
-export type FenamCheckInput = z.infer<typeof fenamCheckSchema>;
 export type ReservationInput = z.infer<typeof reservationSchema>;

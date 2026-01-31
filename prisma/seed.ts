@@ -18,23 +18,23 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("🌱 Starting seed...");
 
-  const eventDate = new Date("2026-02-05T20:00:00.000Z");
+  const eventDate = new Date("2026-02-15T20:00:00.000Z");
 
-  // Primo evento reale: Cena a Tullpukuna (posti limitati, no placeholder)
+  // Evento reale: Cena a Tullpukuna – 15 febbraio 2026, Tullpukuna, 40 posti, 80€ a persona (solo cena), menu 5 portate
   const eventPayload = {
-    slug: "cena-tullpukuna",
+    slug: "cena-tullpukuna-15-febbraio-2026",
     title: "Cena a Tullpukuna",
     subtitle: "Cucina andina contemporanea e vini in abbinamento",
     date: eventDate,
     locationName: "Tullpukuna",
-    locationAddress: "Piazza Dante 5, Roma",
+    locationAddress: null,
     description:
-      "Una serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.",
-    capacity: 30,
+      "Prezzo: 80€ a persona (solo cena).\n\nUna serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.\n\nMenu 5 portate (4 salate + 1 dolce):\n• Antipasto – Ceviche di pesce con avocado e mais\n• Primo – Causa rellena con pollo e olive\n• Secondo – Lomo saltado con riso e patate\n• Pre-dolce – Formaggi andini con miele\n• Dolce – Suspiro a la limeña\n\nAbbinamento vini: selezione di etichette italiane e sudamericane in abbinamento alle portate.",
+    capacity: 40,
     status: "published",
   };
   const event = await prisma.event.upsert({
-    where: { slug: "cena-tullpukuna" },
+    where: { slug: "cena-tullpukuna-15-febbraio-2026" },
     update: eventPayload,
     create: eventPayload,
   });

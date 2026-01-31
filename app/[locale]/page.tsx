@@ -125,8 +125,11 @@ export default async function HomePage({
               <h3 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
                 Cosa facciamo
               </h3>
-              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-6">
+              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-4">
                 In Enotempo curiamo esperienze enogastronomiche che raccontano le tradizioni latinoamericane attraverso il dialogo con i prodotti italiani d&apos;eccellenza. Non proponiamo semplici degustazioni: creiamo eventi multisensoriali in cui vino, gastronomia e cultura si intrecciano per offrire momenti autentici e profondi.
+              </p>
+              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-6">
+                {tHome("formatText")}
               </p>
               <ul className="list-disc list-inside space-y-3 text-lg md:text-xl text-marrone-scuro/80 leading-relaxed ml-4">
                 <li>Eventi di degustazione eno-gastronomica con vini italiani e latinoamericani abbinati a piatti tipici, raccontati con storie e identità culturali.</li>

@@ -2,13 +2,13 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import Image from "next/image";
+import { cookies } from "next/headers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getEventBySlug, getEvents } from "@/lib/events";
-import ReservationForm from "@/components/events/ReservationForm";
+import BookingGate from "@/components/events/BookingGate";
 import { locales } from "@/lib/i18n/config";
+import { hasValidSession, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,10 @@ export default async function CenaDetailPage({
 }) {
   const { locale, slug } = await params;
   const t = await getTranslations("events");
+  const tRegole = await getTranslations("regole");
   const event = await getEventBySlug(slug);
+  const cookieStore = await cookies();
+  const hasIdentity = hasValidSession(cookieStore.get(FENAM_SESSION_COOKIE)?.value);
 
   if (!event) {
     notFound();
@@ -127,41 +130,40 @@ export default async function CenaDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-marrone-scuro/90 leading-relaxed text-lg font-normal">
+                <p className="text-marrone-scuro/90 leading-relaxed text-lg font-normal whitespace-pre-line">
                   {event.description ?? event.subtitle ?? ""}
                 </p>
               </CardContent>
             </Card>
 
-            {/* FENAM Requirement Alert - Più evidente */}
-            <Alert className="bg-borgogna/10 border-2 border-borgogna rounded-2xl shadow-md">
-              <AlertDescription className="text-borgogna">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">⚠️</div>
-                  <div className="flex-1">
-                    <strong className="text-xl mb-3 block font-bold">{t("fenamRequired")}</strong>
-                    <p className="text-base mb-4 text-borgogna/90">
-                      L&rsquo;iscrizione alla FENAM è obbligatoria per partecipare alle cene Enotempo. 
-                      Se non sei ancora iscritto, registrati prima di completare la prenotazione.
-                    </p>
-                    <Link href={`/${locale}/fenam/iscrizione`}>
-                      <Button
-                        className="bg-borgogna text-bianco-caldo hover:bg-borgogna/90 mt-2 rounded-xl py-3 px-6 font-semibold text-base shadow-md"
-                      >
-                        {t("registerFenam")} →
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
+            <Card className="border-0 shadow-sm rounded-2xl">
+              <CardHeader>
+                <CardTitle className="font-serif text-2xl text-borgogna">
+                  {tRegole("title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <ul className="list-disc list-inside text-marrone-scuro/90 space-y-2">
+                  <li>{tRegole("punctuality")}</li>
+                  <li>{tRegole("allergies")}</li>
+                  <li>{tRegole("extraPaid")}</li>
+                  <li>{tRegole("limitedSeats")}</li>
+                </ul>
+                <Link
+                  href={`/${locale}/regole`}
+                  className="inline-block text-borgogna font-medium hover:underline mt-2"
+                >
+                  {tRegole("readMore")} →
+                </Link>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Colonna destra - Form prenotazione */}
           <div className="lg:col-span-1">
             {event.remainingSeats > 0 && (
               <div className="sticky top-8">
-                <ReservationForm eventSlug={slug} />
+                <BookingGate hasIdentity={hasIdentity} eventSlug={slug} locale={locale} />
               </div>
             )}
           </div>

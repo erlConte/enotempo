@@ -117,7 +117,7 @@ Si aprirà un'interfaccia web su `http://localhost:5555` dove puoi vedere e modi
 Gli eventi sono letti dal database tramite `lib/events.ts` (getEvents, getEventBySlug, getNextUpcomingEvent). Il seed popola il primo evento reale (Cena a Tullpukuna). Prenotazioni con capienza e protezione overbooking via API `/api/reservations`.
 
 **Campo `phone` in FenamMember:**
-Nel schema Prisma, `phone` è definito come opzionale (`String?`), ma nelle API (`/api/fenam/register` e `/api/reservations`) è richiesto come regola di business per la validazione dei dati.
+Nel schema Prisma, `phone` è definito come opzionale (`String?`), ma nell'API `/api/reservations` è richiesto come regola di business per la validazione dei dati. La prenotazione richiede sessione FeNAM (cookie firmato da handoff). Vedi `.env.example` per `FENAM_LOGIN_URL` e `FENAM_HANDOFF_SECRET`; il ritorno da FeNAM avviene via POST a `/api/auth/fenam/handoff` (nessun token in query).
 
 **File di configurazione ambiente:**
 - `Next dev` usa `.env.local` per le variabili d'ambiente durante lo sviluppo
