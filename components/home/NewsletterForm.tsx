@@ -29,11 +29,9 @@ export default function NewsletterForm() {
     setIsLoading(true);
 
     try {
-      // TODO: Collegare a backend/Supabase quando disponibile
-      // Per ora, stampiamo in console e simuliamo un successo
-      console.log("Newsletter subscription:", email);
-      
-      // Simulazione chiamata API
+      // TODO: In futuro, implementare endpoint API /api/newsletter
+      // Per ora, simuliamo un successo
+      // In produzione, qui si può integrare con servizio email (Resend, Mailchimp, ecc.)
       await new Promise((resolve) => setTimeout(resolve, 500));
       
       setSuccess(true);

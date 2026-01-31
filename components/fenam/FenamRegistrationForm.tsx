@@ -85,10 +85,9 @@ export default function FenamRegistrationForm() {
       } else {
         throw new Error(data.error || "Errore durante la registrazione.");
       }
-    } catch (err: any) {
-      const errorMessage = err.message || "Si è verificato un errore. Riprova più tardi.";
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Si è verificato un errore. Riprova più tardi.";
       setError(errorMessage);
-      console.error("Registration error:", err);
     } finally {
       setIsLoading(false);
     }

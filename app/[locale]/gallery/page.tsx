@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import fs from "fs";
 import path from "path";
+import { logger } from "@/lib/logger";
 
 export const revalidate = 0;
 
@@ -23,7 +24,7 @@ async function getGalleryData(): Promise<GalleryItem[]> {
     
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Errore nel caricamento della gallery:", error);
+    logger.error("Error loading gallery", error);
     return [];
   }
 }

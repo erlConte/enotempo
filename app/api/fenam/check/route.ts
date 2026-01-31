@@ -4,65 +4,53 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fenamCheckSchema } from "@/lib/validation";
+import { handleApiError } from "@/lib/api-error";
+import { withRateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting
+    const rateLimitCheck = withRateLimit(20, 60000); // 20 richieste al minuto
+    const { allowed, retryAfter } = rateLimitCheck(req);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter || 60),
+          },
+        }
+      );
+    }
+
     const body = await req.json();
-    const { email } = body;
 
-    if (!email) {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 }
-      );
+    // Validazione con Zod
+    const validationResult = fenamCheckSchema.safeParse(body);
+    if (!validationResult.success) {
+      return handleApiError(validationResult.error);
     }
 
-    // Validazione email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 }
-      );
-    }
+    const { email } = validationResult.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
     const member = await prisma.fenamMember.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
+    });
+
+    logger.debug("FENAM check", {
+      email: normalizedEmail,
+      isMember: !!member,
     });
 
     return NextResponse.json(
       { isMember: !!member },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error("FENAM check error:", error);
-    
-    // Log dettagliato dell'errore per debugging
-    if (error.code) {
-      console.error("Prisma error code:", error.code);
-    }
-    if (error.meta) {
-      console.error("Prisma error meta:", error.meta);
-    }
-    if (error.message) {
-      console.error("Error message:", error.message);
-    }
-
-    // Messaggio di errore più specifico
-    let errorMessage = "Internal server error";
-    if (error.code === "P1001") {
-      errorMessage = "Database connection error";
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? error.message : undefined 
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error);
   }
 }
-

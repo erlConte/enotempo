@@ -4,89 +4,77 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fenamRegisterSchema, type FenamRegisterInput } from "@/lib/validation";
+import { handleApiError } from "@/lib/api-error";
+import { sanitizeTextFields } from "@/lib/sanitize";
+import { withRateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting
+    const rateLimitCheck = withRateLimit(5, 60000); // 5 richieste al minuto
+    const { allowed, retryAfter } = rateLimitCheck(req);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter || 60),
+          },
+        }
+      );
+    }
+
     const body = await req.json();
 
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      taxCode,
-      locale,
-      dataConsent
-    } = body;
-
-    // Log dataConsent per debugging (non salviamo nel DB)
-    console.log("FENAM dataConsent", dataConsent);
-
-    if (!firstName || !lastName || !email || !phone) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    // Validazione con Zod
+    const validationResult = fenamRegisterSchema.safeParse(body);
+    if (!validationResult.success) {
+      return handleApiError(validationResult.error);
     }
 
-    // Validazione email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 }
-      );
-    }
+    const data: FenamRegisterInput = validationResult.data;
+
+    // Sanitizzazione input
+    const sanitizedData = sanitizeTextFields({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email.toLowerCase().trim(),
+      phone: data.phone,
+    });
+
+    logger.info("FENAM registration attempt", {
+      email: sanitizedData.email,
+      hasDataConsent: data.dataConsent,
+    });
 
     const member = await prisma.fenamMember.upsert({
-      where: { email },
+      where: { email: sanitizedData.email },
       update: {
-        firstName,
-        lastName,
-        phone: phone || null, // phone è opzionale nello schema
-        // taxCode e locale non sono nello schema, li ignoriamo per ora
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
+        phone: sanitizedData.phone,
       },
       create: {
-        firstName,
-        lastName,
-        email,
-        phone: phone || null, // phone è opzionale nello schema
-        // taxCode e locale non sono nello schema, li ignoriamo per ora
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
+        email: sanitizedData.email,
+        phone: sanitizedData.phone,
       },
+    });
+
+    logger.info("FENAM member registered/updated", {
+      memberId: member.id,
+      email: member.email,
     });
 
     return NextResponse.json(
       { success: true, memberId: member.id },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error("FENAM register error:", error);
-    
-    // Log dettagliato dell'errore per debugging
-    if (error.code) {
-      console.error("Prisma error code:", error.code);
-    }
-    if (error.meta) {
-      console.error("Prisma error meta:", error.meta);
-    }
-    if (error.message) {
-      console.error("Error message:", error.message);
-    }
-
-    // Messaggio di errore più specifico
-    let errorMessage = "Internal server error";
-    if (error.code === "P2002") {
-      errorMessage = "Email già registrata";
-    } else if (error.code === "P1001") {
-      errorMessage = "Errore di connessione al database";
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    return NextResponse.json(
-      { error: errorMessage, details: process.env.NODE_ENV === "development" ? error.message : undefined },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error);
   }
 }
-

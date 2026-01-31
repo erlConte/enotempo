@@ -38,7 +38,6 @@ export default function ContactPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implementare endpoint API /api/contact
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {

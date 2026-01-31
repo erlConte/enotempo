@@ -1,76 +1,68 @@
-  // NOTE: Le prenotazioni vengono salvate nella tabella Reservation
+// NOTE: Le prenotazioni vengono salvate nella tabella Reservation
 // tramite Prisma. Richiede che l'utente sia membro FENAM.
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getEventBySlug } from "@/lib/mockEvents";
+import { reservationSchema, type ReservationInput } from "@/lib/validation";
+import { handleApiError } from "@/lib/api-error";
+import { sanitizeTextFields } from "@/lib/sanitize";
+import { withRateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting
+    const rateLimitCheck = withRateLimit(5, 60000); // 5 richieste al minuto
+    const { allowed, retryAfter } = rateLimitCheck(req);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter || 60),
+          },
+        }
+      );
+    }
+
     const body = await req.json();
 
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      participants,
-      notes,
-      eventSlug,
-      fenamConfirmed,
-      dataConsent,
-    } = body;
-
-    // Validazione campi obbligatori
-    if (!firstName || !lastName || !email || !phone) {
-      return NextResponse.json(
-        { message: "Missing required fields" },
-        { status: 400 }
-      );
+    // Validazione con Zod
+    const validationResult = reservationSchema.safeParse(body);
+    if (!validationResult.success) {
+      return handleApiError(validationResult.error);
     }
 
-    if (!eventSlug) {
-      return NextResponse.json(
-        { message: "Event slug is required" },
-        { status: 400 }
-      );
-    }
+    const data: ReservationInput = validationResult.data;
 
-    if (!fenamConfirmed) {
-      return NextResponse.json(
-        { message: "FENAM membership confirmation is required" },
-        { status: 400 }
-      );
-    }
-
-    // Validazione email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { message: "Invalid email format" },
-        { status: 400 }
-      );
-    }
-
-    // Validazione numero partecipanti
-    const guests = parseInt(participants, 10);
-    if (isNaN(guests) || guests < 1 || guests > 20) {
-      return NextResponse.json(
-        { message: "Invalid number of participants (1-20)" },
-        { status: 400 }
-      );
-    }
-
-    // Gli eventi lato UI sono mock/locali: li usiamo come source of truth
-    // e garantiamo la presenza dell'evento nel DB tramite upsert.
-    const mockEvent = getEventBySlug(eventSlug);
+    // Verifica che l'evento esista nei mock events
+    const mockEvent = getEventBySlug(data.eventSlug);
     if (!mockEvent) {
       return NextResponse.json(
-        { message: "Event not found in mock events" },
+        { error: "Event not found" },
         { status: 404 }
       );
     }
 
+    // Sanitizzazione input
+    const sanitizedData = sanitizeTextFields({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email.toLowerCase().trim(),
+      phone: data.phone,
+      notes: data.notes || null,
+    });
+
+    logger.info("Reservation attempt", {
+      email: sanitizedData.email,
+      eventSlug: data.eventSlug,
+      guests: data.participants,
+      hasDataConsent: data.dataConsent,
+    });
+
+    // Upsert evento nel database
     const event = await prisma.event.upsert({
       where: { slug: mockEvent.slug },
       update: {
@@ -92,77 +84,49 @@ export async function POST(req: Request) {
       },
     });
 
-    // Upsert membro FENAM (crea se non esiste, aggiorna se esiste)
+    // Upsert membro FENAM
     const fenamMember = await prisma.fenamMember.upsert({
-      where: { email },
+      where: { email: sanitizedData.email },
       update: {
-        firstName,
-        lastName,
-        phone,
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
+        phone: sanitizedData.phone,
       },
       create: {
-        email,
-        firstName,
-        lastName,
-        phone,
+        email: sanitizedData.email,
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
+        phone: sanitizedData.phone,
       },
     });
-
-    // Log dataConsent per debugging (non salviamo nel DB)
-    console.log("Reservation dataConsent", dataConsent);
 
     // Crea la prenotazione
     const reservation = await prisma.reservation.create({
       data: {
         eventId: event.id,
         fenamMemberId: fenamMember.id,
-        guests,
-        notes: notes || null,
+        guests: data.participants,
+        notes: sanitizedData.notes,
       },
     });
 
+    logger.info("Reservation created", {
+      reservationId: reservation.id,
+      eventId: event.id,
+      memberId: fenamMember.id,
+      guests: reservation.guests,
+    });
+
     return NextResponse.json(
-      { 
-        success: true, 
+      {
+        success: true,
         reservationId: reservation.id,
         eventId: event.id,
-        guests,
+        guests: reservation.guests,
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error("Reservation error:", error);
-    
-    // Log dettagliato dell'errore per debugging
-    if (error.code) {
-      console.error("Prisma error code:", error.code);
-    }
-    if (error.meta) {
-      console.error("Prisma error meta:", error.meta);
-    }
-    if (error.message) {
-      console.error("Error message:", error.message);
-    }
-
-    // Messaggio di errore più specifico
-    let errorMessage = "Internal server error";
-    if (error.code === "P2002") {
-      errorMessage = "Reservation already exists";
-    } else if (error.code === "P2003") {
-      errorMessage = "Invalid event or member reference";
-    } else if (error.code === "P1001") {
-      errorMessage = "Database connection error";
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    return NextResponse.json(
-      { 
-        message: errorMessage, 
-        details: process.env.NODE_ENV === "development" ? error.message : undefined 
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError(error);
   }
 }
-
