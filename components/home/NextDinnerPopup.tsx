@@ -4,23 +4,28 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { getNextUpcomingEvent } from "@/lib/mockEvents";
 import { X } from "lucide-react";
+
+export type NextEventSerialized = {
+  title: string;
+  slug: string;
+  date: string; // ISO
+  locationName: string;
+  locationAddress: string | null;
+};
 
 interface NextDinnerPopupProps {
   locale: string;
+  nextEvent: NextEventSerialized | null;
 }
 
-export default function NextDinnerPopup({ locale }: NextDinnerPopupProps) {
+export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupProps) {
   const t = useTranslations("home.nextDinner");
   const [isVisible, setIsVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  const nextEvent = getNextUpcomingEvent();
-
   useEffect(() => {
     setIsMounted(true);
-    // Controlla localStorage solo lato client
     if (typeof window !== "undefined") {
       const dismissed = localStorage.getItem("enotempo-next-dinner-dismissed");
       if (!dismissed && nextEvent) {
@@ -36,7 +41,7 @@ export default function NextDinnerPopup({ locale }: NextDinnerPopupProps) {
     }
   };
 
-  const formatDate = (date: Date, locale: string) => {
+  const formatDate = (dateIso: string, locale: string) => {
     return new Intl.DateTimeFormat(
       locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES",
       {
@@ -46,7 +51,7 @@ export default function NextDinnerPopup({ locale }: NextDinnerPopupProps) {
         hour: "2-digit",
         minute: "2-digit",
       }
-    ).format(date);
+    ).format(new Date(dateIso));
   };
 
   // Non renderizzare nulla se non c'è un evento futuro o se è stato chiuso

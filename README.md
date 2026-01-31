@@ -108,7 +108,7 @@ Si aprirà un'interfaccia web su `http://localhost:5555` dove puoi vedere e modi
 #### Note sul Database
 
 **Eventi nel Frontend:**
-Gli eventi visualizzati nel frontend attualmente arrivano da mock data (`lib/mockEvents.ts`), non dal database. Il database è comunque pronto per ospitare gli eventi tramite il modello `Event` e può essere popolato tramite seed o API future.
+Gli eventi sono letti dal database tramite `lib/events.ts` (getEvents, getEventBySlug, getNextUpcomingEvent). Il seed popola il primo evento reale (Cena a Tullpukuna). Prenotazioni con capienza e protezione overbooking via API `/api/reservations`.
 
 **Campo `phone` in FenamMember:**
 Nel schema Prisma, `phone` è definito come opzionale (`String?`), ma nelle API (`/api/fenam/register` e `/api/reservations`) è richiesto come regola di business per la validazione dei dati.

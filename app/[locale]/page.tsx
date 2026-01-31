@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NextDinnerPopup from "@/components/home/NextDinnerPopup";
 import NewsletterForm from "@/components/home/NewsletterForm";
+import { getNextUpcomingEvent } from "@/lib/events";
 
 export const revalidate = 0;
 
@@ -15,6 +16,17 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations("hero");
   const tHome = await getTranslations("home");
+  const nextEventFromDb = await getNextUpcomingEvent();
+  const nextEvent =
+    nextEventFromDb != null
+      ? {
+          title: nextEventFromDb.title,
+          slug: nextEventFromDb.slug,
+          date: nextEventFromDb.date.toISOString(),
+          locationName: nextEventFromDb.locationName,
+          locationAddress: nextEventFromDb.locationAddress ?? null,
+        }
+      : null;
 
   return (
     <div className="min-h-screen">
@@ -177,8 +189,8 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* Popup prossima cena */}
-      <NextDinnerPopup locale={locale} />
+      {/* Popup prossima cena (dati da DB) */}
+      <NextDinnerPopup locale={locale} nextEvent={nextEvent} />
     </div>
   );
 }

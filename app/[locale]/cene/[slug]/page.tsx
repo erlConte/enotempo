@@ -6,19 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getEventBySlug, getMockEvents } from "@/lib/mockEvents";
+import { getEventBySlug, getEvents } from "@/lib/events";
 import ReservationForm from "@/components/events/ReservationForm";
 import { locales } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
-export function generateStaticParams() {
-  const events = getMockEvents();
-  const slugs = events.map((event) => event.slug);
-  // Produci combinazioni di parametri { locale, slug } per ogni lingua e evento
-  return locales.flatMap((locale) =>
-    slugs.map((slug) => ({ locale, slug }))
-  );
+export async function generateStaticParams() {
+  const events = await getEvents();
+  const slugs = events.map((e) => e.slug);
+  return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export default async function CenaDetailPage({
@@ -28,7 +25,7 @@ export default async function CenaDetailPage({
 }) {
   const { locale, slug } = await params;
   const t = await getTranslations("events");
-  const event = getEventBySlug(slug);
+  const event = await getEventBySlug(slug);
 
   if (!event) {
     notFound();
@@ -92,15 +89,15 @@ export default async function CenaDetailPage({
                     {event.locationAddress ? `, ${event.locationAddress}` : ""}
                   </span>
                 </p>
-                {event.price && (
+                {event.price != null && (
                   <p className="text-base md:text-lg text-marrone-scuro/80 flex items-center gap-2 font-semibold">
                     <span>💰</span>
                     <span>{event.price} €</span>
                   </p>
                 )}
-                {event.availableSeats > 0 ? (
+                {event.remainingSeats > 0 ? (
                   <Badge className="bg-verde text-bianco-caldo text-sm">
-                    {t("availableSeats")}: {event.availableSeats}
+                    {t("availableSeats")}: {event.remainingSeats}
                   </Badge>
                 ) : (
                   <Badge variant="destructive" className="text-sm">
@@ -131,7 +128,7 @@ export default async function CenaDetailPage({
               </CardHeader>
               <CardContent>
                 <p className="text-marrone-scuro/90 leading-relaxed text-lg font-normal">
-                  {event.fullDescription}
+                  {event.description ?? event.subtitle ?? ""}
                 </p>
               </CardContent>
             </Card>
@@ -162,7 +159,7 @@ export default async function CenaDetailPage({
 
           {/* Colonna destra - Form prenotazione */}
           <div className="lg:col-span-1">
-            {event.availableSeats > 0 && (
+            {event.remainingSeats > 0 && (
               <div className="sticky top-8">
                 <ReservationForm eventSlug={slug} />
               </div>

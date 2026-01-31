@@ -2,19 +2,16 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getEventBySlug, getMockEvents } from "@/lib/mockEvents";
+import { getEventBySlug, getEvents } from "@/lib/events";
 import Link from "next/link";
 import { locales } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
-export function generateStaticParams() {
-  const events = getMockEvents();
-  const slugs = events.map((event) => event.slug);
-  // Produci combinazioni di parametri { locale, slug } per ogni lingua e evento
-  return locales.flatMap((locale) =>
-    slugs.map((slug) => ({ locale, slug }))
-  );
+export async function generateStaticParams() {
+  const events = await getEvents();
+  const slugs = events.map((e) => e.slug);
+  return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export default async function CenaDonationPage({
@@ -24,7 +21,7 @@ export default async function CenaDonationPage({
 }) {
   const { locale, slug } = await params;
   const t = await getTranslations({ locale, namespace: "donation" });
-  const event = getEventBySlug(slug);
+  const event = await getEventBySlug(slug);
 
   if (!event) {
     notFound();

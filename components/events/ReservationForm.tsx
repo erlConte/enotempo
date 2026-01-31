@@ -93,17 +93,23 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
         let message = "Richiesta non valida.";
         try {
           const data = (await response.json()) as { message?: string; error?: string };
-          message = data.message ?? data.error ?? message;
+          message = data.error ?? data.message ?? message;
         } catch {
           // ignore JSON parse errors
         }
-        throw new Error(`(${response.status}) ${message}`);
+        // 409 = posti esauriti: mostra solo il messaggio API, senza prefisso status
+        if (response.status === 409) {
+          setError(message);
+          return;
+        }
+        setError(`Errore prenotazione: (${response.status}) ${message}`);
+        return;
       }
 
       setSuccess(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Errore sconosciuto";
-      setError(`Errore prenotazione: ${message}`);
+      setError(err instanceof Error ? err.message : "Errore sconosciuto. Riprova.");
     } finally {
       setIsLoading(false);
     }

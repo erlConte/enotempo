@@ -1,5 +1,7 @@
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("postgresql://postgres.qxuhqfbetljqqcvfsrls:puttanalamadonnastapassworddimerda1237490@aws-1-eu-west-2.pooler.supabase.com:5432/postgres")
+  directUrl = env("postgresql://postgres.qxuhqfbetljqqcvfsrls:puttanalamadonnastapassworddimerda1237490@aws-1-eu-west-2.pooler.supabase.com:6543/postgres)
 }
 
 generator client {
@@ -27,6 +29,8 @@ model Event {
   locationName    String
   locationAddress String?
   description     String?
+  capacity        Int            // posti massimi; usato per evitare overbooking
+  status          String         @default("published") // draft | published | cancelled
   createdAt       DateTime       @default(now())
 
   reservations Reservation[]
@@ -35,8 +39,9 @@ model Event {
 model Reservation {
   id            String   @id @default(cuid())
   eventId       String
-  fenamMemberId String
-  guests        Int
+  fenamMemberId String   // customerRef: riferimento membro FENAM
+  guests        Int      // posti prenotati (seats)
+  status        String   @default("confirmed") // confirmed | cancelled
   notes         String?
   createdAt     DateTime @default(now())
 

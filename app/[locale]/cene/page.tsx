@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getMockEvents } from "@/lib/mockEvents";
+import { getEvents } from "@/lib/events";
 
 export const revalidate = 0;
 
@@ -15,7 +15,7 @@ export default async function CenePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations("events");
-  const events = getMockEvents();
+  const events = await getEvents();
 
   const formatDate = (date: Date, locale: string) => {
     return new Intl.DateTimeFormat(locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES", {
@@ -77,9 +77,9 @@ export default async function CenePage({
                     <CardTitle className="font-serif text-2xl text-borgogna flex-1">
                       {event.title}
                     </CardTitle>
-                    {event.availableSeats > 0 ? (
+                    {event.remainingSeats > 0 ? (
                       <Badge className="bg-verde text-bianco-caldo ml-2 shrink-0">
-                        {event.availableSeats} {t("availableSeats")}
+                        {event.remainingSeats} {t("availableSeats")}
                       </Badge>
                     ) : (
                       <Badge variant="destructive" className="ml-2 shrink-0">
@@ -100,7 +100,7 @@ export default async function CenePage({
                       {event.locationAddress ? `, ${event.locationAddress}` : ""}
                     </span>
                   </p>
-                  {event.price && (
+                  {event.price != null && (
                     <p className="text-base text-marrone-scuro/80 flex items-center gap-2 font-semibold">
                       <span>💰</span>
                       <span>{event.price} €</span>
@@ -113,7 +113,7 @@ export default async function CenePage({
                     </p>
                   )}
                   <p className="text-base text-marrone-scuro/80 leading-relaxed line-clamp-3">
-                    {event.shortDescription}
+                    {event.subtitle ?? event.description ?? ""}
                   </p>
                 </CardContent>
 
@@ -121,7 +121,7 @@ export default async function CenePage({
                   <Link href={`/${locale}/cene/${event.slug}`} className="w-full">
                     <Button
                       className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                      disabled={event.availableSeats === 0}
+                      disabled={event.remainingSeats === 0}
                     >
                       {t("details")}
                     </Button>

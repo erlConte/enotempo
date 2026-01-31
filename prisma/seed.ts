@@ -20,30 +20,23 @@ async function main() {
 
   const eventDate = new Date("2026-02-05T20:00:00.000Z");
 
-  // Upsert Event by slug "cena-tullpukuna"
+  // Primo evento reale: Cena a Tullpukuna (posti limitati, no placeholder)
+  const eventPayload = {
+    slug: "cena-tullpukuna",
+    title: "Cena a Tullpukuna",
+    subtitle: "Cucina andina contemporanea e vini in abbinamento",
+    date: eventDate,
+    locationName: "Tullpukuna",
+    locationAddress: "Piazza Dante 5, Roma",
+    description:
+      "Una serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.",
+    capacity: 30,
+    status: "published",
+  };
   const event = await prisma.event.upsert({
-    where: {
-      slug: "cena-tullpukuna",
-    },
-    update: {
-      title: "Cena a Tullpukuna",
-      subtitle: "Cucina andina contemporanea e vini in abbinamento",
-      date: eventDate,
-      locationName: "Tullpukuna",
-      locationAddress: "Piazza Dante 5, Roma",
-      description:
-        "Una serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.",
-    },
-    create: {
-      slug: "cena-tullpukuna",
-      title: "Cena a Tullpukuna",
-      subtitle: "Cucina andina contemporanea e vini in abbinamento",
-      date: eventDate,
-      locationName: "Tullpukuna",
-      locationAddress: "Piazza Dante 5, Roma",
-      description:
-        "Una serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.",
-    },
+    where: { slug: "cena-tullpukuna" },
+    update: eventPayload,
+    create: eventPayload,
   });
 
   console.log("✅ Created/Updated Event:", {
