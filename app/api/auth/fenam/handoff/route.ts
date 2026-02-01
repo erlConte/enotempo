@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { verifyFenamToken, createSessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
+import { verifyFenamToken, createSessionToken, verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
@@ -16,6 +16,26 @@ export async function POST(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const redirectTo = searchParams.get("redirect") || searchParams.get("returnUrl") || "/it/cene";
+
+    if (process.env.DEBUG_AUTH === "1") {
+      const cookieStore = await cookies();
+      const incomingCookie = cookieStore.get(FENAM_SESSION_COOKIE)?.value;
+      const sessionValid = !!verifySessionToken(incomingCookie);
+      const base = req.nextUrl.origin;
+      const redirectUrl = redirectTo.startsWith("http") ? redirectTo : `${base}${redirectTo.startsWith("/") ? "" : "/"}${redirectTo}`;
+      const redirectHost = (() => {
+        try {
+          return new URL(redirectUrl).host;
+        } catch {
+          return "(invalid)";
+        }
+      })();
+      console.warn("[DEBUG_AUTH] handoff", {
+        hasCookie: !!incomingCookie,
+        sessionValid,
+        redirectHost,
+      });
+    }
 
     let body: { token?: string };
     const contentType = req.headers.get("content-type") || "";

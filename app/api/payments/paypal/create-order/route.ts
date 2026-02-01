@@ -51,6 +51,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Idempotenza: se esiste già un ordine PayPal per questa prenotazione, ritorna lo stesso orderId
+    if (reservation.paypalOrderId) {
+      return NextResponse.json({ orderId: reservation.paypalOrderId });
+    }
+
     const event = await getEventById(reservation.eventId);
     const amount =
       event?.price != null

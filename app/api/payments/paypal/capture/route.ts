@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     } catch (txErr) {
       if (txErr instanceof Error && (txErr as Error & { code?: string }).code === "SOLD_OUT") {
         return NextResponse.json(
-          { error: "Non ci sono più posti disponibili per questo evento (sold out)." },
+          { error: "Non ci sono più posti disponibili per questo evento (sold out). Contatta il supporto per assistenza." },
           { status: 409 }
         );
       }

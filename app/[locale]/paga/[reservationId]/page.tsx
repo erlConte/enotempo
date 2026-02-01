@@ -99,6 +99,8 @@ export default async function PagaPage({
   const amount =
     event.priceCents != null ? (event.priceCents / 100).toFixed(2) : "75.00";
 
+  const paypalConfigured = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
   return (
     <div className="min-h-screen bg-bianco-caldo py-12 px-4">
       <div className="container mx-auto max-w-xl">
@@ -118,10 +120,17 @@ export default async function PagaPage({
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <PayPalButtonWrapper
-              reservationId={reservationId}
-              locale={locale}
-            />
+            {!paypalConfigured ? (
+              <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-center text-marrone-scuro">
+                <p className="font-medium">Pagamento temporaneamente non disponibile.</p>
+                <p className="text-sm mt-1">Contatta il supporto per completare la prenotazione.</p>
+              </div>
+            ) : (
+              <PayPalButtonWrapper
+                reservationId={reservationId}
+                locale={locale}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
