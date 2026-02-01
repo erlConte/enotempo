@@ -82,6 +82,37 @@ export async function getEventBySlug(slug: string): Promise<EventWithRemaining |
   };
 }
 
+/** Evento per id (solo published); null se non trovato */
+export async function getEventById(id: string): Promise<EventWithRemaining | null> {
+  if (!process.env.DATABASE_URL) return null;
+  const event = await prisma.event.findUnique({
+    where: { id },
+    include: {
+      reservations: {
+        where: { status: "confirmed" },
+        select: { guests: true },
+      },
+    },
+  });
+  if (!event || event.status !== "published") return null;
+  const booked = event.reservations.reduce((s, r) => s + r.guests, 0);
+  return {
+    id: event.id,
+    slug: event.slug,
+    title: event.title,
+    subtitle: event.subtitle,
+    date: event.date,
+    locationName: event.locationName,
+    locationAddress: event.locationAddress,
+    description: event.description,
+    capacity: event.capacity,
+    status: event.status,
+    createdAt: event.createdAt,
+    remainingSeats: Math.max(0, event.capacity - booked),
+    price: event.priceCents != null ? event.priceCents / 100 : undefined,
+  };
+}
+
 /** Prossimo evento in programma (per popup home); null se nessuno */
 export async function getNextUpcomingEvent(): Promise<EventWithRemaining | null> {
   const now = new Date();

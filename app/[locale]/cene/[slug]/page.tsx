@@ -5,18 +5,11 @@ import Image from "next/image";
 import { cookies } from "next/headers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getEventBySlug, getEvents } from "@/lib/events";
+import { getEventBySlug } from "@/lib/events";
 import BookingGate from "@/components/events/BookingGate";
-import { locales } from "@/lib/i18n/config";
 import { hasValidSession, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 
 export const dynamic = "force-dynamic";
-
-export async function generateStaticParams() {
-  const events = await getEvents();
-  const slugs = events.map((e) => e.slug);
-  return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
-}
 
 export default async function CenaDetailPage({
   params,

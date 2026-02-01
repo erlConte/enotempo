@@ -26,8 +26,11 @@ export type SessionPayload = {
 
 function getSecret(): string {
   const secret = process.env.FENAM_HANDOFF_SECRET;
-  if (!secret || secret.length < 16) {
-    throw new Error("FENAM_HANDOFF_SECRET not configured or too short");
+  if (!secret || typeof secret !== "string") {
+    throw new Error("FENAM_HANDOFF_SECRET is required (missing)");
+  }
+  if (secret.length < 16) {
+    throw new Error("FENAM_HANDOFF_SECRET must be at least 16 characters");
   }
   return secret;
 }

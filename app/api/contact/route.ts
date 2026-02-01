@@ -48,11 +48,7 @@ export async function POST(req: Request) {
       message: data.message,
     });
 
-    logger.info("Contact form submission", {
-      email: sanitizedData.email,
-      name: sanitizedData.name,
-      messageLength: sanitizedData.message.length,
-    });
+    logger.info("Contact form submission", { messageLength: sanitizedData.message.length });
 
     // TODO: In futuro, qui si può:
     // - Salvare nel database (creare modello ContactMessage in Prisma)

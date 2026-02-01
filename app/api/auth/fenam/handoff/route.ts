@@ -15,7 +15,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 export async function POST(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const redirectTo = searchParams.get("redirect") || "/it/cene";
+    const redirectTo = searchParams.get("redirect") || searchParams.get("returnUrl") || "/it/cene";
 
     let body: { token?: string };
     const contentType = req.headers.get("content-type") || "";

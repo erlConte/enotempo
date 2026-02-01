@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getEvents } from "@/lib/events";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function CenePage({

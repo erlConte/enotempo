@@ -1,5 +1,6 @@
-// Prenotazioni: evento da DB, check capienza in transazione (no overbooking).
-// Hard gate: richiede sessione FeNAM valida (cookie da handoff). Senza sessione → 401.
+// Prenotazioni: evento da DB, check capienza in transazione (solo confirmed).
+// Auth obbligatoria. Stato iniziale pending_payment; idempotenza: 1 prenotazione per (evento, membro).
+// guests sempre 1.
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
@@ -43,7 +44,6 @@ export async function POST(req: Request) {
     }
     const data: ReservationInput = validationResult.data;
 
-    // Evento da DB (published, con capienza)
     const eventFromDb = await getEventBySlug(data.eventSlug);
     if (!eventFromDb) {
       return NextResponse.json(
@@ -52,32 +52,36 @@ export async function POST(req: Request) {
       );
     }
 
-    const sanitizedData = sanitizeTextFields({
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email.toLowerCase().trim(),
-      phone: data.phone,
-      notes: data.notes || null,
-    });
+    const notes = data.notes ? sanitizeTextFields({ notes: data.notes }).notes : null;
+    const memberUpdate =
+      data.firstName != null || data.lastName != null
+        ? sanitizeTextFields({
+            firstName: data.firstName ?? "",
+            lastName: data.lastName ?? "",
+          })
+        : null;
 
-    const fenamMemberExisting = await prisma.fenamMember.findUnique({
-      where: { id: session.fenamMemberId },
-    });
-    if (!fenamMemberExisting || fenamMemberExisting.email.toLowerCase() !== sanitizedData.email.toLowerCase()) {
-      return NextResponse.json(
-        { error: "L'email deve corrispondere all'account con cui hai effettuato l'accesso." },
-        { status: 403 }
-      );
-    }
+    logger.info("Reservation attempt", { eventSlug: data.eventSlug });
 
-    logger.info("Reservation attempt", {
-      email: sanitizedData.email,
-      eventSlug: data.eventSlug,
-      guests: data.participants,
-    });
-
-    // Transazione: check capienza + crea prenotazione (evita overbooking)
     const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.reservation.findFirst({
+        where: {
+          eventId: eventFromDb.id,
+          fenamMemberId: session.fenamMemberId,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      if (existing) {
+        if (existing.status === "confirmed") {
+          const err = new Error("ALREADY_CONFIRMED") as Error & { code?: string };
+          err.code = "ALREADY_CONFIRMED";
+          throw err;
+        }
+        if (existing.status === "pending_payment") {
+          return { reservation: existing, event: eventFromDb, existing: true };
+        }
+      }
+
       const event = await tx.event.findUnique({
         where: { id: eventFromDb.id },
         include: {
@@ -90,50 +94,57 @@ export async function POST(req: Request) {
       if (!event) throw new Error(EVENT_NOT_FOUND);
       const booked = event.reservations.reduce((s, r) => s + r.guests, 0);
       const remaining = event.capacity - booked;
-      if (data.participants > remaining) {
+      if (1 > remaining) {
         const err = new Error(NO_CAPACITY) as Error & { code?: string };
         err.code = NO_CAPACITY;
         throw err;
       }
+
       const fenamMember = await tx.fenamMember.findUniqueOrThrow({
         where: { id: session.fenamMemberId },
       });
-      await tx.fenamMember.update({
-        where: { id: fenamMember.id },
-        data: {
-          firstName: sanitizedData.firstName,
-          lastName: sanitizedData.lastName,
-          phone: sanitizedData.phone,
-        },
-      });
+      if (memberUpdate && (memberUpdate.firstName || memberUpdate.lastName)) {
+        await tx.fenamMember.update({
+          where: { id: fenamMember.id },
+          data: {
+            ...(memberUpdate.firstName && { firstName: memberUpdate.firstName }),
+            ...(memberUpdate.lastName && { lastName: memberUpdate.lastName }),
+          },
+        });
+      }
       const reservation = await tx.reservation.create({
         data: {
           eventId: event.id,
           fenamMemberId: fenamMember.id,
-          guests: data.participants,
-          notes: sanitizedData.notes,
-          status: "confirmed",
+          guests: 1,
+          notes,
+          status: "pending_payment",
         },
       });
-      return { reservation, event, fenamMember };
+      return { reservation, event, existing: false };
     });
 
-    logger.info("Reservation created", {
+    logger.info("Reservation created or existing", {
       reservationId: result.reservation.id,
-      eventId: result.event.id,
-      guests: result.reservation.guests,
+      eventId: eventFromDb.id,
+      existing: result.existing,
     });
 
     return NextResponse.json(
       {
         success: true,
         reservationId: result.reservation.id,
-        eventId: result.event.id,
-        guests: result.reservation.guests,
+        eventId: eventFromDb.id,
       },
       { status: 200 }
     );
   } catch (error) {
+    if (error instanceof Error && (error as Error & { code?: string }).code === "ALREADY_CONFIRMED") {
+      return NextResponse.json(
+        { error: "Sei già prenotato per questo evento." },
+        { status: 409 }
+      );
+    }
     if (error instanceof Error && (error as Error & { code?: string }).code === NO_CAPACITY) {
       return NextResponse.json(
         { error: "Non ci sono abbastanza posti disponibili per questa prenotazione." },

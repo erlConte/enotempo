@@ -6,6 +6,7 @@ import NextDinnerPopup from "@/components/home/NextDinnerPopup";
 import NewsletterForm from "@/components/home/NewsletterForm";
 import { getNextUpcomingEvent } from "@/lib/events";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function HomePage({

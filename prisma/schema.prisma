@@ -29,6 +29,7 @@ model Event {
   locationAddress String?
   description     String?
   capacity        Int            // posti massimi; usato per evitare overbooking
+  priceCents      Int?           // prezzo in centesimi (es. 7500 = 75€); null = da hardcodare
   status          String         @default("published") // draft | published | cancelled
   createdAt       DateTime       @default(now())
 
@@ -36,13 +37,17 @@ model Event {
 }
 
 model Reservation {
-  id            String   @id @default(cuid())
-  eventId       String
-  fenamMemberId String   // customerRef: riferimento membro FENAM
-  guests        Int      // posti prenotati (seats)
-  status        String   @default("confirmed") // confirmed | cancelled
-  notes         String?
-  createdAt     DateTime @default(now())
+  id                String    @id @default(cuid())
+  eventId           String
+  fenamMemberId     String
+  guests            Int       @default(1) // sempre 1 persona
+  status            String    @default("pending_payment") // pending_payment | confirmed | cancelled
+  notes             String?
+  confirmationCode String?   @unique // es. TULL-XXXXXX, generato dopo capture
+  paidAt            DateTime?
+  paypalOrderId    String?
+  paypalCaptureId  String?
+  createdAt         DateTime  @default(now())
 
   event         Event       @relation(fields: [eventId], references: [id])
   fenamMember   FenamMember @relation(fields: [fenamMemberId], references: [id])

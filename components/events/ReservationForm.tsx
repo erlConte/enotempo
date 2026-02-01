@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -15,86 +15,119 @@ interface ReservationFormProps {
   eventSlug: string;
 }
 
+type MeResponse = {
+  hasIdentity: boolean;
+  member?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+  };
+};
+
 export default function ReservationForm({ eventSlug }: ReservationFormProps) {
   const t = useTranslations("events.reservation");
   const tRegole = useTranslations("regole");
   const locale = useLocale();
+  const [member, setMember] = useState<MeResponse["member"] | null>(null);
+  const [meLoading, setMeLoading] = useState(true);
+  const [meError, setMeError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    phone: "",
-    participants: "1",
     notes: "",
     rulesAccepted: false,
     dataConsent: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
   const [dataConsentError, setDataConsentError] = useState<string | null>(null);
   const [rulesError, setRulesError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [reservationId, setReservationId] = useState<string | null>(null);
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const validateEmail = (value: string) => {
-    if (!value) return "Inserisci un indirizzo email valido.";
-    if (!emailRegex.test(value)) return "Inserisci un indirizzo email valido.";
-    return null;
-  };
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((res) => res.json() as Promise<MeResponse>)
+      .then((data) => {
+        if (cancelled) return;
+        if (!data.hasIdentity || !data.member) {
+          setMeError("Sessione non valida. Accedi con FENAM.");
+          return;
+        }
+        setMember(data.member);
+        setFormData((prev) => ({
+          ...prev,
+          firstName: data.member?.firstName ?? "",
+          lastName: data.member?.lastName ?? "",
+        }));
+      })
+      .catch(() => {
+        if (!cancelled) setMeError("Impossibile caricare i dati. Riprova.");
+      })
+      .finally(() => {
+        if (!cancelled) setMeLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setEmailError(null);
     setRulesError(null);
-
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
-      setError("Tutti i campi obbligatori devono essere compilati.");
-      return;
-    }
-
-    const emailValidationError = validateEmail(formData.email);
-    if (emailValidationError) {
-      setEmailError(emailValidationError);
-      return;
-    }
+    setDataConsentError(null);
 
     if (!formData.rulesAccepted) {
       setRulesError(t("rulesAcceptError"));
       return;
     }
-
     if (!formData.dataConsent) {
       setDataConsentError(t("dataConsentError"));
       return;
     }
-    setDataConsentError(null);
+
+    const firstNameEditable = !(member?.firstName ?? "").trim();
+    const lastNameEditable = !(member?.lastName ?? "").trim();
+    if (firstNameEditable && !formData.firstName.trim()) {
+      setError("Il nome è obbligatorio.");
+      return;
+    }
+    if (lastNameEditable && !formData.lastName.trim()) {
+      setError("Il cognome è obbligatorio.");
+      return;
+    }
 
     setIsLoading(true);
+
+    const payload: Record<string, unknown> = {
+      eventSlug,
+      notes: formData.notes || null,
+      rulesAccepted: true,
+      dataConsent: true,
+    };
+    if (firstNameEditable && formData.firstName.trim()) payload.firstName = formData.firstName.trim();
+    if (lastNameEditable && formData.lastName.trim()) payload.lastName = formData.lastName.trim();
 
     try {
       const response = await fetch("/api/reservations", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          ...formData,
-          eventSlug,
-          dataConsent: true,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      const data = (await response.json()) as {
+        reservationId?: string;
+        error?: string;
+        message?: string;
+      };
+
       if (!response.ok) {
-        let message = "Richiesta non valida.";
-        try {
-          const data = (await response.json()) as { message?: string; error?: string };
-          message = data.error ?? data.message ?? message;
-        } catch {
-          // ignore JSON parse errors
-        }
+        const message = data.error ?? data.message ?? "Richiesta non valida.";
         if (response.status === 401) {
           setError(message);
           return;
@@ -107,6 +140,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
         return;
       }
 
+      setReservationId(data.reservationId ?? null);
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Errore sconosciuto. Riprova.");
@@ -115,7 +149,37 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
     }
   };
 
-  if (success) {
+  if (meLoading) {
+    return (
+      <Card className="border-0 shadow-lg rounded-2xl bg-white">
+        <CardContent className="py-12 px-8 text-center text-marrone-scuro/80">
+          Caricamento...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (meError || !member) {
+    return (
+      <Card className="border-0 shadow-lg rounded-2xl bg-white">
+        <CardHeader className="pb-4 px-8 pt-8">
+          <CardTitle className="font-serif text-2xl text-borgogna">
+            {t("title")}
+          </CardTitle>
+          <p className="text-marrone-scuro/80 mt-2">{meError ?? "Accedi per prenotare."}</p>
+        </CardHeader>
+        <CardContent className="px-8 pb-8">
+          <Link href={`/${locale}/accedi-fenam?returnUrl=${encodeURIComponent(`/${locale}/cene/${eventSlug}`)}`}>
+            <Button className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-7 text-lg font-semibold shadow-md">
+              Accedi / Iscriviti con FENAM
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (success && reservationId) {
     return (
       <Card className="border-0 shadow-sm rounded-2xl">
         <CardContent className="pt-6">
@@ -124,13 +188,14 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
               {t("success")}
             </AlertDescription>
           </Alert>
-          <div className="text-center">
-            <Link href={`/${locale}/donazione/cena/${eventSlug}`}>
-              <Button className="bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl w-full">
-                {t("goToDonation")}
-              </Button>
-            </Link>
-          </div>
+          <p className="text-marrone-scuro text-sm mb-4">
+            Completa il pagamento per confermare la prenotazione.
+          </p>
+          <Link href={`/${locale}/paga/${reservationId}`}>
+            <Button className="bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl w-full">
+              Vai al pagamento
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     );
@@ -143,7 +208,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
           {t("title")}
         </CardTitle>
         <p className="text-sm text-marrone-scuro/70 mt-2">
-          Compila tutti i campi per completare la prenotazione
+          I tuoi dati sono precompilati; puoi aggiungere note o allergie.
         </p>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -161,12 +226,11 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
               </Label>
               <Input
                 id="firstName"
-                value={formData.firstName}
-                onChange={(e) =>
-                  setFormData({ ...formData, firstName: e.target.value })
-                }
-                required
-                className="h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"
+                value={(member?.firstName ?? "").trim() ? (member?.firstName ?? "") : formData.firstName}
+                readOnly={!!(member?.firstName ?? "").trim()}
+                disabled={!!(member?.firstName ?? "").trim()}
+                onChange={(e) => (member?.firstName ?? "").trim() ? undefined : setFormData((prev) => ({ ...prev, firstName: e.target.value }))}
+                className={(member?.firstName ?? "").trim() ? "h-12 rounded-xl border-2 border-marrone-scuro/20 bg-marrone-scuro/5 text-base px-4" : "h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"}
                 placeholder="Nome"
               />
             </div>
@@ -176,12 +240,11 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
               </Label>
               <Input
                 id="lastName"
-                value={formData.lastName}
-                onChange={(e) =>
-                  setFormData({ ...formData, lastName: e.target.value })
-                }
-                required
-                className="h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"
+                value={(member?.lastName ?? "").trim() ? (member?.lastName ?? "") : formData.lastName}
+                readOnly={!!(member?.lastName ?? "").trim()}
+                disabled={!!(member?.lastName ?? "").trim()}
+                onChange={(e) => (member?.lastName ?? "").trim() ? undefined : setFormData((prev) => ({ ...prev, lastName: e.target.value }))}
+                className={(member?.lastName ?? "").trim() ? "h-12 rounded-xl border-2 border-marrone-scuro/20 bg-marrone-scuro/5 text-base px-4" : "h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"}
                 placeholder="Cognome"
               />
             </div>
@@ -195,57 +258,26 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
               <Input
                 id="email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                onBlur={() => {
-                  const validationError = validateEmail(formData.email);
-                  setEmailError(validationError);
-                }}
-                required
-                className="h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"
-                placeholder="nome@esempio.com"
+                value={member.email ?? ""}
+                readOnly
+                disabled
+                className="h-12 rounded-xl border-2 border-marrone-scuro/20 bg-marrone-scuro/5 text-base px-4"
               />
-              {emailError && (
-                <p className="text-sm text-borgogna font-medium">{emailError}</p>
-              )}
             </div>
             <div className="space-y-3">
               <Label htmlFor="phone" className="text-base font-semibold text-marrone-scuro">
-                {t("phone")} <span className="text-borgogna">*</span>
+                {t("phone")}
               </Label>
               <Input
                 id="phone"
                 type="tel"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                required
-                className="h-12 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4"
-                placeholder="+39 123 456 7890"
+                value={member.phone ?? ""}
+                readOnly
+                disabled
+                className="h-12 rounded-xl border-2 border-marrone-scuro/20 bg-marrone-scuro/5 text-base px-4"
+                placeholder="—"
               />
             </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="participants" className="text-base font-semibold text-marrone-scuro">
-              {t("participants")} <span className="text-borgogna">*</span>
-            </Label>
-            <select
-              id="participants"
-              value={formData.participants}
-              onChange={(e) =>
-                setFormData({ ...formData, participants: e.target.value })
-              }
-              className="flex h-12 w-full rounded-xl border-2 border-marrone-scuro/20 bg-background px-4 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-borgogna/20 focus-visible:border-borgogna transition-all duration-200"
-              required
-            >
-              {[1, 2, 3, 4, 5, 6].map((num) => (
-                <option key={num} value={num.toString()}>
-                  {num} {num === 1 ? "persona" : "persone"}
-                </option>
-              ))}
-            </select>
           </div>
 
           <div className="space-y-3">
@@ -255,9 +287,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
               rows={4}
               className="rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna focus:ring-2 focus:ring-borgogna/20 transition-all duration-200 text-base px-4 py-3"
               placeholder="Note aggiuntive (allergie, preferenze alimentari, ecc.)"
@@ -269,7 +299,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
               id="rulesAccept"
               checked={formData.rulesAccepted}
               onCheckedChange={(checked) => {
-                setFormData({ ...formData, rulesAccepted: checked === true });
+                setFormData((prev) => ({ ...prev, rulesAccepted: checked === true }));
                 setRulesError(null);
               }}
               className="mt-1 h-5 w-5 rounded-md border-2 border-marrone-scuro/30 data-[state=checked]:bg-borgogna data-[state=checked]:border-borgogna"
@@ -299,7 +329,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
                 id="dataConsent"
                 checked={formData.dataConsent}
                 onCheckedChange={(checked) => {
-                  setFormData({ ...formData, dataConsent: checked === true });
+                  setFormData((prev) => ({ ...prev, dataConsent: checked === true }));
                   setDataConsentError(null);
                 }}
                 className="mt-1 h-5 w-5 rounded-md border-2 border-marrone-scuro/30 data-[state=checked]:bg-borgogna data-[state=checked]:border-borgogna"
