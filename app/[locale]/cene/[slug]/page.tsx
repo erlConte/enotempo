@@ -212,8 +212,8 @@ export default async function CenaDetailPage({
           </div>
         </header>
 
-        {/* CTA box integrato: prezzo, regole pagamento, CTA (un solo blocco visivo) */}
-        {event.remainingSeats > 0 && (
+        {/* CTA o form prenotazione: senza sidebar, card centrata quando loggato */}
+        {event.remainingSeats > 0 && !hasIdentity && (
           <section className="mb-12 rounded-2xl border border-border bg-white/80 shadow-md p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="space-y-2">
@@ -230,6 +230,23 @@ export default async function CenaDetailPage({
                 <BookingGate hasIdentity={hasIdentity} eventSlug={slug} locale={locale} />
               </div>
             </div>
+          </section>
+        )}
+        {event.remainingSeats > 0 && hasIdentity && (
+          <section className="mb-12 space-y-6">
+            <div className="rounded-2xl border border-border bg-white/80 shadow-md p-6 md:p-8">
+              <div className="space-y-2">
+                {event.price != null && (
+                  <p className="text-xl font-semibold text-marrone-scuro">
+                    {event.price} € a persona
+                  </p>
+                )}
+                <p className="text-sm text-marrone-scuro/80">
+                  Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.
+                </p>
+              </div>
+            </div>
+            <BookingGate hasIdentity={hasIdentity} eventSlug={slug} locale={locale} />
           </section>
         )}
 

@@ -53,12 +53,14 @@ export async function POST(req: Request) {
     }
 
     const notes = data.notes ? sanitizeTextFields({ notes: data.notes }).notes : null;
-    const memberUpdate =
-      data.firstName != null || data.lastName != null
+    type MemberUpdateFields = { firstName: string; lastName: string; phone: string };
+    const memberUpdate: MemberUpdateFields | null =
+      data.firstName != null || data.lastName != null || data.phone != null
         ? sanitizeTextFields({
             firstName: data.firstName ?? "",
             lastName: data.lastName ?? "",
-          })
+            phone: data.phone ?? "",
+          } as MemberUpdateFields)
         : null;
 
     logger.info("Reservation attempt", { eventSlug: data.eventSlug });
@@ -103,12 +105,16 @@ export async function POST(req: Request) {
       const fenamMember = await tx.fenamMember.findUniqueOrThrow({
         where: { id: session.fenamMemberId },
       });
-      if (memberUpdate && (memberUpdate.firstName || memberUpdate.lastName)) {
+      if (
+        memberUpdate &&
+        (memberUpdate.firstName || memberUpdate.lastName || memberUpdate.phone !== undefined)
+      ) {
         await tx.fenamMember.update({
           where: { id: fenamMember.id },
           data: {
             ...(memberUpdate.firstName && { firstName: memberUpdate.firstName }),
             ...(memberUpdate.lastName && { lastName: memberUpdate.lastName }),
+            ...(memberUpdate.phone !== undefined && { phone: memberUpdate.phone || null }),
           },
         });
       }

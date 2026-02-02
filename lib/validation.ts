@@ -25,11 +25,12 @@ export const nameSchema = z
   .max(100, "Name too long")
   .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Invalid characters in name");
 
-// Schema per prenotazione evento: 1 persona, server usa email del membro; firstName/lastName opzionali (per membri con nome vuoto)
+// Schema per prenotazione evento: 1 persona, server usa email del membro; firstName/lastName/phone opzionali (per membri con dati vuoti)
 export const reservationSchema = z.object({
   eventSlug: z.string().min(1, "Event slug is required"),
   firstName: nameSchema.optional(),
   lastName: nameSchema.optional(),
+  phone: z.string().max(50).optional(),
   notes: z.string().max(1000, "Notes too long").optional().nullable(),
   rulesAccepted: z.boolean().refine((val) => val === true, {
     message: "Acceptance of rules is required",

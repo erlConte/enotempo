@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { isPlaceholderEmail } from "@/lib/fenam-handoff";
 
 interface ReservationFormProps {
   eventSlug: string;
@@ -36,6 +37,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    phone: "",
     notes: "",
     rulesAccepted: false,
     dataConsent: false,
@@ -62,6 +64,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
           ...prev,
           firstName: data.member?.firstName ?? "",
           lastName: data.member?.lastName ?? "",
+          phone: data.member?.phone ?? "",
         }));
       })
       .catch(() => {
@@ -103,6 +106,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
 
     setIsLoading(true);
 
+    const phoneEditable = !(member?.phone ?? "").trim();
     const payload: Record<string, unknown> = {
       eventSlug,
       notes: formData.notes || null,
@@ -111,6 +115,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
     };
     if (firstNameEditable && formData.firstName.trim()) payload.firstName = formData.firstName.trim();
     if (lastNameEditable && formData.lastName.trim()) payload.lastName = formData.lastName.trim();
+    if (phoneEditable && formData.phone.trim()) payload.phone = formData.phone.trim();
 
     try {
       const response = await fetch("/api/reservations", {
@@ -151,7 +156,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
 
   if (meLoading) {
     return (
-      <Card className="border-0 shadow-lg rounded-2xl bg-white">
+      <Card className="w-full max-w-xl mx-auto border-0 shadow-lg rounded-2xl bg-white">
         <CardContent className="py-12 px-8 text-center text-marrone-scuro/80">
           Caricamento...
         </CardContent>
@@ -161,7 +166,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
 
   if (meError || !member) {
     return (
-      <Card className="border-0 shadow-lg rounded-2xl bg-white">
+      <Card className="w-full max-w-xl mx-auto border-0 shadow-lg rounded-2xl bg-white">
         <CardHeader className="pb-4 px-8 pt-8">
           <CardTitle className="font-serif text-2xl text-borgogna">
             {t("title")}
@@ -181,7 +186,7 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
 
   if (success && reservationId) {
     return (
-      <Card className="border-0 shadow-sm rounded-2xl">
+      <Card className="w-full max-w-xl mx-auto border-0 shadow-sm rounded-2xl">
         <CardContent className="pt-6">
           <Alert className="mb-6 bg-verde/10 border-verde rounded-xl">
             <AlertDescription className="text-verde font-semibold">
@@ -353,12 +358,16 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
               <p className="text-sm text-borgogna font-medium ml-8">{dataConsentError}</p>
             )}
           </div>
+
+          <div className="rounded-xl border border-marrone-scuro/20 bg-marrone-scuro/5 px-4 py-3 text-sm text-marrone-scuro/90">
+            {t("paymentInfo")}
+          </div>
         </CardContent>
-        <CardFooter className="pt-6 pb-8 px-8">
+        <CardFooter className="pt-4 pb-6 px-6 md:px-8">
           <Button
             type="submit"
             disabled={isLoading || !formData.rulesAccepted}
-            className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-7 text-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+            className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
           >
             {isLoading ? "Invio in corso..." : t("submit")}
           </Button>
