@@ -16,6 +16,7 @@ import {
   FENAM_SESSION_COOKIE,
   getAllowlistedRedirectUrl,
 } from "@/lib/fenam-handoff";
+import { upsertFenamMemberByExternalId } from "@/lib/fenam-member";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 const DEFAULT_REDIRECT = "/it/cene";
@@ -45,17 +46,11 @@ export async function GET(req: NextRequest) {
   try {
     const payload = verifyFenamToken(token as string);
 
-    const fenamMember = await prisma.fenamMember.upsert({
-      where: { email: payload.email.toLowerCase().trim() },
-      update: {
-        externalFenamId: payload.affiliationId || payload.memberNumber || undefined,
-      },
-      create: {
-        email: payload.email.toLowerCase().trim(),
-        firstName: "",
-        lastName: "",
-        externalFenamId: payload.affiliationId || payload.memberNumber || undefined,
-      },
+    const fenamMember = await upsertFenamMemberByExternalId(prisma, {
+      email: payload.email ?? null,
+      stableId: payload.stableId,
+      affiliationId: payload.affiliationId,
+      memberNumber: payload.memberNumber,
     });
 
     const sessionToken = createSessionToken(fenamMember.id);

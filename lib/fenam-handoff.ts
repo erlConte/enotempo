@@ -17,9 +17,12 @@ export const FENAM_SESSION_COOKIE = "fenamToken";
 export type FenamHandoffPayload = {
   affiliationId: string;
   memberNumber: string;
-  email: string;
+  /** Se presente e valida usata per lookup; se assente (token 2-part) si usa identificativo stabile come placeholder. */
+  email: string | null;
   exp: number;
   iss: string;
+  /** Identificativo stabile per lookup quando email manca: sub | memberNumber | affiliationId | id | jti. */
+  stableId: string;
 };
 
 export type SessionPayload = {
@@ -194,29 +197,44 @@ export function verifyFenamToken(token: string): FenamHandoffPayload {
           : typeof affiliationId === "string"
             ? affiliationId
             : "";
+    const stableId = String(decoded.sub ?? affiliationId ?? memberNumber ?? decoded.id ?? "").trim();
     return {
       iss: decoded.iss ?? ISS_FENAM,
       exp: typeof decoded.exp === "number" ? decoded.exp : 0,
       email: email.trim(),
       affiliationId: String(affiliationId),
       memberNumber: String(memberNumber),
+      stableId: stableId || String(affiliationId || memberNumber),
     };
   }
   if (parts.length !== 2) throw errWithCode("Invalid token format", "InvalidFormat");
   const [payloadB64, sigB64] = parts;
-  let payload: FenamHandoffPayload;
+  type HmacRawPayload = {
+    iss?: string;
+    exp?: number;
+    email?: string;
+    sub?: string;
+    memberNumber?: string;
+    member_number?: string;
+    affiliationId?: string;
+    affiliation_id?: string;
+    fenamMemberId?: string;
+    id?: string;
+    jti?: string;
+  };
+  let raw: HmacRawPayload;
   try {
     const payloadJson = Buffer.from(payloadB64.replace(/-/g, "+").replace(/_/g, "/"), "base64url").toString("utf8");
-    payload = JSON.parse(payloadJson) as FenamHandoffPayload;
+    raw = JSON.parse(payloadJson) as HmacRawPayload;
   } catch {
     throw errWithCode("Invalid token format", "InvalidFormat");
   }
-  if (payload.iss !== ISS_FENAM) {
-    const issHash = createHash("sha256").update(String(payload.iss ?? "")).digest("hex").slice(0, 8);
+  if (raw.iss !== ISS_FENAM) {
+    const issHash = createHash("sha256").update(String(raw.iss ?? "")).digest("hex").slice(0, 8);
     console.warn("[fenam] HMAC token unexpected iss", { unexpectedIss: true, issHash });
   }
   const nowSec = Math.floor(Date.now() / 1000);
-  const expSec = normalizeExpToSec(payload.exp);
+  const expSec = normalizeExpToSec(raw.exp);
   if (expSec != null && expSec + CLOCK_TOLERANCE_SEC < nowSec) {
     throw errWithCode("Token expired", "TokenExpired");
   }
@@ -224,7 +242,30 @@ export function verifyFenamToken(token: string): FenamHandoffPayload {
   if (expectedSig.length !== sigB64.length || !timingSafeEqual(Buffer.from(expectedSig, "utf8"), Buffer.from(sigB64, "utf8"))) {
     throw errWithCode("Invalid signature", "InvalidSignature");
   }
-  return payload;
+  const stableId = String(
+    raw.sub ?? raw.memberNumber ?? raw.member_number ?? raw.affiliationId ?? raw.affiliation_id ?? raw.fenamMemberId ?? raw.id ?? raw.jti ?? ""
+  ).trim();
+  if (!stableId) {
+    throw errWithCode("Missing stable identifier (sub/memberNumber/affiliationId/id/jti)", "MissingClaims");
+  }
+  const email =
+    typeof raw.email === "string" && raw.email.trim() && looksLikeEmail(raw.email) ? raw.email.trim() : null;
+  const affiliationId =
+    raw.affiliationId ?? raw.affiliation_id ?? raw.memberNumber ?? raw.member_number ?? raw.fenamMemberId ?? raw.id ?? stableId;
+  const memberNumber =
+    typeof raw.memberNumber === "string"
+      ? raw.memberNumber
+      : typeof raw.member_number === "string"
+        ? raw.member_number
+        : affiliationId;
+  return {
+    iss: raw.iss ?? ISS_FENAM,
+    exp: typeof raw.exp === "number" ? raw.exp : 0,
+    email,
+    affiliationId: String(affiliationId),
+    memberNumber: String(memberNumber),
+    stableId,
+  };
 }
 
 export function createSessionToken(fenamMemberId: string): string {
@@ -265,6 +306,26 @@ export function hasValidSession(cookieValue: string | undefined): boolean {
   } catch {
     return false;
   }
+}
+
+/** Email placeholder usata quando il token FENAM non fornisce email (evita duplicati per externalFenamId). */
+const PLACEHOLDER_EMAIL_SUFFIX = "@placeholder.enotempo";
+const PLACEHOLDER_EMAIL_PREFIX = "fenam-";
+
+/** Restituisce true se l'email è un placeholder generato (fenam-...@placeholder.enotempo). */
+export function isPlaceholderEmail(email: string): boolean {
+  if (typeof email !== "string" || !email) return false;
+  return (
+    email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) &&
+    email.startsWith(PLACEHOLDER_EMAIL_PREFIX) &&
+    email.length > (PLACEHOLDER_EMAIL_PREFIX.length + PLACEHOLDER_EMAIL_SUFFIX.length)
+  );
+}
+
+/** Genera email placeholder deterministica da stableId (stesso formato usato in callback/handoff). */
+export function buildPlaceholderEmail(stableId: string): string {
+  const safe = String(stableId).replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 128);
+  return `${PLACEHOLDER_EMAIL_PREFIX}${safe}${PLACEHOLDER_EMAIL_SUFFIX}`;
 }
 
 /** Host allowlisted per redirect dopo login (evita open redirect). www normalizzato a enotempo.it. */
