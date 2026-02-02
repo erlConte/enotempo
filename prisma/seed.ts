@@ -18,23 +18,25 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("🌱 Starting seed...");
 
-  const eventDate = new Date("2026-02-15T20:00:00.000Z");
+  // 12 febbraio 2026 ore 19:30 Europe/Rome → 18:30 UTC
+  const eventDate = new Date("2026-02-12T18:30:00.000Z");
 
-  // Evento reale: Cena a Tullpukuna – 15 febbraio 2026, Tullpukuna, 40 posti, 80€ a persona (solo cena), menu 5 portate
+  // Cena Tullpukuna – 12 febbraio 2026 ore 19:30, 75€, pagamento online obbligatorio, 1 persona = 1 prenotazione
   const eventPayload = {
-    slug: "cena-tullpukuna-15-febbraio-2026",
-    title: "Cena a Tullpukuna",
+    slug: "cena-tullpukuna",
+    title: "Cena Tullpukuna",
     subtitle: "Cucina andina contemporanea e vini in abbinamento",
     date: eventDate,
     locationName: "Tullpukuna",
     locationAddress: null,
     description:
-      "Prezzo: 80€ a persona (solo cena).\n\nUna serata di convivialità a Tullpukuna: piatti ispirati alle Ande reinterpretati in chiave contemporanea, racconti di viaggio e vini selezionati in abbinamento.\n\nMenu 5 portate (4 salate + 1 dolce):\n• Antipasto – Ceviche di pesce con avocado e mais\n• Primo – Causa rellena con pollo e olive\n• Secondo – Lomo saltado con riso e patate\n• Pre-dolce – Formaggi andini con miele\n• Dolce – Suspiro a la limeña\n\nAbbinamento vini: selezione di etichette italiane e sudamericane in abbinamento alle portate.",
+      "Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.\n\nEsperienza conviviale con cucina andina contemporanea, vini in abbinamento e atmosfera unica. Posti limitati.",
     capacity: 40,
+    priceCents: 7500,
     status: "published",
   };
   const event = await prisma.event.upsert({
-    where: { slug: "cena-tullpukuna-15-febbraio-2026" },
+    where: { slug: "cena-tullpukuna" },
     update: eventPayload,
     create: eventPayload,
   });

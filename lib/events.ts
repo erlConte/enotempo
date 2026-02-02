@@ -49,6 +49,7 @@ export async function getEvents(): Promise<EventWithRemaining[]> {
     status: e.status,
     createdAt: e.createdAt,
     remainingSeats: Math.max(0, e.capacity - e.reservations.reduce((s, r) => s + r.guests, 0)),
+    price: e.priceCents != null ? e.priceCents / 100 : undefined,
   }));
 }
 
@@ -79,6 +80,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithRemaining |
     status: event.status,
     createdAt: event.createdAt,
     remainingSeats: Math.max(0, event.capacity - booked),
+    price: event.priceCents != null ? event.priceCents / 100 : undefined,
   };
 }
 
