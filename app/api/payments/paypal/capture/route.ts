@@ -15,6 +15,32 @@ import { sendReservationConfirmation } from "@/lib/email";
 import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 import { logger } from "@/lib/logger";
 
+function safePayPalLog(
+  stage: "create-order" | "capture",
+  data: {
+    mode?: string | null;
+    intent?: string;
+    hasClientId?: boolean;
+    clientIdLen?: number;
+    hasSecret?: boolean;
+    reservationId?: string;
+    orderIdPrefix?: string;
+    errorCode?: string;
+  }
+) {
+  if (process.env.NODE_ENV === "test") return;
+  console.warn(`[PayPal ${stage}]`, {
+    mode: data.mode ?? process.env.PAYPAL_MODE ?? null,
+    intent: data.intent ?? "capture",
+    hasClientId: data.hasClientId ?? !!process.env.PAYPAL_CLIENT_ID,
+    clientIdLen: data.clientIdLen ?? (process.env.PAYPAL_CLIENT_ID?.length ?? 0),
+    hasSecret: data.hasSecret ?? !!process.env.PAYPAL_SECRET,
+    reservationId: data.reservationId,
+    orderIdPrefix: data.orderIdPrefix,
+    errorCode: data.errorCode,
+  });
+}
+
 function generateConfirmationCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "TULL-";
@@ -27,6 +53,7 @@ function generateConfirmationCode(): string {
 export async function POST(req: NextRequest) {
   const paypalStatus = getPayPalConfigStatus();
   if (!paypalStatus.configured) {
+    safePayPalLog("capture", { errorCode: "PAYPAL_NOT_CONFIGURED" });
     return NextResponse.json(
       { error: "PAYPAL_NOT_CONFIGURED", missing: paypalStatus.missing },
       { status: 503 }
@@ -48,11 +75,13 @@ export async function POST(req: NextRequest) {
     const reservationId = body?.reservationId;
     const orderId = body?.orderId;
     if (!reservationId || !orderId || typeof reservationId !== "string" || typeof orderId !== "string") {
+      safePayPalLog("capture", { errorCode: "MISSING_PARAMS" });
       return NextResponse.json(
         { error: "reservationId e orderId richiesti" },
         { status: 400 }
       );
     }
+    safePayPalLog("capture", { reservationId, orderIdPrefix: orderId.slice(0, 8) });
 
     const reservation = await prisma.reservation.findUnique({
       where: { id: reservationId },
@@ -178,12 +207,19 @@ export async function POST(req: NextRequest) {
           }).format(new Date(event.date))
         : "";
 
+    const reservationForEmail = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+      include: { fenamMember: true },
+    });
+    const toEmail = reservationForEmail?.fenamMember?.email ?? reservation.fenamMember.email;
+    const notesForEmail = reservationForEmail?.notes ?? reservation.notes;
+
     sendReservationConfirmation({
-      to: reservation.fenamMember.email,
+      to: toEmail,
       eventTitle,
       eventDate,
       confirmationCode,
-      notes: reservation.notes,
+      notes: notesForEmail,
     }).then((r) => {
       if (!r.ok) {
         logger.warn("Email conferma non inviata", { reservationId, error: r.error });
@@ -195,6 +231,9 @@ export async function POST(req: NextRequest) {
       confirmationCode,
     });
   } catch (err) {
+    safePayPalLog("capture", {
+      errorCode: err instanceof Error ? err.name : "Unknown",
+    });
     const status = getPayPalConfigStatus();
     if (!status.configured) {
       return NextResponse.json(

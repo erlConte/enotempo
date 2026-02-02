@@ -41,3 +41,12 @@ export const reservationSchema = z.object({
 });
 
 export type ReservationInput = z.infer<typeof reservationSchema>;
+
+/** Schema per PATCH reservation (checkout: salva dati prima di capture) */
+export const patchReservationSchema = z.object({
+  firstName: nameSchema.optional(),
+  lastName: nameSchema.optional(),
+  phone: z.string().max(50).optional(),
+  notes: z.string().max(1000, "Notes too long").optional().nullable(),
+});
+export type PatchReservationInput = z.infer<typeof patchReservationSchema>;

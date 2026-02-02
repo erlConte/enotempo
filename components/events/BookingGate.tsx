@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import ReservationForm from "./ReservationForm";
+import CheckoutGate from "./CheckoutGate";
 
 interface BookingGateProps {
   hasIdentity: boolean;
@@ -37,5 +37,5 @@ export default function BookingGate({ hasIdentity, eventSlug, locale }: BookingG
     );
   }
 
-  return <ReservationForm eventSlug={eventSlug} />;
+  return <CheckoutGate eventSlug={eventSlug} />;
 }

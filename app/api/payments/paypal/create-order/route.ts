@@ -14,9 +14,36 @@ import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 
 const DEFAULT_EVENT_PRICE_EUR = "75.00"; // Cena Tullpukuna
 
+function safePayPalLog(
+  stage: "create-order" | "capture",
+  data: {
+    mode?: string | null;
+    intent?: string;
+    hasClientId?: boolean;
+    clientIdLen?: number;
+    hasSecret?: boolean;
+    reservationId?: string;
+    orderIdPrefix?: string;
+    errorCode?: string;
+  }
+) {
+  if (process.env.NODE_ENV === "test") return;
+  console.warn(`[PayPal ${stage}]`, {
+    mode: data.mode ?? process.env.PAYPAL_MODE ?? null,
+    intent: data.intent ?? "capture",
+    hasClientId: data.hasClientId ?? !!process.env.PAYPAL_CLIENT_ID,
+    clientIdLen: data.clientIdLen ?? (process.env.PAYPAL_CLIENT_ID?.length ?? 0),
+    hasSecret: data.hasSecret ?? !!process.env.PAYPAL_SECRET,
+    reservationId: data.reservationId,
+    orderIdPrefix: data.orderIdPrefix,
+    errorCode: data.errorCode,
+  });
+}
+
 export async function POST(req: NextRequest) {
   const paypalStatus = getPayPalConfigStatus();
   if (!paypalStatus.configured) {
+    safePayPalLog("create-order", { errorCode: "PAYPAL_NOT_CONFIGURED" });
     return NextResponse.json(
       { error: "PAYPAL_NOT_CONFIGURED", missing: paypalStatus.missing },
       { status: 503 }
@@ -37,11 +64,13 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as { reservationId?: string };
     const reservationId = body?.reservationId;
     if (!reservationId || typeof reservationId !== "string") {
+      safePayPalLog("create-order", { errorCode: "MISSING_RESERVATION_ID" });
       return NextResponse.json(
         { error: "reservationId richiesto" },
         { status: 400 }
       );
     }
+    safePayPalLog("create-order", { reservationId });
 
     const reservation = await prisma.reservation.findUnique({
       where: { id: reservationId },
@@ -80,8 +109,12 @@ export async function POST(req: NextRequest) {
       data: { paypalOrderId: orderId },
     });
 
+    safePayPalLog("create-order", { reservationId, orderIdPrefix: orderId.slice(0, 8) });
     return NextResponse.json({ orderId });
   } catch (err) {
+    safePayPalLog("create-order", {
+      errorCode: err instanceof Error ? err.name : "Unknown",
+    });
     const status = getPayPalConfigStatus();
     if (!status.configured) {
       return NextResponse.json(

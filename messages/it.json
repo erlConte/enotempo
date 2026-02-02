@@ -109,8 +109,14 @@
       "dataConsentError": "Per procedere è necessario accettare il trattamento dei dati.",
       "submit": "Conferma prenotazione",
       "success": "Prenotazione inviata! Per completare la partecipazione, effettua ora la donazione relativa alla cena.",
-      "goToDonation": "Procedi alla donazione per la cena"
+      "goToDonation": "Procedi alla donazione per la cena",
+      "goToCheckout": "Vai al checkout"
     }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "paymentInfo": "Pagamento online obbligatorio. 1 persona = 1 prenotazione.",
+    "retry": "Riprova"
   },
   "reservations": {
     "title": "Prenotazione"

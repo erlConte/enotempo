@@ -18,9 +18,11 @@ interface PayPalButtonProps {
   reservationId: string;
   onSuccess: () => void;
   onError?: (message: string) => void;
+  /** Chiamato prima di create-order (es. salva form checkout). Se lancia, onError viene usato. */
+  beforeCreateOrder?: () => Promise<void>;
 }
 
-export default function PayPalButton({ reservationId, onSuccess, onError }: PayPalButtonProps) {
+export default function PayPalButton({ reservationId, onSuccess, onError, beforeCreateOrder }: PayPalButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [scriptError, setScriptError] = useState<string | null>(null);
@@ -49,6 +51,15 @@ export default function PayPalButton({ reservationId, onSuccess, onError }: PayP
       window.paypal
         .Buttons({
           createOrder: async () => {
+            if (beforeCreateOrder) {
+              try {
+                await beforeCreateOrder();
+              } catch (e) {
+                const msg = e instanceof Error ? e.message : "Salvataggio dati fallito";
+                onError?.(msg);
+                throw new Error(msg);
+              }
+            }
             const res = await fetch("/api/payments/paypal/create-order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -101,7 +112,7 @@ export default function PayPalButton({ reservationId, onSuccess, onError }: PayP
     return () => {
       script.remove();
     };
-  }, [clientId, reservationId, onSuccess, onError]);
+  }, [clientId, reservationId, onSuccess, onError, beforeCreateOrder]);
 
   if (scriptError) {
     return (

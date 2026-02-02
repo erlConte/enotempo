@@ -110,8 +110,14 @@
       "dataConsentError": "Debes aceptar el tratamiento de datos para continuar.",
       "submit": "Confirmar reserva",
       "success": "¡Reserva enviada! Para completar tu participación, realiza la donación para la cena.",
-      "goToDonation": "Proceder a la donación de la cena"
+      "goToDonation": "Proceder a la donación de la cena",
+      "goToCheckout": "Ir al checkout"
     }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "paymentInfo": "Pago online obligatorio. 1 persona = 1 reserva.",
+    "retry": "Reintentar"
   },
   "reservations": {
     "title": "Reserva"

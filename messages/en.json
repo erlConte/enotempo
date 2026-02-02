@@ -110,8 +110,14 @@
       "dataConsentError": "You must accept the data processing to proceed.",
       "submit": "Confirm reservation",
       "success": "Reservation submitted! To complete your participation, please make the donation for the dinner.",
-      "goToDonation": "Proceed to dinner donation"
+      "goToDonation": "Proceed to dinner donation",
+      "goToCheckout": "Go to checkout"
     }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "paymentInfo": "Online payment required. 1 person = 1 reservation.",
+    "retry": "Retry"
   },
   "reservations": {
     "title": "Reservation"

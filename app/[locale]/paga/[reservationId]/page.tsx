@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 import { getPayPalConfigStatus } from "@/lib/paypal";
-import PayPalButtonWrapper from "./PayPalButtonWrapper";
+import CheckoutFormWithPayPal from "./CheckoutFormWithPayPal";
 
 export const dynamic = "force-dynamic";
 
@@ -101,28 +101,18 @@ export default async function PagaPage({
     event.priceCents != null ? (event.priceCents / 100).toFixed(2) : "75.00";
 
   const paypalStatus = getPayPalConfigStatus();
+  const member = reservation.fenamMember;
 
   return (
     <div className="min-h-screen bg-bianco-caldo py-12 px-4">
       <div className="container mx-auto max-w-xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-serif text-3xl text-borgogna text-center">
-              Completa il pagamento
-            </CardTitle>
-            <p className="text-center text-marrone-scuro font-semibold mt-2">
-              {event.title}
-            </p>
-            <p className="text-center text-marrone-scuro/80 text-sm mt-1">
-              {eventDate}
-            </p>
-            <p className="text-center text-marrone-scuro font-medium mt-2">
-              Importo: {amount} €
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {!paypalStatus.configured ? (
-              <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-center text-marrone-scuro">
+        {!paypalStatus.configured ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-serif text-2xl text-borgogna text-center">
+                Checkout
+              </CardTitle>
+              <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-center text-marrone-scuro mt-4">
                 <p className="font-medium">Pagamento non disponibile. Riprova più tardi.</p>
                 <p className="text-sm mt-1">Contatta il supporto se il problema persiste.</p>
                 {paypalStatus.missing.length > 0 && (
@@ -136,14 +126,24 @@ export default async function PagaPage({
                   </details>
                 )}
               </div>
-            ) : (
-              <PayPalButtonWrapper
-                reservationId={reservationId}
-                locale={locale}
-              />
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+          </Card>
+        ) : (
+          <CheckoutFormWithPayPal
+            reservationId={reservationId}
+            member={{
+              firstName: member.firstName ?? "",
+              lastName: member.lastName ?? "",
+              phone: member.phone ?? null,
+              email: member.email,
+            }}
+            initialNotes={reservation.notes}
+            eventTitle={event.title}
+            eventDate={eventDate}
+            amount={amount}
+            locale={locale}
+          />
+        )}
       </div>
     </div>
   );
