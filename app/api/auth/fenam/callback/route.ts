@@ -12,6 +12,7 @@ import {
   verifyFenamToken,
   createSessionToken,
   getVerifyErrorCode,
+  safeJwtPeek,
   FENAM_SESSION_COOKIE,
   getAllowlistedRedirectUrl,
 } from "@/lib/fenam-handoff";
@@ -73,11 +74,15 @@ export async function GET(req: NextRequest) {
     return res;
   } catch (e) {
     const verifyErrorCode = getVerifyErrorCode(e);
+    const peek = safeJwtPeek(token as string);
     console.warn("[fenam/callback] 401", {
-      tokenPresent: true,
-      tokenLen,
-      secretPresent,
       verifyErrorCode,
+      alg: peek.alg,
+      hasIss: peek.hasIss,
+      issHash: peek.issHash,
+      expDeltaSec: peek.expDeltaSec,
+      tokenParts: peek.tokenParts,
+      tokenLen: peek.tokenLen,
     });
     return NextResponse.json({ error: "Token non valido o scaduto" }, { status: 401, headers: NO_CACHE_HEADERS });
   }
