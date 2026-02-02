@@ -1,8 +1,8 @@
 /**
  * GET /api/auth/fenam/callback
- * Callback dopo login FENAM: FENAM redirige qui con token in query (fenamToken o token).
- * Verifica HMAC (FENAM_HANDOFF_SECRET), crea sessione Enotempo, redirect a path allowlisted.
- * Nessun log con token o URL completa.
+ * Callback dopo login FENAM: FENAM redirige qui con token in query (fenamToken primario, token fallback).
+ * Verifica JWT HS256 o HMAC (FENAM_HANDOFF_SECRET), crea sessione Enotempo, redirect a path allowlisted.
+ * Log diagnostica SAFE: tokenPresent, tokenLen, secretPresent, verifyErrorCode (mai token/PII).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import {
   verifyFenamToken,
   createSessionToken,
+  getVerifyErrorCode,
   FENAM_SESSION_COOKIE,
   getAllowlistedRedirectUrl,
 } from "@/lib/fenam-handoff";
@@ -29,22 +30,19 @@ export async function GET(req: NextRequest) {
   const redirectParam = searchParams.get("redirect");
   const origin = req.nextUrl.origin;
 
-  const hasToken = !!token && typeof token === "string";
-  if (process.env.DEBUG_AUTH === "1") {
-    console.warn("[DEBUG_AUTH] callback", { hasToken });
-  }
+  const tokenPresent = !!token && typeof token === "string";
+  const tokenLen = tokenPresent ? (token as string).length : 0;
+  const secretPresent = !!(process.env.FENAM_HANDOFF_SECRET && process.env.FENAM_HANDOFF_SECRET.trim());
 
-  if (!hasToken) {
+  if (!tokenPresent) {
+    if (process.env.DEBUG_AUTH === "1") {
+      console.warn("[fenam/callback] 400", { tokenPresent: false, secretPresent });
+    }
     return NextResponse.json({ error: "Token mancante" }, { status: 400, headers: NO_CACHE_HEADERS });
   }
 
-  let validSignature = false;
   try {
-    const payload = verifyFenamToken(token);
-    validSignature = true;
-    if (process.env.DEBUG_AUTH === "1") {
-      console.warn("[DEBUG_AUTH] callback", { hasToken: true, validSignature });
-    }
+    const payload = verifyFenamToken(token as string);
 
     const fenamMember = await prisma.fenamMember.upsert({
       where: { email: payload.email.toLowerCase().trim() },
@@ -70,13 +68,17 @@ export async function GET(req: NextRequest) {
     });
 
     const redirectUrl = getAllowlistedRedirectUrl(redirectParam, origin, DEFAULT_REDIRECT);
-    const res = NextResponse.redirect(redirectUrl, 303);
+    const res = NextResponse.redirect(redirectUrl, 302);
     Object.entries(NO_CACHE_HEADERS).forEach(([k, v]) => res.headers.set(k, v));
     return res;
-  } catch {
-    if (process.env.DEBUG_AUTH === "1") {
-      console.warn("[DEBUG_AUTH] callback", { hasToken: true, validSignature: false });
-    }
+  } catch (e) {
+    const verifyErrorCode = getVerifyErrorCode(e);
+    console.warn("[fenam/callback] 401", {
+      tokenPresent: true,
+      tokenLen,
+      secretPresent,
+      verifyErrorCode,
+    });
     return NextResponse.json({ error: "Token non valido o scaduto" }, { status: 401, headers: NO_CACHE_HEADERS });
   }
 }

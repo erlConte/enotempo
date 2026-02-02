@@ -3,6 +3,34 @@
  * Env: PAYPAL_MODE (sandbox|live), PAYPAL_CLIENT_ID, PAYPAL_SECRET, NEXT_PUBLIC_PAYPAL_CLIENT_ID (frontend).
  */
 
+export type PayPalConfigStatus = {
+  configured: boolean;
+  missing: string[];
+};
+
+/** Verifica env PayPal senza lanciare. Ritorna { configured, missing } (solo nomi env, mai valori). */
+export function getPayPalConfigStatus(): PayPalConfigStatus {
+  const missing: string[] = [];
+  const mode = process.env.PAYPAL_MODE;
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_SECRET;
+  const publicClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
+  if (!mode || (mode !== "sandbox" && mode !== "live")) missing.push("PAYPAL_MODE");
+  if (!clientId || typeof clientId !== "string" || !clientId.trim()) missing.push("PAYPAL_CLIENT_ID");
+  if (!secret || typeof secret !== "string" || !secret.trim()) missing.push("PAYPAL_SECRET");
+  if (!publicClientId || typeof publicClientId !== "string" || !publicClientId.trim()) {
+    missing.push("NEXT_PUBLIC_PAYPAL_CLIENT_ID");
+  }
+  if (clientId && publicClientId && clientId.trim() !== publicClientId.trim()) {
+    missing.push("PAYPAL_CLIENT_ID/NEXT_PUBLIC_PAYPAL_CLIENT_ID (incoerenti)");
+  }
+  return {
+    configured: missing.length === 0,
+    missing,
+  };
+}
+
 function getPayPalBaseUrl(): string {
   const mode = process.env.PAYPAL_MODE;
   if (!mode || (mode !== "sandbox" && mode !== "live")) {
@@ -17,20 +45,13 @@ function getPayPalBaseUrl(): string {
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
 function getCredentials(): { clientId: string; secret: string } {
+  const status = getPayPalConfigStatus();
+  if (!status.configured) {
+    throw new Error(`PayPal: env mancanti o incoerenti: ${status.missing.join(", ")}`);
+  }
   const mode = process.env.PAYPAL_MODE;
-  const clientId = process.env.PAYPAL_CLIENT_ID;
-  const secret = process.env.PAYPAL_SECRET;
-  const publicClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-
-  if (!mode || (mode !== "sandbox" && mode !== "live")) {
-    throw new Error("PayPal: PAYPAL_MODE must be sandbox or live");
-  }
-  if (!clientId || !secret) {
-    throw new Error("PayPal: PAYPAL_CLIENT_ID and PAYPAL_SECRET are required");
-  }
-  if (!publicClientId && typeof process !== "undefined" && process.env?.NODE_ENV !== "test") {
-    console.warn("[PayPal] NEXT_PUBLIC_PAYPAL_CLIENT_ID not set; frontend button may fail");
-  }
+  const clientId = process.env.PAYPAL_CLIENT_ID!;
+  const secret = process.env.PAYPAL_SECRET!;
   return { clientId, secret };
 }
 

@@ -2,18 +2,27 @@
  * POST /api/payments/paypal/create-order
  * body: { reservationId }
  * Verifica sessione, ownership, status pending_payment; crea ordine PayPal; salva paypalOrderId; ritorna { orderId }.
+ * Se env PayPal mancanti: 503 { error: "PAYPAL_NOT_CONFIGURED", missing }. Prenotazione altrui: 404 (stessa risposta di non esistente).
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getEventById } from "@/lib/events";
-import { createOrder } from "@/lib/paypal";
+import { createOrder, getPayPalConfigStatus } from "@/lib/paypal";
 import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 
 const DEFAULT_EVENT_PRICE_EUR = "75.00"; // Cena Tullpukuna
 
 export async function POST(req: NextRequest) {
+  const paypalStatus = getPayPalConfigStatus();
+  if (!paypalStatus.configured) {
+    return NextResponse.json(
+      { error: "PAYPAL_NOT_CONFIGURED", missing: paypalStatus.missing },
+      { status: 503 }
+    );
+  }
+
   try {
     const cookieStore = await cookies();
     const cookieValue = cookieStore.get(FENAM_SESSION_COOKIE)?.value;
@@ -40,7 +49,7 @@ export async function POST(req: NextRequest) {
     });
     if (!reservation || reservation.fenamMemberId !== session.fenamMemberId) {
       return NextResponse.json(
-        { error: "Prenotazione non trovata o non autorizzata" },
+        { error: "Prenotazione non trovata" },
         { status: 404 }
       );
     }
@@ -73,6 +82,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ orderId });
   } catch (err) {
+    const status = getPayPalConfigStatus();
+    if (!status.configured) {
+      return NextResponse.json(
+        { error: "PAYPAL_NOT_CONFIGURED", missing: status.missing },
+        { status: 503 }
+      );
+    }
     const message = err instanceof Error ? err.message : "Errore creazione ordine PayPal";
     return NextResponse.json(
       { error: message },

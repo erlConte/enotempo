@@ -56,6 +56,10 @@ export default function PayPalButton({ reservationId, onSuccess, onError }: PayP
               body: JSON.stringify({ reservationId }),
             });
             const data = (await res.json()) as { orderId?: string; error?: string };
+            if (res.status === 503 && data.error === "PAYPAL_NOT_CONFIGURED") {
+              onError?.("Pagamento non disponibile. Riprova più tardi.");
+              throw new Error("PAYPAL_NOT_CONFIGURED");
+            }
             if (!res.ok || !data.orderId) {
               throw new Error(data.error ?? "Errore creazione ordine");
             }
@@ -69,6 +73,14 @@ export default function PayPalButton({ reservationId, onSuccess, onError }: PayP
               body: JSON.stringify({ reservationId, orderId: data.orderID }),
             });
             const result = (await res.json()) as { ok?: boolean; error?: string };
+            if (res.status === 409 && result.error === "SOLD_OUT") {
+              onError?.("Evento esaurito. Non ci sono più posti disponibili.");
+              return;
+            }
+            if (res.status === 503 && result.error === "PAYPAL_NOT_CONFIGURED") {
+              onError?.("Pagamento non disponibile. Riprova più tardi.");
+              return;
+            }
             if (!res.ok || !result.ok) {
               onError?.(result.error ?? "Pagamento non completato");
               return;

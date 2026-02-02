@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { getEventBySlug } from "@/lib/events";
 import { getGalleryItems, getGallerySlice } from "@/lib/gallery";
 import BookingGate from "@/components/events/BookingGate";
+import EventVideo from "@/components/events/EventVideo";
 import { hasValidSession, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 import type { Metadata } from "next";
 
@@ -18,9 +19,11 @@ const GALLERY_COUNT = 6;
 const VIDEO_PATH = "/events/tullpukuna/video.mp4";
 
 function buildBaseUrl(): string {
+  const site = process.env.NEXT_PUBLIC_SITE_URL;
+  if (typeof site === "string" && site.trim()) return site.trim().replace(/\/$/, "");
   const v = process.env.VERCEL_URL;
   if (typeof v === "string" && v) return `https://${v}`;
-  return "";
+  return "https://enotempo.it";
 }
 
 export async function generateMetadata({
@@ -48,7 +51,8 @@ export async function generateMetadata({
   const canonicalUrl = baseUrl ? `${baseUrl}${pathname}` : pathname;
 
   const gallery = getGalleryItems();
-  const ogImage = gallery[0]?.src ?? null;
+  const ogImageRaw = gallery[0]?.src ?? null;
+  const ogImage = ogImageRaw && !ogImageRaw.startsWith("http") ? `${buildBaseUrl()}${ogImageRaw.startsWith("/") ? "" : "/"}${ogImageRaw}` : ogImageRaw;
 
   const metadata: Metadata = {
     title,
@@ -84,6 +88,22 @@ function formatTime(date: Date): string {
   return new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
+function formatDateWithTime(date: Date, loc: string): string {
+  return new Intl.DateTimeFormat(
+    loc === "it" ? "it-IT" : loc === "en" ? "en-US" : "es-ES",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  )
+    .format(date)
+    .replace(/, (\d{1,2}:\d{2})/, " — $1");
+}
+
 export default async function CenaDetailPage({
   params,
 }: {
@@ -100,35 +120,19 @@ export default async function CenaDetailPage({
     notFound();
   }
 
-  const formatDate = (date: Date, loc: string) => {
-    return new Intl.DateTimeFormat(
-      loc === "it" ? "it-IT" : loc === "en" ? "en-US" : "es-ES",
-      {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    ).format(date);
-  };
-
-  const initials = event.title
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase();
-
   const isTullpukuna = slug === TULLPUKUNA_SLUG;
   const eventGallery = isTullpukuna ? getGallerySlice(GALLERY_COUNT) : [];
   const heroImage = event.image ?? (eventGallery[0]?.src ?? null);
   const videoPoster = eventGallery[0]?.src ?? null;
+  const mapsQuery =
+    event.locationAddress
+      ? `${event.locationName}, ${event.locationAddress}`
+      : event.locationName;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
 
   return (
     <div className="min-h-screen bg-bianco-caldo">
-      {/* JSON-LD Event (senza location se indirizzo non disponibile) */}
+      {/* JSON-LD Event */}
       {isTullpukuna && (
         <script
           type="application/ld+json"
@@ -139,209 +143,218 @@ export default async function CenaDetailPage({
               name: event.title,
               description: event.description ?? event.subtitle ?? undefined,
               startDate: event.date.toISOString(),
-              ...(event.price != null && { offers: { "@type": "Offer", price: event.price, priceCurrency: "EUR" } }),
+              ...(event.price != null && {
+                offers: { "@type": "Offer", price: event.price, priceCurrency: "EUR" },
+              }),
               ...(event.locationAddress
-                ? { location: { "@type": "Place", name: event.locationName, address: event.locationAddress } }
+                ? {
+                    location: {
+                      "@type": "Place",
+                      name: event.locationName,
+                      address: event.locationAddress,
+                    },
+                  }
                 : {}),
             }),
           }}
         />
       )}
 
-      {/* Hero */}
-      <div className="bg-white border-b border-border">
-        <div className="container mx-auto max-w-5xl px-4 py-12 md:py-16">
+      <div className="container mx-auto max-w-5xl px-4 py-8 md:py-12">
+        {/* Hero: immagine grande */}
+        <section className="mb-10">
           {heroImage ? (
-            <div className="mb-8">
+            <div className="relative w-full aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden bg-marrone-scuro/10">
               <Image
                 src={heroImage}
                 alt={event.title}
-                width={1200}
-                height={800}
-                className="w-full h-64 md:h-80 rounded-2xl object-cover"
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 768px) 100vw, 1024px"
               />
             </div>
           ) : null}
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            {!heroImage && (
-              <div className="w-full md:w-32 h-32 md:h-32 rounded-2xl bg-gradient-to-br from-borgogna/20 via-crema/30 to-verde/20 flex items-center justify-center shrink-0">
-                <span className="text-3xl font-serif font-bold text-borgogna/40">{initials}</span>
-              </div>
+        </section>
+
+        {/* Titolo + info chips */}
+        <header className="mb-8">
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-borgogna mb-6">
+            {event.title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 text-base md:text-lg text-marrone-scuro/80">
+            <span className="flex items-center gap-2">
+              <span>📅</span>
+              <span>{formatDateWithTime(event.date, locale)}</span>
+            </span>
+            <span className="flex items-center gap-2">
+              <span>📍</span>
+              <span>
+                {event.locationName}
+                {event.locationAddress ? `, ${event.locationAddress}` : ""}
+              </span>
+            </span>
+            {event.price != null && (
+              <span className="flex items-center gap-2 font-semibold">
+                <span>💰</span>
+                <span>{event.price} €</span>
+              </span>
             )}
-            <div className="flex-1">
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-borgogna mb-6">
-                {event.title}
-              </h1>
-              <div className="flex flex-wrap items-center gap-4 mb-4">
-                <p className="text-base md:text-lg text-marrone-scuro/80 flex items-center gap-2">
-                  <span>📅</span>
-                  <span>{formatDate(event.date, locale)}</span>
-                </p>
-                <p className="text-base md:text-lg text-marrone-scuro/80 flex items-center gap-2">
-                  <span>📍</span>
-                  <span>
-                    {event.locationName}
-                    {event.locationAddress ? `, ${event.locationAddress}` : ""}
-                  </span>
-                </p>
+            {event.remainingSeats > 0 ? (
+              <Badge className="bg-verde text-bianco-caldo text-sm">
+                {t("availableSeats")}: {event.remainingSeats}
+              </Badge>
+            ) : (
+              <Badge variant="destructive" className="text-sm">
+                {t("soldOut")}
+              </Badge>
+            )}
+          </div>
+        </header>
+
+        {/* CTA box integrato: prezzo, regole pagamento, CTA (un solo blocco visivo) */}
+        {event.remainingSeats > 0 && (
+          <section className="mb-12 rounded-2xl border border-border bg-white/80 shadow-md p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="space-y-2">
                 {event.price != null && (
-                  <p className="text-base md:text-lg text-marrone-scuro/80 flex items-center gap-2 font-semibold">
-                    <span>💰</span>
-                    <span>{event.price} €</span>
+                  <p className="text-xl font-semibold text-marrone-scuro">
+                    {event.price} € a persona
                   </p>
                 )}
-                {event.remainingSeats > 0 ? (
-                  <Badge className="bg-verde text-bianco-caldo text-sm">
-                    {t("availableSeats")}: {event.remainingSeats}
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive" className="text-sm">
-                    {t("soldOut")}
-                  </Badge>
-                )}
-              </div>
-              {event.chef && (
-                <p className="text-base md:text-lg text-marrone-scuro/80 flex items-center gap-2 mb-4">
-                  <span>👨‍🍳</span>
-                  <span>{event.chef}</span>
+                <p className="text-sm text-marrone-scuro/80">
+                  Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.
                 </p>
-              )}
+              </div>
+              <div className="shrink-0 md:min-w-[280px]">
+                <BookingGate hasIdentity={hasIdentity} eventSlug={slug} locale={locale} />
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </section>
+        )}
 
-      <div className="container mx-auto max-w-5xl px-4 py-12 md:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-8">
+        {/* Corpo: sezioni in ordine */}
+        <div className="space-y-10">
+          {/* Descrizione */}
+          {(event.description ?? event.subtitle) && (
             <Card className="border-0 shadow-sm rounded-2xl">
               <CardHeader>
                 <CardTitle className="font-serif text-2xl text-borgogna">Descrizione</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-marrone-scuro/90 leading-relaxed text-lg font-normal whitespace-pre-line">
+                <p className="text-marrone-scuro/90 leading-relaxed text-lg whitespace-pre-line">
                   {event.description ?? event.subtitle ?? ""}
                 </p>
               </CardContent>
             </Card>
+          )}
 
-            {/* Tullpukuna: Gallery immagini da sito */}
-            {isTullpukuna && eventGallery.length > 0 && (
-              <Card className="border-0 shadow-sm rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="font-serif text-2xl text-borgogna">Gallery</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {eventGallery.map((item) => (
-                      <div
-                        key={item.src}
-                        className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
-                      >
-                        <Image
-                          src={item.src}
-                          alt={`${event.title} - ${item.name}`}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 50vw, 33vw"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Tullpukuna: Video (file in public/events/tullpukuna/video.mp4; copiare da WhatsApp Video...) */}
-            {isTullpukuna && (
-              <Card className="border-0 shadow-sm rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="font-serif text-2xl text-borgogna">Video</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-marrone-scuro/10">
-                    <video
-                      controls
-                      preload="metadata"
-                      playsInline
-                      className="w-full h-full object-contain"
-                      poster={videoPoster ?? undefined}
-                      src={VIDEO_PATH}
-                    >
-                      Il tuo browser non supporta il tag video.
-                    </video>
-                  </div>
-                  {/* TODO: se video non visibile, copiare file locale "WhatsApp Video 2026-01-31 at 18.50.28.mp4" in public/events/tullpukuna/video.mp4 */}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Dove: mappa o placeholder */}
-            {isTullpukuna && (
-              <Card className="border-0 shadow-sm rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="font-serif text-2xl text-borgogna">Dove</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {event.locationAddress ? (
-                    <>
-                      <p className="text-marrone-scuro/90">
-                        {event.locationName}, {event.locationAddress}
-                      </p>
-                      {/* TODO: se disponibile embed mappa (iframe Google Maps), inserirlo qui */}
-                    </>
-                  ) : (
-                    <p className="text-marrone-scuro/80 italic">Luogo: DA CONFERMARE</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Social: placeholder se non in repo/doc */}
-            {isTullpukuna && (
-              <Card className="border-0 shadow-sm rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="font-serif text-2xl text-borgogna">Seguici</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* TODO: inserire link ufficiali da doc (Instagram, Facebook, sito) quando disponibili */}
-                  <p className="text-marrone-scuro/80 text-sm">
-                    Instagram, Facebook e sito: link da confermare.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
+          {/* Video (solo Tullpukuna; fallback "Video in arrivo" + hero se non carica) */}
+          {isTullpukuna && (
             <Card className="border-0 shadow-sm rounded-2xl">
               <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">
-                  {tRegole("title")}
-                </CardTitle>
+                <CardTitle className="font-serif text-2xl text-borgogna">Video</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <ul className="list-disc list-inside text-marrone-scuro/90 space-y-2">
-                  <li>{tRegole("punctuality")}</li>
-                  <li>{tRegole("allergies")}</li>
-                  <li>{tRegole("extraPaid")}</li>
-                  <li>{tRegole("limitedSeats")}</li>
-                </ul>
-                <Link
-                  href={`/${locale}/regole`}
-                  className="inline-block text-borgogna font-medium hover:underline mt-2"
-                >
-                  {tRegole("readMore")} →
-                </Link>
+              <CardContent>
+                <EventVideo
+                  src={VIDEO_PATH}
+                  poster={videoPoster ?? undefined}
+                  alt={event.title}
+                />
               </CardContent>
             </Card>
-          </div>
+          )}
 
-          <div className="lg:col-span-1">
-            {event.remainingSeats > 0 && (
-              <div className="sticky top-8">
-                <BookingGate hasIdentity={hasIdentity} eventSlug={slug} locale={locale} />
-              </div>
-            )}
-          </div>
+          {/* Gallery */}
+          {isTullpukuna && eventGallery.length > 0 && (
+            <Card className="border-0 shadow-sm rounded-2xl">
+              <CardHeader>
+                <CardTitle className="font-serif text-2xl text-borgogna">Gallery</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {eventGallery.map((item) => (
+                    <div
+                      key={item.src}
+                      className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
+                    >
+                      <Image
+                        src={item.src}
+                        alt={`${event.title} - ${item.name}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Dove: indirizzo + Apri in Maps */}
+          <Card className="border-0 shadow-sm rounded-2xl">
+            <CardHeader>
+              <CardTitle className="font-serif text-2xl text-borgogna">Dove</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {event.locationAddress ? (
+                <>
+                  <p className="text-marrone-scuro/90">
+                    {event.locationName}, {event.locationAddress}
+                  </p>
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-borgogna font-semibold hover:underline"
+                  >
+                    Apri in Maps
+                    <span aria-hidden>↗</span>
+                  </a>
+                </>
+              ) : (
+                <p className="text-marrone-scuro/80 italic">Luogo: DA CONFERMARE</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Seguici: solo testo neutro, nessun link fake */}
+          {isTullpukuna && (
+            <Card className="border-0 shadow-sm rounded-2xl">
+              <CardHeader>
+                <CardTitle className="font-serif text-2xl text-borgogna">Seguici</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-marrone-scuro/80 text-sm">
+                  Link in aggiornamento.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Regole e dichiarazioni */}
+          <Card className="border-0 shadow-sm rounded-2xl">
+            <CardHeader>
+              <CardTitle className="font-serif text-2xl text-borgogna">
+                {tRegole("title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <ul className="list-disc list-inside text-marrone-scuro/90 space-y-2">
+                <li>{tRegole("punctuality")}</li>
+                <li>{tRegole("allergies")}</li>
+                <li>{tRegole("extraPaid")}</li>
+                <li>{tRegole("limitedSeats")}</li>
+              </ul>
+              <Link
+                href={`/${locale}/regole`}
+                className="inline-block text-borgogna font-medium hover:underline mt-2"
+              >
+                {tRegole("readMore")} →
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

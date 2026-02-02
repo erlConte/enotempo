@@ -1,15 +1,16 @@
 /**
  * POST /api/payments/paypal/capture
  * body: { reservationId, orderId }
- * Verifica sessione, ownership, pending_payment; cattura ordine; conferma prenotazione; invia email.
+ * Verifica sessione, ownership, pending_payment; cattura ordine; conferma prenotazione in transazione (anti-overbooking); invia email.
  * Idempotente: se reservation già confirmed con captureId → ritorna ok.
+ * Se env PayPal mancanti: 503 { error: "PAYPAL_NOT_CONFIGURED", missing }. Prenotazione altrui: 404. Capienza superata: 409 { error: "SOLD_OUT" }.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getEventById } from "@/lib/events";
-import { captureOrder } from "@/lib/paypal";
+import { captureOrder, getPayPalConfigStatus } from "@/lib/paypal";
 import { sendReservationConfirmation } from "@/lib/email";
 import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 import { logger } from "@/lib/logger";
@@ -24,6 +25,14 @@ function generateConfirmationCode(): string {
 }
 
 export async function POST(req: NextRequest) {
+  const paypalStatus = getPayPalConfigStatus();
+  if (!paypalStatus.configured) {
+    return NextResponse.json(
+      { error: "PAYPAL_NOT_CONFIGURED", missing: paypalStatus.missing },
+      { status: 503 }
+    );
+  }
+
   try {
     const cookieStore = await cookies();
     const cookieValue = cookieStore.get(FENAM_SESSION_COOKIE)?.value;
@@ -51,7 +60,7 @@ export async function POST(req: NextRequest) {
     });
     if (!reservation || reservation.fenamMemberId !== session.fenamMemberId) {
       return NextResponse.json(
-        { error: "Prenotazione non trovata o non autorizzata" },
+        { error: "Prenotazione non trovata" },
         { status: 404 }
       );
     }
@@ -142,7 +151,7 @@ export async function POST(req: NextRequest) {
     } catch (txErr) {
       if (txErr instanceof Error && (txErr as Error & { code?: string }).code === "SOLD_OUT") {
         return NextResponse.json(
-          { error: "Non ci sono più posti disponibili per questo evento (sold out). Contatta il supporto per assistenza." },
+          { error: "SOLD_OUT" },
           { status: 409 }
         );
       }
@@ -186,6 +195,13 @@ export async function POST(req: NextRequest) {
       confirmationCode,
     });
   } catch (err) {
+    const status = getPayPalConfigStatus();
+    if (!status.configured) {
+      return NextResponse.json(
+        { error: "PAYPAL_NOT_CONFIGURED", missing: status.missing },
+        { status: 503 }
+      );
+    }
     const message = err instanceof Error ? err.message : "Errore cattura pagamento";
     return NextResponse.json(
       { error: message },

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
+import { getPayPalConfigStatus } from "@/lib/paypal";
 import PayPalButtonWrapper from "./PayPalButtonWrapper";
 
 export const dynamic = "force-dynamic";
@@ -99,7 +100,7 @@ export default async function PagaPage({
   const amount =
     event.priceCents != null ? (event.priceCents / 100).toFixed(2) : "75.00";
 
-  const paypalConfigured = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  const paypalStatus = getPayPalConfigStatus();
 
   return (
     <div className="min-h-screen bg-bianco-caldo py-12 px-4">
@@ -120,10 +121,20 @@ export default async function PagaPage({
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {!paypalConfigured ? (
+            {!paypalStatus.configured ? (
               <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-center text-marrone-scuro">
-                <p className="font-medium">Pagamento temporaneamente non disponibile.</p>
-                <p className="text-sm mt-1">Contatta il supporto per completare la prenotazione.</p>
+                <p className="font-medium">Pagamento non disponibile. Riprova più tardi.</p>
+                <p className="text-sm mt-1">Contatta il supporto se il problema persiste.</p>
+                {paypalStatus.missing.length > 0 && (
+                  <details className="mt-3 text-left text-xs text-marrone-scuro/70">
+                    <summary>Dettagli tecnici</summary>
+                    <ul className="mt-1 list-disc list-inside">
+                      {paypalStatus.missing.map((name) => (
+                        <li key={name}>{name}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </div>
             ) : (
               <PayPalButtonWrapper

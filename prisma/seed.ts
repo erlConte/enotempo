@@ -21,17 +21,17 @@ async function main() {
   // 12 febbraio 2026 ore 19:30 Europe/Rome → 18:30 UTC
   const eventDate = new Date("2026-02-12T18:30:00.000Z");
 
-  // Cena Tullpukuna – 12 febbraio 2026 ore 19:30, 75€, pagamento online obbligatorio, 1 persona = 1 prenotazione
+  // Cena a Tullpukuna – 12 febbraio 2026 ore 19:30, 75€, 30 posti, pagamento online obbligatorio
   const eventPayload = {
     slug: "cena-tullpukuna",
-    title: "Cena Tullpukuna",
+    title: "Cena a Tullpukuna",
     subtitle: "Cucina andina contemporanea e vini in abbinamento",
     date: eventDate,
     locationName: "Tullpukuna",
-    locationAddress: null,
+    locationAddress: "Piazza Dante 5, Roma",
     description:
       "Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.\n\nEsperienza conviviale con cucina andina contemporanea, vini in abbinamento e atmosfera unica. Posti limitati.",
-    capacity: 40,
+    capacity: 30,
     priceCents: 7500,
     status: "published",
   };

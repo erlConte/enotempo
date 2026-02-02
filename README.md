@@ -60,46 +60,13 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/enotempo?schema=publ
 
 ### 3. Setup Database
 
-Dopo aver configurato la `DATABASE_URL`, esegui le migrazioni:
+**Regola:** lo schema DB si aggiorna via **Supabase** (Dashboard / SQL Editor). In repo **non** si eseguono `prisma migrate` né `prisma db seed` in locale (la connessione da locale può fallire per TLS). Il repo resta coerente con il DB reale facendo **pull** dello schema.
 
-#### Sviluppo Locale (Development)
+- **Schema:** modifiche al DB via Supabase SQL Editor; i file SQL si versionano in `supabase/migrations/`.
+- **Allineare il repo al DB:** da un ambiente che riesce a connettersi (es. Vercel, CI): `npm run db:pull` → commit di `prisma/schema.prisma`.
+- **Evento Cena Tullpukuna:** eseguire su Supabase SQL Editor il contenuto di `supabase/seed-events.sql` (UPSERT idempotente).
 
-Per creare e applicare migrazioni durante lo sviluppo:
-
-```bash
-npm run prisma:migrate
-# oppure
-npx prisma migrate dev
-```
-
-Questo comando:
-- Crea una nuova migrazione se hai modificato `prisma/schema.prisma`
-- Applica le migrazioni al database locale/remoto
-- Genera il Prisma Client aggiornato
-
-#### Produzione (Deploy)
-
-Per applicare le migrazioni in produzione (es. Vercel, Supabase):
-
-```bash
-npx prisma migrate deploy
-```
-
-**Importante:** `migrate deploy`:
-- Applica SOLO le migrazioni già create (non crea nuove migrazioni)
-- È sicuro per l'uso in CI/CD e produzione
-- Non modifica lo schema, solo applica le migrazioni pendenti
-
-**Flusso consigliato:**
-1. **Locale:** Modifica `prisma/schema.prisma` → `prisma migrate dev` → testa
-2. **Commit:** Commit delle migrazioni nella cartella `prisma/migrations/`
-3. **Produzione:** Nel deploy, esegui `prisma migrate deploy` come parte del build
-
-Opzionalmente, popola il database con dati di esempio:
-
-```bash
-npm run db:seed
-```
+**Dettaglio completo:** vedi **[docs/DB_WORKFLOW.md](docs/DB_WORKFLOW.md)** (come applicare migration SQL, come fare db pull, come inserire l’evento).
 
 #### Visualizzare i dati del database
 
@@ -114,7 +81,7 @@ Si aprirà un'interfaccia web su `http://localhost:5555` dove puoi vedere e modi
 #### Note sul Database
 
 **Eventi nel Frontend:**
-Gli eventi sono letti dal database tramite `lib/events.ts` (getEvents, getEventBySlug, getNextUpcomingEvent). Il seed popola il primo evento reale (Cena a Tullpukuna). Prenotazioni con capienza e protezione overbooking via API `/api/reservations`.
+Gli eventi sono letti dal database tramite `lib/events.ts` (getEvents, getEventBySlug, getNextUpcomingEvent). L’evento Cena Tullpukuna si inserisce/aggiorna con `supabase/seed-events.sql` su Supabase (non `db:seed` in locale). Prenotazioni con capienza e protezione overbooking via API `/api/reservations`.
 
 **Campo `phone` in FenamMember:**
 Nel schema Prisma, `phone` è definito come opzionale (`String?`), ma nell'API `/api/reservations` è richiesto come regola di business per la validazione dei dati. La prenotazione richiede sessione FeNAM (cookie firmato da handoff). Vedi `.env.example` per `FENAM_LOGIN_URL` e `FENAM_HANDOFF_SECRET`; il ritorno da FeNAM avviene via POST a `/api/auth/fenam/handoff` (nessun token in query).
@@ -141,14 +108,9 @@ Il progetto è configurato per essere deployment-ready. Prima di fare il deploy:
    - `DATABASE_URL`: Connection string PostgreSQL (obbligatorio)
    - `BLOB_READ_WRITE_TOKEN`: Token Vercel Blob (opzionale, solo se usi upload immagini)
 
-2. **Esegui le migrazioni del database**:
-   ```bash
-   npm run prisma:migrate:deploy
-   ```
+2. **Database:** le migrazioni si applicano su Supabase (SQL Editor); il repo non esegue migrate/seed in locale. In deploy è sufficiente `prisma generate` (già in `postinstall`). Opzionale: `prisma migrate deploy` se vuoi applicare la cartella `prisma/migrations/` dal build.
    
-   **Nota per Vercel:** Vercel esegue automaticamente `prisma generate` durante il build grazie allo script `postinstall`. Per le migrazioni, puoi:
-   - Configurare un comando di build personalizzato: `npm run build && npm run prisma:migrate:deploy`
-   - Oppure usare Vercel Postgres e configurare le migrazioni automatiche
+   **Nota per Vercel:** Vercel esegue automaticamente `prisma generate` durante il build (`postinstall`). Non è obbligatorio eseguire `prisma migrate deploy` se lo schema è già aggiornato su Supabase.
 
 3. **Verifica il build locale**:
    ```bash
@@ -161,11 +123,8 @@ Il progetto è configurato per essere deployment-ready. Prima di fare il deploy:
 2. **Configura le variabili d'ambiente** nel dashboard Vercel:
    - `DATABASE_URL`
    - `BLOB_READ_WRITE_TOKEN` (se necessario)
-3. **Configura il Build Command** (opzionale, se vuoi migrazioni automatiche):
-   ```
-   npm run build && npm run prisma:migrate:deploy
-   ```
-4. **Deploy!** Vercel eseguirà automaticamente `npm install` (che include `prisma generate`)
+3. **Build Command:** `npm run build` (default). Non serve `prisma migrate deploy` se lo schema è gestito su Supabase (vedi `docs/DB_WORKFLOW.md`).
+4. **Deploy!** Vercel eseguirà `npm install` (che include `prisma generate`).
 
 ### Vercel Deploy Checklist
 
@@ -220,10 +179,12 @@ Vedi `.env.example` per un template completo (se disponibile).
 - `npm run build` - Build per produzione
 - `npm run start` - Avvia il server di produzione
 - `npm run lint` - Esegue il linter
-- `npm run prisma:migrate` - Crea e applica migrazioni (sviluppo)
-- `npm run prisma:migrate:deploy` - Applica migrazioni esistenti (produzione)
+- `npm run prisma:generate` - Genera Prisma Client (eseguito da `postinstall`)
+- `npm run db:pull` - Allinea `prisma/schema.prisma` al DB reale (da ambiente connesso; vedi `docs/DB_WORKFLOW.md`)
 - `npm run prisma:studio` - Apre Prisma Studio
-- `npm run db:seed` - Popola il database con dati di esempio
+- `npm run prisma:migrate` - Prisma migrate dev (non usato in locale: schema via Supabase)
+- `npm run prisma:migrate:deploy` - Applica migrazioni esistenti (opzionale in deploy)
+- `npm run db:seed` - Seed via Prisma (non usato in locale: usare `supabase/seed-events.sql` su Supabase)
 
 ## Documentazione
 
