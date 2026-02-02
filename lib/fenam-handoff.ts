@@ -36,7 +36,8 @@ export type FenamVerifyErrorCode =
   | "SecretMissing"
   | "JwtExpired"
   | "JsonWebTokenError"
-  | "MissingClaims";
+  | "MissingClaims"
+  | "MissingExp";
 
 function errWithCode(message: string, code: FenamVerifyErrorCode): Error {
   const e = new Error(message) as Error & { code: FenamVerifyErrorCode };
@@ -61,6 +62,7 @@ export function getVerifyErrorCode(e: unknown): FenamVerifyErrorCode | string {
     return (e as { code: FenamVerifyErrorCode }).code;
   }
   if (e instanceof Error) {
+    if (e.message.includes("Missing exp") || (e as Error & { code?: string }).code === "MissingExp") return "MissingExp";
     if (e.message.includes("expired") || e.name === "TokenExpiredError") return "JwtExpired";
     if (e.name === "JsonWebTokenError") return "JsonWebTokenError";
   }
@@ -148,14 +150,11 @@ export function verifyFenamToken(token: string): FenamHandoffPayload {
       decoded = raw;
       const nowSec = Math.floor(Date.now() / 1000);
       const expSec = normalizeExpToSec(decoded.exp);
-      if (expSec != null) {
-        if (expSec + JWT_CLOCK_TOLERANCE_SEC < nowSec) {
-          throw errWithCode("Token expired", "JwtExpired");
-        }
-      } else if (decoded.exp === undefined) {
-        if (process.env.DEBUG_AUTH === "1") {
-          console.warn("[fenam] JWT missing exp", { missingExp: true, hasIss: !!decoded.iss });
-        }
+      if (expSec == null) {
+        throw errWithCode("Missing exp", "MissingExp");
+      }
+      if (expSec + JWT_CLOCK_TOLERANCE_SEC < nowSec) {
+        throw errWithCode("Token expired", "JwtExpired");
       }
       jwt.verify(token, secret, {
         algorithms: ["HS256"],
