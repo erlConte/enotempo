@@ -4,7 +4,7 @@
  */
 
 import type { PrismaClient } from "@prisma/client";
-import { isPlaceholderEmail, buildPlaceholderEmail } from "@/lib/fenam-handoff";
+import { buildPlaceholderEmail, isPlaceholderEmail } from "@/lib/fenam-handoff";
 
 function looksLikeEmail(s: string): boolean {
   return typeof s === "string" && s.includes("@") && s.length >= 5;
@@ -18,59 +18,78 @@ export type FenamMemberUpsertPayload = {
 };
 
 /**
- * Cerca/crea FenamMember per externalFenamId. Se esiste già e arriva email valida (e l'attuale è placeholder), aggiorna email.
- * Compat: se non esiste e c'è email valida, crea con externalFenamId + email.
+ * Cerca/crea FenamMember per externalFenamId.
+ * - Chiave primaria: externalFenamId = affiliationId || memberNumber || stableId (stableId sempre presente)
+ * - Email: opzionale. Se arriva email valida e l'attuale è placeholder → sostituisce (gestendo P2002).
  */
 export async function upsertFenamMemberByExternalId(
   prisma: PrismaClient,
   payload: FenamMemberUpsertPayload
 ) {
-  const externalId =
-    payload.affiliationId || payload.memberNumber || payload.stableId || undefined;
+  // externalId deve essere sempre definito perché stableId è required
+  const externalId = payload.affiliationId ?? payload.memberNumber ?? payload.stableId;
+
+  if (!externalId) {
+    // Non dovrebbe mai accadere: stableId è required. Manteniamo errore coerente.
+    throw Object.assign(new Error("Missing externalFenamId"), { code: "MissingClaims" });
+  }
+
   const validEmail =
-    payload.email && payload.email.trim() && looksLikeEmail(payload.email)
+    payload.email && looksLikeEmail(payload.email)
       ? payload.email.toLowerCase().trim()
       : null;
+
   const placeholderEmail = buildPlaceholderEmail(payload.stableId);
 
-  const existing =
-    externalId != null
-      ? await prisma.fenamMember.findFirst({
-          where: { externalFenamId: externalId },
-        })
-      : null;
+  // Lookup per externalFenamId (mai per email) per evitare duplicati
+  const existing = await prisma.fenamMember.findFirst({
+    where: { externalFenamId: externalId },
+  });
 
   if (existing) {
+    // Aggiorna sempre externalFenamId (in caso cambino affiliationId/memberNumber)
+    // Aggiorna email solo se:
+    // - arriva email valida
+    // - email attuale è placeholder
     const updateData: { externalFenamId: string; email?: string } = {
       externalFenamId: externalId,
     };
+
     if (validEmail && isPlaceholderEmail(existing.email)) {
       updateData.email = validEmail;
     }
+
     try {
       return await prisma.fenamMember.update({
         where: { id: existing.id },
         data: updateData,
       });
     } catch (e: unknown) {
-      const code = e && typeof e === "object" && "code" in e ? (e as { code: string }).code : null;
+      const code =
+        e && typeof e === "object" && "code" in e
+          ? (e as { code?: string }).code ?? null
+          : null;
+
       if (code === "P2002") {
-        // Unique constraint su email: altro member ha già questa email, non aggiornare email
+        // Unique constraint su email: l'email valida è già associata a un altro record.
+        // In questo caso NON sovrascriviamo l'email, ma aggiorniamo comunque externalFenamId.
         return await prisma.fenamMember.update({
           where: { id: existing.id },
           data: { externalFenamId: externalId },
         });
       }
+
       throw e;
     }
   }
 
+  // Non esiste ancora: crea record con email reale se disponibile, altrimenti placeholder
   return await prisma.fenamMember.create({
     data: {
       email: validEmail ?? placeholderEmail,
       firstName: "",
       lastName: "",
-      externalFenamId: externalId ?? null,
+      externalFenamId: externalId,
     },
   });
 }
