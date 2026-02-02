@@ -8,24 +8,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { verifyFenamToken, createSessionToken, verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
+import {
+  verifyFenamToken,
+  createSessionToken,
+  verifySessionToken,
+  FENAM_SESSION_COOKIE,
+  getAllowlistedRedirectUrl,
+} from "@/lib/fenam-handoff";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+const DEFAULT_REDIRECT = "/it/cene";
 
 export async function POST(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const redirectTo = searchParams.get("redirect") || searchParams.get("returnUrl") || "/it/cene";
+    const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
+    const origin = req.nextUrl.origin;
+    const redirectTo = getAllowlistedRedirectUrl(redirectParam, origin, DEFAULT_REDIRECT);
 
     if (process.env.DEBUG_AUTH === "1") {
       const cookieStore = await cookies();
       const incomingCookie = cookieStore.get(FENAM_SESSION_COOKIE)?.value;
       const sessionValid = !!verifySessionToken(incomingCookie);
-      const base = req.nextUrl.origin;
-      const redirectUrl = redirectTo.startsWith("http") ? redirectTo : `${base}${redirectTo.startsWith("/") ? "" : "/"}${redirectTo}`;
       const redirectHost = (() => {
         try {
-          return new URL(redirectUrl).host;
+          return new URL(redirectTo).host;
         } catch {
           return "(invalid)";
         }
@@ -85,9 +92,7 @@ export async function POST(req: NextRequest) {
       path: "/",
     });
 
-    const base = req.nextUrl.origin;
-    const redirectUrl = redirectTo.startsWith("http") ? redirectTo : `${base}${redirectTo.startsWith("/") ? "" : "/"}${redirectTo}`;
-    return NextResponse.redirect(redirectUrl, 303);
+    return NextResponse.redirect(redirectTo, 303);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Handoff fallito";
     return NextResponse.json(

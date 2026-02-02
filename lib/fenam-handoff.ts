@@ -94,3 +94,37 @@ export function hasValidSession(cookieValue: string | undefined): boolean {
     return false;
   }
 }
+
+/** Host allowlisted per redirect dopo login (evita open redirect). www normalizzato a enotempo.it. */
+const ALLOWED_HOSTS = ["enotempo.it", "www.enotempo.it"];
+
+/**
+ * Restituisce l'URL di redirect completo solo se sicuro. Fallback silenzioso su input invalido.
+ * - redirectParam falsy → ${origin}${defaultPath}
+ * - Path relativo: deve iniziare con /, non con // (// → fallback)
+ * - URL assoluta: host allowlisted (enotempo.it, www.enotempo.it), protocollo forzato https, www → enotempo.it
+ */
+export function getAllowlistedRedirectUrl(
+  redirectParam: string | null,
+  origin: string,
+  defaultPath: string
+): string {
+  const defaultFull = `${origin}${defaultPath.startsWith("/") ? "" : "/"}${defaultPath}`;
+  if (!redirectParam || typeof redirectParam !== "string") return defaultFull;
+  const trimmed = redirectParam.trim();
+  if (!trimmed) return defaultFull;
+  // Path relativo: / ok, // evil → fallback
+  if (trimmed.startsWith("//")) return defaultFull;
+  if (trimmed.startsWith("/")) return `${origin}${trimmed}`;
+  try {
+    const u = new URL(trimmed);
+    const hostLower = u.host.toLowerCase();
+    if (!ALLOWED_HOSTS.includes(hostLower)) return defaultFull;
+    // Forza https; normalizza www.enotempo.it → enotempo.it
+    u.protocol = "https:";
+    if (hostLower === "www.enotempo.it") u.hostname = "enotempo.it";
+    return u.origin + u.pathname + u.search;
+  } catch {
+    return defaultFull;
+  }
+}

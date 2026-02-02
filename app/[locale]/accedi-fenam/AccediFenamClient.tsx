@@ -4,22 +4,18 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 type Props = {
-  fenamLoginUrl: string;
-  callbackUrl: string;
-  returnUrl: string;
-  locale: string;
+  /** URL completo verso FENAM (già costruito server-side: base?source=enotempo&returnUrl=encoded). */
+  fenamRedirectUrl: string;
 };
 
-export default function AccediFenamClient({ fenamLoginUrl, callbackUrl, returnUrl, locale }: Props) {
+export default function AccediFenamClient({ fenamRedirectUrl }: Props) {
   const t = useTranslations("auth.fenam");
 
   const handleRedirect = () => {
-    const url = new URL(fenamLoginUrl);
-    url.searchParams.set("returnUrl", callbackUrl);
-    window.location.href = url.toString();
+    window.location.href = fenamRedirectUrl;
   };
 
-  if (!fenamLoginUrl) {
+  if (!fenamRedirectUrl || !fenamRedirectUrl.startsWith("http")) {
     return (
       <p className="text-marrone-scuro/80 text-sm">
         {t("notConfigured")}
