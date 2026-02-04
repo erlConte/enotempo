@@ -267,7 +267,7 @@ export default async function CenaDetailPage({
               <section className="space-y-4">
                 <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
                   <p className="text-sm md:text-base text-marrone-scuro/80 mb-6">
-                    Pagamento online obbligatorio – 1 persona = 1 prenotazione
+                    PRENOTAZIONE 
                   </p>
                   <BookingGate
                     hasIdentity={hasIdentity}
