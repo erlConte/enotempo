@@ -243,31 +243,67 @@ export default async function CenaDetailPage({
 
       {/* Container centrale per tutto il contenuto */}
       <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-16 md:space-y-20">
-        {/* 2) BLOCCO PRENOTAZIONE - Box semplice, NON colonna laterale */}
-        {event.remainingSeats > 0 && (
-          <section className="space-y-4">
-            <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
-              <p className="text-sm md:text-base text-marrone-scuro/80 mb-6">
-                Pagamento online obbligatorio – 1 persona = 1 prenotazione
-              </p>
-              <BookingGate
-                hasIdentity={hasIdentity}
-                eventSlug={slug}
-                locale={locale}
-                simple={true}
+        {/* TOP BLOCK: Grid 2 colonne desktop (Video sinistra, Prenotazione+Descrizione destra) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          {/* Colonna sinistra: Video (solo desktop, mobile va dopo) */}
+          {isTullpukuna && (
+            <section className="hidden lg:block">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+                Video
+              </h2>
+              <EventVideo
+                src={VIDEO_PATH}
+                poster={videoPoster ?? undefined}
+                alt={event.title}
+                vertical={true}
               />
-            </div>
-          </section>
-        )}
+            </section>
+          )}
 
-        {/* 3) DESCRIZIONE - Testo editoriale, nessuna card */}
-        {(event.description ?? event.subtitle) && (
-          <section>
-            <div className="prose prose-lg max-w-none">
-              <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
-                {event.description ?? event.subtitle ?? ""}
-              </p>
-            </div>
+          {/* Colonna destra: Prenotazione + Descrizione */}
+          <div className="space-y-8">
+            {/* 2) BLOCCO PRENOTAZIONE - Box semplice */}
+            {event.remainingSeats > 0 && (
+              <section className="space-y-4">
+                <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
+                  <p className="text-sm md:text-base text-marrone-scuro/80 mb-6">
+                    Pagamento online obbligatorio – 1 persona = 1 prenotazione
+                  </p>
+                  <BookingGate
+                    hasIdentity={hasIdentity}
+                    eventSlug={slug}
+                    locale={locale}
+                    simple={true}
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* 3) DESCRIZIONE - Testo editoriale breve */}
+            {(event.description ?? event.subtitle) && (
+              <section>
+                <div className="prose prose-lg max-w-none">
+                  <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
+                    {event.description ?? event.subtitle ?? ""}
+                  </p>
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
+
+        {/* Video mobile (mostrato solo su mobile, dopo descrizione) */}
+        {isTullpukuna && (
+          <section className="lg:hidden">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+              Video
+            </h2>
+            <EventVideo
+              src={VIDEO_PATH}
+              poster={videoPoster ?? undefined}
+              alt={event.title}
+              vertical={true}
+            />
           </section>
         )}
 
@@ -324,21 +360,6 @@ export default async function CenaDetailPage({
               </p>
               <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
             </div>
-          </section>
-        )}
-
-        {/* 7) VIDEO - Verticale 9:16, centrato, max-width contenuto */}
-        {isTullpukuna && (
-          <section>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
-              Video
-            </h2>
-            <EventVideo
-              src={VIDEO_PATH}
-              poster={videoPoster ?? undefined}
-              alt={event.title}
-              vertical={true}
-            />
           </section>
         )}
 
