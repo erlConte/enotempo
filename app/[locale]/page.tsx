@@ -23,7 +23,7 @@ export default async function HomePage({
       ? {
           title: nextEventFromDb.title,
           slug: nextEventFromDb.slug,
-          date: nextEventFromDb.date.toISOString(),
+          date: nextEventFromDb.date.getTime(), // Timestamp numerico (stesso momento della pagina evento)
           locationName: nextEventFromDb.locationName,
           locationAddress: nextEventFromDb.locationAddress ?? null,
         }

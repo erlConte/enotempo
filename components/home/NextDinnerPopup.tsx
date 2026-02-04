@@ -9,7 +9,7 @@ import { X } from "lucide-react";
 export type NextEventSerialized = {
   title: string;
   slug: string;
-  date: string; // ISO
+  date: number; // Timestamp numerico (preserva l'ora esatta senza problemi di timezone)
   locationName: string;
   locationAddress: string | null;
 };
@@ -41,7 +41,8 @@ export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupPr
     }
   };
 
-  const formatDate = (dateIso: string, locale: string) => {
+  const formatDate = (timestamp: number, locale: string) => {
+    const date = new Date(timestamp);
     return new Intl.DateTimeFormat(
       locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES",
       {
@@ -51,7 +52,7 @@ export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupPr
         hour: "2-digit",
         minute: "2-digit",
       }
-    ).format(new Date(dateIso));
+    ).format(date);
   };
 
   // Non renderizzare nulla se non c'è un evento futuro o se è stato chiuso
