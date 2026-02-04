@@ -243,11 +243,11 @@ export default async function CenaDetailPage({
 
       {/* Container centrale per tutto il contenuto */}
       <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-16 md:space-y-20">
-        {/* TOP BLOCK: Grid 2 colonne desktop (Video sinistra, Prenotazione+Descrizione destra) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          {/* Colonna sinistra: Video (solo desktop, mobile va dopo) */}
+        {/* TOP BLOCK: Grid desktop 2 colonne (Video sinistra, Prenotazione+Descrizione destra); mobile stack verticale */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 lg:gap-12 items-start">
+          {/* Colonna sinistra: Video (9:16, max-width controllata) */}
           {isTullpukuna && (
-            <section className="hidden lg:block">
+            <section className="w-full max-w-sm lg:max-w-md">
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
                 Video
               </h2>
@@ -261,8 +261,8 @@ export default async function CenaDetailPage({
           )}
 
           {/* Colonna destra: Prenotazione + Descrizione */}
-          <div className="space-y-8">
-            {/* 2) BLOCCO PRENOTAZIONE - Box semplice */}
+          <div className="space-y-8 min-w-0">
+            {/* 2) BLOCCO PRENOTAZIONE */}
             {event.remainingSeats > 0 && (
               <section className="space-y-4">
                 <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
@@ -279,7 +279,7 @@ export default async function CenaDetailPage({
               </section>
             )}
 
-            {/* 3) DESCRIZIONE - Testo editoriale breve */}
+            {/* 3) DESCRIZIONE */}
             {(event.description ?? event.subtitle) && (
               <section>
                 <div className="prose prose-lg max-w-none">
@@ -291,21 +291,6 @@ export default async function CenaDetailPage({
             )}
           </div>
         </div>
-
-        {/* Video mobile (mostrato solo su mobile, dopo descrizione) */}
-        {isTullpukuna && (
-          <section className="lg:hidden">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
-              Video
-            </h2>
-            <EventVideo
-              src={VIDEO_PATH}
-              poster={videoPoster ?? undefined}
-              alt={event.title}
-              vertical={true}
-            />
-          </section>
-        )}
 
         {/* 4) MENU - Sezione dedicata */}
         {menuItems.length > 0 && (
