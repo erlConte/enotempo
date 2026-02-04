@@ -331,7 +331,7 @@ export default async function CenaDetailPage({
 
 
 
-          {/* TOP BLOCK: Grid desktop 2 colonne (Video sinistra, Prenotazione+Descrizione destra); mobile stack verticale */}
+          {/* Grid desktop 2 colonne (Video sinistra, Prenotazione+Descrizione destra); mobile stack verticale */}
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 lg:gap-12 items-start">
             {/* Colonna sinistra: Video (9:16, max-width controllata) */}
             {isTullpukuna && (
@@ -364,6 +364,14 @@ export default async function CenaDetailPage({
                       />
                     </div>
                   ))}
+                </div>
+              </section>
+            )}
+            {/* 6) MAPPA - Embed Google Maps */}
+            {event.locationAddress && (
+              <section>
+                <div className="space-y-4">
+                  <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
                 </div>
               </section>
             )}
