@@ -10,14 +10,31 @@ interface BookingGateProps {
   hasIdentity: boolean;
   eventSlug: string;
   locale: string;
+  simple?: boolean; // Se true, usa versione semplificata senza Card (per pagina evento)
 }
 
-export default function BookingGate({ hasIdentity, eventSlug, locale }: BookingGateProps) {
+export default function BookingGate({
+  hasIdentity,
+  eventSlug,
+  locale,
+  simple = false,
+}: BookingGateProps) {
   const t = useTranslations("auth.fenam");
   const tEvents = useTranslations("events");
 
   if (!hasIdentity) {
     const returnUrl = `/${locale}/cene/${eventSlug}`;
+    if (simple) {
+      // Versione semplificata per pagina evento (senza Card)
+      return (
+        <Link href={`/${locale}/accedi-fenam?returnUrl=${encodeURIComponent(returnUrl)}`}>
+          <Button className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-base md:text-lg font-semibold shadow-md">
+            {t("cta")}
+          </Button>
+        </Link>
+      );
+    }
+    // Versione completa con Card (per altre pagine)
     return (
       <Card className="border-0 shadow-lg rounded-2xl bg-white">
         <CardHeader className="pb-4 px-8 pt-8">

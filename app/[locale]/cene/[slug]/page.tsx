@@ -3,12 +3,13 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getEventBySlug } from "@/lib/events";
-import { getGalleryItems, getGallerySlice } from "@/lib/gallery";
+import { getGallerySlice } from "@/lib/gallery";
 import BookingGate from "@/components/events/BookingGate";
 import EventVideo from "@/components/events/EventVideo";
+import EventMenu from "@/components/events/EventMenu";
+import EventMap from "@/components/events/EventMap";
 import { hasValidSession, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 import type { Metadata } from "next";
 
@@ -17,6 +18,34 @@ export const dynamic = "force-dynamic";
 const TULLPUKUNA_SLUG = "cena-tullpukuna";
 const GALLERY_COUNT = 6;
 const VIDEO_PATH = "/events/tullpukuna/video.mp4";
+
+// Menu per Tullpukuna (hardcoded per ora, da estendere in futuro con DB)
+const TULLPUKUNA_MENU = [
+  {
+    course: "Antipasto",
+    dish: "Ceviche di pesce con avocado e mais",
+    wine: "Selezione vini bianchi italiani",
+  },
+  {
+    course: "Primo",
+    dish: "Causa rellena con pollo e olive",
+    wine: "Vini bianchi e rosati",
+  },
+  {
+    course: "Secondo",
+    dish: "Lomo saltado con riso e patate",
+    wine: "Vini rossi italiani e sudamericani",
+  },
+  {
+    course: "Pre-dolce",
+    dish: "Formaggi andini con miele",
+    wine: "Vini da dessert",
+  },
+  {
+    course: "Dolce",
+    dish: "Suspiro a la limeña",
+  },
+];
 
 function buildBaseUrl(): string {
   const site = process.env.NEXT_PUBLIC_SITE_URL;
@@ -50,9 +79,12 @@ export async function generateMetadata({
   const pathname = `/${locale}/cene/${slug}`;
   const canonicalUrl = baseUrl ? `${baseUrl}${pathname}` : pathname;
 
-  const gallery = getGalleryItems();
+  const gallery = getGallerySlice(1);
   const ogImageRaw = gallery[0]?.src ?? null;
-  const ogImage = ogImageRaw && !ogImageRaw.startsWith("http") ? `${buildBaseUrl()}${ogImageRaw.startsWith("/") ? "" : "/"}${ogImageRaw}` : ogImageRaw;
+  const ogImage =
+    ogImageRaw && !ogImageRaw.startsWith("http")
+      ? `${buildBaseUrl()}${ogImageRaw.startsWith("/") ? "" : "/"}${ogImageRaw}`
+      : ogImageRaw;
 
   const metadata: Metadata = {
     title,
@@ -81,25 +113,28 @@ function formatDateShort(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES", {
     day: "numeric",
     month: "long",
+    timeZone: "Europe/Rome", // Timezone esplicito per coerenza
   }).format(date);
 }
 
 function formatTime(date: Date): string {
-  return new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" }).format(date);
+  return new Intl.DateTimeFormat("it-IT", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Rome", // Timezone esplicito per coerenza
+  }).format(date);
 }
 
 function formatDateWithTime(date: Date, loc: string): string {
-  return new Intl.DateTimeFormat(
-    loc === "it" ? "it-IT" : loc === "en" ? "en-US" : "es-ES",
-    {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }
-  )
+  return new Intl.DateTimeFormat(loc === "it" ? "it-IT" : loc === "en" ? "en-US" : "es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Rome", // Timezone esplicito per coerenza
+  })
     .format(date)
     .replace(/, (\d{1,2}:\d{2})/, " — $1");
 }
@@ -112,6 +147,7 @@ export default async function CenaDetailPage({
   const { locale, slug } = await params;
   const t = await getTranslations("events");
   const tRegole = await getTranslations("regole");
+  const tAuth = await getTranslations("auth.fenam");
   const event = await getEventBySlug(slug);
   const cookieStore = await cookies();
   const hasIdentity = hasValidSession(cookieStore.get(FENAM_SESSION_COOKIE)?.value);
@@ -124,11 +160,7 @@ export default async function CenaDetailPage({
   const eventGallery = isTullpukuna ? getGallerySlice(GALLERY_COUNT) : [];
   const heroImage = event.image ?? (eventGallery[0]?.src ?? null);
   const videoPoster = eventGallery[0]?.src ?? null;
-  const mapsQuery =
-    event.locationAddress
-      ? `${event.locationName}, ${event.locationAddress}`
-      : event.locationName;
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
+  const menuItems = isTullpukuna ? TULLPUKUNA_MENU : [];
 
   return (
     <div className="min-h-screen bg-bianco-caldo">
@@ -160,33 +192,36 @@ export default async function CenaDetailPage({
         />
       )}
 
-      <div className="container mx-auto max-w-5xl px-4 py-8 md:py-12">
-        {/* Hero: immagine grande */}
-        <section className="mb-10">
-          {heroImage ? (
-            <div className="relative w-full aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden bg-marrone-scuro/10">
-              <Image
-                src={heroImage}
-                alt={event.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 768px) 100vw, 1024px"
-              />
-            </div>
-          ) : null}
-        </section>
+      {/* 1) HERO - Immagine full-width + titolo + info */}
+      <section className="w-full">
+        {/* Immagine hero */}
+        {heroImage && (
+          <div className="relative w-full aspect-[4/5] md:aspect-[21/9] overflow-hidden bg-marrone-scuro/10">
+            <Image
+              src={heroImage}
+              alt={event.title}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+          </div>
+        )}
 
-        {/* Titolo + info chips */}
-        <header className="mb-8">
+        {/* Titolo e info - container centrale */}
+        <div className="container mx-auto max-w-6xl px-4 py-8 md:py-12">
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-borgogna mb-6">
             {event.title}
           </h1>
-          <div className="flex flex-wrap items-center gap-3 md:gap-4 text-base md:text-lg text-marrone-scuro/80">
+
+          <div className="flex flex-wrap items-center gap-4 md:gap-6 text-base md:text-lg text-marrone-scuro/80">
+            {/* Data + ora */}
             <span className="flex items-center gap-2">
               <span>📅</span>
               <span>{formatDateWithTime(event.date, locale)}</span>
             </span>
+
+            {/* Luogo */}
             <span className="flex items-center gap-2">
               <span>📍</span>
               <span>
@@ -194,185 +229,143 @@ export default async function CenaDetailPage({
                 {event.locationAddress ? `, ${event.locationAddress}` : ""}
               </span>
             </span>
+
+            {/* Prezzo */}
             {event.price != null && (
-              <span className="flex items-center gap-2 font-semibold">
+              <span className="flex items-center gap-2 font-semibold text-borgogna">
                 <span>💰</span>
                 <span>{event.price} €</span>
               </span>
             )}
-            {event.remainingSeats > 0 ? (
-              <Badge className="bg-verde text-bianco-caldo text-sm">
-                {t("availableSeats")}: {event.remainingSeats}
-              </Badge>
-            ) : (
-              <Badge variant="destructive" className="text-sm">
-                {t("soldOut")}
-              </Badge>
-            )}
           </div>
-        </header>
-
-        {/* CTA o form prenotazione: senza sidebar, card centrata quando loggato */}
-        {event.remainingSeats > 0 && !hasIdentity && (
-          <section className="mb-12 rounded-2xl border border-border bg-white/80 shadow-md p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="space-y-2">
-                {event.price != null && (
-                  <p className="text-xl font-semibold text-marrone-scuro">
-                    {event.price} € a persona
-                  </p>
-                )}
-                <p className="text-sm text-marrone-scuro/80">
-                  Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.
-                </p>
-              </div>
-              <div className="shrink-0 md:min-w-[280px]">
-                <BookingGate hasIdentity={hasIdentity} eventSlug={slug} locale={locale} />
-              </div>
-            </div>
-          </section>
-        )}
-        {event.remainingSeats > 0 && hasIdentity && (
-          <section className="mb-12 space-y-6">
-            <div className="rounded-2xl border border-border bg-white/80 shadow-md p-6 md:p-8">
-              <div className="space-y-2">
-                {event.price != null && (
-                  <p className="text-xl font-semibold text-marrone-scuro">
-                    {event.price} € a persona
-                  </p>
-                )}
-                <p className="text-sm text-marrone-scuro/80">
-                  Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.
-                </p>
-              </div>
-            </div>
-            <BookingGate hasIdentity={hasIdentity} eventSlug={slug} locale={locale} />
-          </section>
-        )}
-
-        {/* Corpo: sezioni in ordine */}
-        <div className="space-y-10">
-          {/* Descrizione */}
-          {(event.description ?? event.subtitle) && (
-            <Card className="border-0 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">Descrizione</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-marrone-scuro/90 leading-relaxed text-lg whitespace-pre-line">
-                  {event.description ?? event.subtitle ?? ""}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Video (solo Tullpukuna; fallback "Video in arrivo" + hero se non carica) */}
-          {isTullpukuna && (
-            <Card className="border-0 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">Video</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <EventVideo
-                  src={VIDEO_PATH}
-                  poster={videoPoster ?? undefined}
-                  alt={event.title}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Gallery */}
-          {isTullpukuna && eventGallery.length > 0 && (
-            <Card className="border-0 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">Gallery</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {eventGallery.map((item) => (
-                    <div
-                      key={item.src}
-                      className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
-                    >
-                      <Image
-                        src={item.src}
-                        alt={`${event.title} - ${item.name}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Dove: indirizzo + Apri in Maps */}
-          <Card className="border-0 shadow-sm rounded-2xl">
-            <CardHeader>
-              <CardTitle className="font-serif text-2xl text-borgogna">Dove</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {event.locationAddress ? (
-                <>
-                  <p className="text-marrone-scuro/90">
-                    {event.locationName}, {event.locationAddress}
-                  </p>
-                  <a
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-borgogna font-semibold hover:underline"
-                  >
-                    Apri in Maps
-                    <span aria-hidden>↗</span>
-                  </a>
-                </>
-              ) : (
-                <p className="text-marrone-scuro/80 italic">Luogo: DA CONFERMARE</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Seguici: solo testo neutro, nessun link fake */}
-          {isTullpukuna && (
-            <Card className="border-0 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">Seguici</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-marrone-scuro/80 text-sm">
-                  Link in aggiornamento.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Regole e dichiarazioni */}
-          <Card className="border-0 shadow-sm rounded-2xl">
-            <CardHeader>
-              <CardTitle className="font-serif text-2xl text-borgogna">
-                {tRegole("title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <ul className="list-disc list-inside text-marrone-scuro/90 space-y-2">
-                <li>{tRegole("punctuality")}</li>
-                <li>{tRegole("allergies")}</li>
-                <li>{tRegole("extraPaid")}</li>
-                <li>{tRegole("limitedSeats")}</li>
-              </ul>
-              <Link
-                href={`/${locale}/regole`}
-                className="inline-block text-borgogna font-medium hover:underline mt-2"
-              >
-                {tRegole("readMore")} →
-              </Link>
-            </CardContent>
-          </Card>
         </div>
+      </section>
+
+      {/* Container centrale per tutto il contenuto */}
+      <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-16 md:space-y-20">
+        {/* 2) BLOCCO PRENOTAZIONE - Box semplice, NON colonna laterale */}
+        {event.remainingSeats > 0 && (
+          <section className="space-y-4">
+            <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
+              <p className="text-sm md:text-base text-marrone-scuro/80 mb-6">
+                Pagamento online obbligatorio – 1 persona = 1 prenotazione
+              </p>
+              <BookingGate
+                hasIdentity={hasIdentity}
+                eventSlug={slug}
+                locale={locale}
+                simple={true}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* 3) DESCRIZIONE - Testo editoriale, nessuna card */}
+        {(event.description ?? event.subtitle) && (
+          <section>
+            <div className="prose prose-lg max-w-none">
+              <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
+                {event.description ?? event.subtitle ?? ""}
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* 4) MENU - Sezione dedicata */}
+        {menuItems.length > 0 && (
+          <section>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
+              Menu
+            </h2>
+            <EventMenu items={menuItems} />
+          </section>
+        )}
+
+        {/* 5) REGOLE - Elenco breve, senza box */}
+        <section>
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+            {tRegole("title")}
+          </h2>
+          <ul className="space-y-3 text-marrone-scuro/90 text-base md:text-lg">
+            <li className="flex items-start gap-3">
+              <span className="text-borgogna mt-1">•</span>
+              <span>{tRegole("punctuality")}</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-borgogna mt-1">•</span>
+              <span>{tRegole("allergies")}</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-borgogna mt-1">•</span>
+              <span>{tRegole("extraPaid")}</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-borgogna mt-1">•</span>
+              <span>{tRegole("limitedSeats")}</span>
+            </li>
+          </ul>
+          <Link
+            href={`/${locale}/regole`}
+            className="inline-block text-borgogna font-medium hover:underline mt-4"
+          >
+            {tRegole("readMore")} →
+          </Link>
+        </section>
+
+        {/* 6) MAPPA - Embed Google Maps */}
+        {event.locationAddress && (
+          <section>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+              Dove
+            </h2>
+            <div className="space-y-4">
+              <p className="text-marrone-scuro/90 text-base md:text-lg">
+                {event.locationName}, {event.locationAddress}
+              </p>
+              <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
+            </div>
+          </section>
+        )}
+
+        {/* 7) VIDEO - Verticale 9:16, centrato, max-width contenuto */}
+        {isTullpukuna && (
+          <section>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+              Video
+            </h2>
+            <EventVideo
+              src={VIDEO_PATH}
+              poster={videoPoster ?? undefined}
+              alt={event.title}
+              vertical={true}
+            />
+          </section>
+        )}
+
+        {/* 8) GALLERY - Griglia immagini finale */}
+        {isTullpukuna && eventGallery.length > 0 && (
+          <section>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
+              Gallery
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+              {eventGallery.map((item) => (
+                <div
+                  key={item.src}
+                  className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
+                >
+                  <Image
+                    src={item.src}
+                    alt={`${event.title} - ${item.name}`}
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

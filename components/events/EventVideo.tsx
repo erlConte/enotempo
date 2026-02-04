@@ -7,15 +7,18 @@ interface EventVideoProps {
   src: string;
   poster?: string | null;
   alt: string;
+  vertical?: boolean; // Se true, usa aspect ratio 9:16 (verticale)
 }
 
 /** Video con fallback: se non carica o errore, mostra "Video in arrivo" + poster/hero. */
-export default function EventVideo({ src, poster, alt }: EventVideoProps) {
+export default function EventVideo({ src, poster, alt, vertical = false }: EventVideoProps) {
   const [failed, setFailed] = useState(false);
+
+  const aspectClass = vertical ? "aspect-[9/16] max-w-md mx-auto" : "aspect-video";
 
   if (failed) {
     return (
-      <div className="relative aspect-video rounded-xl overflow-hidden bg-marrone-scuro/10 flex flex-col items-center justify-center gap-4 p-6">
+      <div className={`relative ${aspectClass} rounded-xl overflow-hidden bg-marrone-scuro/10 flex flex-col items-center justify-center gap-4 p-6`}>
         {poster ? (
           <div className="absolute inset-0">
             <Image
@@ -23,7 +26,7 @@ export default function EventVideo({ src, poster, alt }: EventVideoProps) {
               alt={alt}
               fill
               className="object-cover opacity-60"
-              sizes="(max-width: 768px) 100vw, 1024px"
+              sizes="(max-width: 768px) 100vw, 512px"
             />
           </div>
         ) : null}
@@ -35,7 +38,7 @@ export default function EventVideo({ src, poster, alt }: EventVideoProps) {
   }
 
   return (
-    <div className="relative aspect-video rounded-xl overflow-hidden bg-marrone-scuro/10">
+    <div className={`relative ${aspectClass} rounded-xl overflow-hidden bg-marrone-scuro/10`}>
       <video
         controls
         preload="metadata"

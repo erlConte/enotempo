@@ -18,6 +18,20 @@ export default async function HomePage({
   const t = await getTranslations("hero");
   const tHome = await getTranslations("home");
   const nextEventFromDb = await getNextUpcomingEvent();
+
+  // Debug logging server-side (NO PII)
+  if (nextEventFromDb) {
+    console.log("[DEBUG] getNextUpcomingEvent() returned:", {
+      id: nextEventFromDb.id,
+      slug: nextEventFromDb.slug,
+      dateISO: nextEventFromDb.date.toISOString(),
+      dateTimestamp: nextEventFromDb.date.getTime(),
+      status: nextEventFromDb.status,
+    });
+  } else {
+    console.log("[DEBUG] getNextUpcomingEvent() returned: null");
+  }
+
   const nextEvent =
     nextEventFromDb != null
       ? {
@@ -28,6 +42,15 @@ export default async function HomePage({
           locationAddress: nextEventFromDb.locationAddress ?? null,
         }
       : null;
+
+  // Debug logging del valore passato al popup
+  if (nextEvent) {
+    console.log("[DEBUG] nextEvent passed to popup:", {
+      slug: nextEvent.slug,
+      dateTimestamp: nextEvent.date,
+      dateISO: new Date(nextEvent.date).toISOString(),
+    });
+  }
 
   return (
     <div className="min-h-screen">

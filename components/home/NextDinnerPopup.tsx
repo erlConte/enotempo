@@ -43,6 +43,7 @@ export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupPr
 
   const formatDate = (timestamp: number, locale: string) => {
     const date = new Date(timestamp);
+    // Formatta in timezone Europe/Rome per coerenza
     return new Intl.DateTimeFormat(
       locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES",
       {
@@ -51,6 +52,7 @@ export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupPr
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "Europe/Rome", // Timezone esplicito per evitare problemi
       }
     ).format(date);
   };
@@ -86,6 +88,17 @@ export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupPr
         <p className="text-base text-marrone-scuro/80 font-medium">
           {formatDate(nextEvent.date, locale)}
         </p>
+
+        {/* Debug info (solo se NEXT_PUBLIC_DEBUG=1) */}
+        {process.env.NEXT_PUBLIC_DEBUG === "1" && (
+          <div className="text-xs text-marrone-scuro/50 border-t border-marrone-scuro/10 pt-2 mt-2">
+            <p>DEBUG:</p>
+            <p>Timestamp: {nextEvent.date}</p>
+            <p>ISO: {new Date(nextEvent.date).toISOString()}</p>
+            <p>Local: {new Date(nextEvent.date).toString()}</p>
+            <p>Rome: {new Date(nextEvent.date).toLocaleString("it-IT", { timeZone: "Europe/Rome" })}</p>
+          </div>
+        )}
 
         {/* Luogo */}
         {nextEvent.locationName && (

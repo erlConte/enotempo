@@ -120,5 +120,22 @@ export async function getNextUpcomingEvent(): Promise<EventWithRemaining | null>
   const now = new Date();
   const events = await getEvents();
   const upcoming = events.filter((e) => e.date > now).sort((a, b) => a.date.getTime() - b.date.getTime());
-  return upcoming[0] ?? null;
+  const result = upcoming[0] ?? null;
+
+  // Debug logging (NO PII)
+  if (result) {
+    console.log("[DEBUG] getNextUpcomingEvent() - DB event:", {
+      id: result.id,
+      slug: result.slug,
+      dateISO: result.date.toISOString(),
+      dateTimestamp: result.date.getTime(),
+      dateLocal: result.date.toString(),
+      dateRome: result.date.toLocaleString("it-IT", { timeZone: "Europe/Rome" }),
+      status: result.status,
+    });
+  } else {
+    console.log("[DEBUG] getNextUpcomingEvent() - No upcoming events found");
+  }
+
+  return result;
 }
