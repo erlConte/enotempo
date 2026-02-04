@@ -349,9 +349,6 @@ export default async function CenaDetailPage({
             {/* 8) GALLERY - Griglia immagini finale */}
             {isTullpukuna && eventGallery.length > 0 && (
               <section>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
-                  Gallery
-                </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                   {eventGallery.map((item) => (
                     <div
