@@ -243,27 +243,8 @@ export default async function CenaDetailPage({
 
       {/* Container centrale per tutto il contenuto */}
       <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-16 md:space-y-20">
-        {/* TOP BLOCK: Grid desktop 2 colonne (Video sinistra, Prenotazione+Descrizione destra); mobile stack verticale */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 lg:gap-12 items-start">
-          {/* Colonna sinistra: Video (9:16, max-width controllata) */}
-          {isTullpukuna && (
-            <section className="w-full max-w-sm lg:max-w-md">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
-                Video
-              </h2>
-              <EventVideo
-                src={VIDEO_PATH}
-                poster={videoPoster ?? undefined}
-                alt={event.title}
-                vertical={true}
-              />
-            </section>
-          )}
-
-          {/* Colonna destra: Prenotazione + Descrizione */}
-          <div className="space-y-8 min-w-0">
-            {/* 2) BLOCCO PRENOTAZIONE */}
-            {event.remainingSeats > 0 && (
+        {/* 2) BLOCCO PRENOTAZIONE */}
+        {event.remainingSeats > 0 && (
               <section className="space-y-4">
                 <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
                   <p className="text-sm md:text-base text-marrone-scuro/80 mb-6">
@@ -279,99 +260,117 @@ export default async function CenaDetailPage({
               </section>
             )}
 
-            {/* 3) DESCRIZIONE */}
-            {(event.description ?? event.subtitle) && (
+         
+          {/* 3) DESCRIZIONE */}
+          {(event.description ?? event.subtitle) && (
+            <section>
+              <div className="prose prose-lg max-w-none">
+                <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
+                  {event.description ?? event.subtitle ?? ""}
+                </p>
+              </div>
+            </section>
+          )}
+            
+
+          {/* 4) MENU - Sezione dedicata */}
+          {menuItems.length > 0 && (
+            <section>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
+                Menu
+              </h2>
+              <EventMenu items={menuItems} />
+            </section>
+          )}
+
+          {/* 5) REGOLE - Elenco breve, senza box */}
+          <section>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+              {tRegole("title")}
+            </h2>
+            <ul className="space-y-3 text-marrone-scuro/90 text-base md:text-lg">
+              <li className="flex items-start gap-3">
+                <span className="text-borgogna mt-1">•</span>
+                <span>{tRegole("punctuality")}</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-borgogna mt-1">•</span>
+                <span>{tRegole("allergies")}</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-borgogna mt-1">•</span>
+                <span>{tRegole("extraPaid")}</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-borgogna mt-1">•</span>
+                <span>{tRegole("limitedSeats")}</span>
+              </li>
+            </ul>
+            <Link
+              href={`/${locale}/regole`}
+              className="inline-block text-borgogna font-medium hover:underline mt-4"
+            >
+              {tRegole("readMore")} →
+            </Link>
+          </section>
+
+          {/* 6) MAPPA - Embed Google Maps */}
+          {event.locationAddress && (
+            <section>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+                Dove
+              </h2>
+              <div className="space-y-4">
+                <p className="text-marrone-scuro/90 text-base md:text-lg">
+                  {event.locationName}, {event.locationAddress}
+                </p>
+                <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
+              </div>
+            </section>
+          )}
+
+
+
+          {/* TOP BLOCK: Grid desktop 2 colonne (Video sinistra, Prenotazione+Descrizione destra); mobile stack verticale */}
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 lg:gap-12 items-start">
+            {/* Colonna sinistra: Video (9:16, max-width controllata) */}
+            {isTullpukuna && (
+              <section className="w-full max-w-sm lg:max-w-md">
+                <EventVideo
+                  src={VIDEO_PATH}
+                  poster={videoPoster ?? undefined}
+                  alt={event.title}
+                  vertical={true}
+                />
+              </section>
+            )}
+
+            {/* Colonna destra */}
+            {/* 8) GALLERY - Griglia immagini finale */}
+            {isTullpukuna && eventGallery.length > 0 && (
               <section>
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
-                    {event.description ?? event.subtitle ?? ""}
-                  </p>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
+                  Gallery
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                  {eventGallery.map((item) => (
+                    <div
+                      key={item.src}
+                      className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
+                    >
+                      <Image
+                        src={item.src}
+                        alt={`${event.title} - ${item.name}`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    </div>
+                  ))}
                 </div>
               </section>
             )}
-          </div>
         </div>
-
-        {/* 4) MENU - Sezione dedicata */}
-        {menuItems.length > 0 && (
-          <section>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
-              Menu
-            </h2>
-            <EventMenu items={menuItems} />
-          </section>
-        )}
-
-        {/* 5) REGOLE - Elenco breve, senza box */}
-        <section>
-          <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
-            {tRegole("title")}
-          </h2>
-          <ul className="space-y-3 text-marrone-scuro/90 text-base md:text-lg">
-            <li className="flex items-start gap-3">
-              <span className="text-borgogna mt-1">•</span>
-              <span>{tRegole("punctuality")}</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-borgogna mt-1">•</span>
-              <span>{tRegole("allergies")}</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-borgogna mt-1">•</span>
-              <span>{tRegole("extraPaid")}</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-borgogna mt-1">•</span>
-              <span>{tRegole("limitedSeats")}</span>
-            </li>
-          </ul>
-          <Link
-            href={`/${locale}/regole`}
-            className="inline-block text-borgogna font-medium hover:underline mt-4"
-          >
-            {tRegole("readMore")} →
-          </Link>
-        </section>
-
-        {/* 6) MAPPA - Embed Google Maps */}
-        {event.locationAddress && (
-          <section>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
-              Dove
-            </h2>
-            <div className="space-y-4">
-              <p className="text-marrone-scuro/90 text-base md:text-lg">
-                {event.locationName}, {event.locationAddress}
-              </p>
-              <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
-            </div>
-          </section>
-        )}
-
-        {/* 8) GALLERY - Griglia immagini finale */}
-        {isTullpukuna && eventGallery.length > 0 && (
-          <section>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
-              Gallery
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {eventGallery.map((item) => (
-                <div
-                  key={item.src}
-                  className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
-                >
-                  <Image
-                    src={item.src}
-                    alt={`${event.title} - ${item.name}`}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 50vw, 33vw"
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );
