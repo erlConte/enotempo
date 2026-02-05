@@ -6,8 +6,8 @@ import NextDinnerPopup from "@/components/home/NextDinnerPopup";
 import NewsletterForm from "@/components/home/NewsletterForm";
 import { getNextUpcomingEvent } from "@/lib/events";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// ISR: rigenera ogni 60 secondi per bilanciare performance e dati aggiornati
+export const revalidate = 60;
 
 export default async function HomePage({
   params,
@@ -19,17 +19,19 @@ export default async function HomePage({
   const tHome = await getTranslations("home");
   const nextEventFromDb = await getNextUpcomingEvent();
 
-  // Debug logging server-side (NO PII)
-  if (nextEventFromDb) {
-    console.log("[DEBUG] getNextUpcomingEvent() returned:", {
-      id: nextEventFromDb.id,
-      slug: nextEventFromDb.slug,
-      dateISO: nextEventFromDb.date.toISOString(),
-      dateTimestamp: nextEventFromDb.date.getTime(),
-      status: nextEventFromDb.status,
-    });
-  } else {
-    console.log("[DEBUG] getNextUpcomingEvent() returned: null");
+  // Debug logging server-side solo in sviluppo (NO PII)
+  if (process.env.NODE_ENV === "development") {
+    if (nextEventFromDb) {
+      console.log("[DEBUG] getNextUpcomingEvent() returned:", {
+        id: nextEventFromDb.id,
+        slug: nextEventFromDb.slug,
+        dateISO: nextEventFromDb.date.toISOString(),
+        dateTimestamp: nextEventFromDb.date.getTime(),
+        status: nextEventFromDb.status,
+      });
+    } else {
+      console.log("[DEBUG] getNextUpcomingEvent() returned: null");
+    }
   }
 
   const nextEvent =
@@ -43,8 +45,8 @@ export default async function HomePage({
         }
       : null;
 
-  // Debug logging del valore passato al popup
-  if (nextEvent) {
+  // Debug logging solo in sviluppo
+  if (process.env.NODE_ENV === "development" && nextEvent) {
     console.log("[DEBUG] nextEvent passed to popup:", {
       slug: nextEvent.slug,
       dateTimestamp: nextEvent.date,

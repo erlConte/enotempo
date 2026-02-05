@@ -26,9 +26,11 @@ export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupPr
 
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window !== "undefined") {
-      const dismissed = localStorage.getItem("enotempo-next-dinner-dismissed");
-      if (!dismissed && nextEvent) {
+    if (typeof window !== "undefined" && nextEvent) {
+      // Usa localStorage per-event invece che globale
+      const storageKey = `enotempo-next-dinner-dismissed-${nextEvent.slug}`;
+      const dismissed = localStorage.getItem(storageKey);
+      if (!dismissed) {
         setIsVisible(true);
       }
     }
@@ -36,8 +38,10 @@ export default function NextDinnerPopup({ locale, nextEvent }: NextDinnerPopupPr
 
   const handleClose = () => {
     setIsVisible(false);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("enotempo-next-dinner-dismissed", "true");
+    if (typeof window !== "undefined" && nextEvent) {
+      // Salva per questo evento specifico
+      const storageKey = `enotempo-next-dinner-dismissed-${nextEvent.slug}`;
+      localStorage.setItem(storageKey, "true");
     }
   };
 

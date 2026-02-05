@@ -76,10 +76,16 @@ export async function POST(req: NextRequest) {
       where: { id: reservationId },
       include: { event: true },
     });
-    if (!reservation || reservation.fenamMemberId !== session.fenamMemberId) {
+    if (!reservation) {
       return NextResponse.json(
         { error: "Prenotazione non trovata" },
         { status: 404 }
+      );
+    }
+    if (reservation.fenamMemberId !== session.fenamMemberId) {
+      return NextResponse.json(
+        { error: "Non autorizzato ad accedere a questa prenotazione" },
+        { status: 403 }
       );
     }
     if (reservation.status !== "pending_payment") {
@@ -89,9 +95,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Idempotenza: se esiste già un ordine PayPal per questa prenotazione, ritorna lo stesso orderId
+    // Idempotenza: se esiste già un ordine PayPal per questa prenotazione, verifica che sia ancora valido
+    // Gli ordini PayPal scadono dopo ~3 ore, quindi se è troppo vecchio ne creiamo uno nuovo
     if (reservation.paypalOrderId) {
-      return NextResponse.json({ orderId: reservation.paypalOrderId });
+      // Verifica se la prenotazione è stata creata di recente (meno di 2 ore fa)
+      const reservationAge = Date.now() - reservation.createdAt.getTime();
+      const MAX_ORDER_AGE_MS = 2 * 60 * 60 * 1000; // 2 ore
+      if (reservationAge < MAX_ORDER_AGE_MS) {
+        return NextResponse.json({ orderId: reservation.paypalOrderId });
+      }
+      // Se l'ordine è troppo vecchio, continuiamo a crearne uno nuovo
     }
 
     const event = await getEventById(reservation.eventId);

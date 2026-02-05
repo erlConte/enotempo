@@ -1,52 +1,17 @@
 /**
  * POST /api/auth/fenam/handoff
  * Riceve POST da FeNAM (HTML autosubmit). Body: token (HMAC firmato), redirect in query.
- * Verifica firma HMAC (FENAM_HANDOFF_SECRET), exp, iss === "fenam".
- * Estrae affiliationId, memberNumber, email; crea/aggiorna FenamMember; crea sessione Enotempo; redirect.
+ * Usa helper unificato per evitare duplicazione di logica con /callback.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
-import {
-  verifyFenamToken,
-  createSessionToken,
-  verifySessionToken,
-  FENAM_SESSION_COOKIE,
-  getAllowlistedRedirectUrl,
-} from "@/lib/fenam-handoff";
-import { upsertFenamMemberByExternalId } from "@/lib/fenam-member";
-
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
-const DEFAULT_REDIRECT = "/it/cene";
+import { processFenamAuth } from "@/lib/fenam-auth-helper";
 
 export async function POST(req: NextRequest) {
+  let body: { token?: string };
+  const contentType = req.headers.get("content-type") || "";
+  
   try {
-    const { searchParams } = new URL(req.url);
-    const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
-    const origin = req.nextUrl.origin;
-    const redirectTo = getAllowlistedRedirectUrl(redirectParam, origin, DEFAULT_REDIRECT);
-
-    if (process.env.DEBUG_AUTH === "1") {
-      const cookieStore = await cookies();
-      const incomingCookie = cookieStore.get(FENAM_SESSION_COOKIE)?.value;
-      const sessionValid = !!verifySessionToken(incomingCookie);
-      const redirectHost = (() => {
-        try {
-          return new URL(redirectTo).host;
-        } catch {
-          return "(invalid)";
-        }
-      })();
-      console.warn("[DEBUG_AUTH] handoff", {
-        hasCookie: !!incomingCookie,
-        sessionValid,
-        redirectHost,
-      });
-    }
-
-    let body: { token?: string };
-    const contentType = req.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
       body = await req.json();
     } else if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
@@ -68,26 +33,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const payload = verifyFenamToken(token);
-
-    const fenamMember = await upsertFenamMemberByExternalId(prisma, {
-      email: payload.email ?? null,
-      stableId: payload.stableId,
-      affiliationId: payload.affiliationId,
-      memberNumber: payload.memberNumber,
-    });
-
-    const sessionToken = createSessionToken(fenamMember.id);
-    const cookieStore = await cookies();
-    cookieStore.set(FENAM_SESSION_COOKIE, sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: COOKIE_MAX_AGE,
-      path: "/",
-    });
-
-    return NextResponse.redirect(redirectTo, 303);
+    const result = await processFenamAuth(token, req, "POST");
+    return result.response;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Handoff fallito";
     return NextResponse.json(

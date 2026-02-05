@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const rateLimitCheck = withRateLimit(5, 60000);
+    const rateLimitCheck = withRateLimit(2, 60000); // 2 richieste/minuto per prevenire abusi
     const { allowed, retryAfter } = rateLimitCheck(req);
     if (!allowed) {
       return NextResponse.json(
@@ -80,15 +80,27 @@ export async function POST(req: Request) {
           throw err;
         }
         if (existing.status === "pending_payment") {
-          return { reservation: existing, event: eventFromDb, existing: true };
+          // Aggiorna la prenotazione esistente con nuovi dati invece di ritornarla così com'è
+          const updatedReservation = await tx.reservation.update({
+            where: { id: existing.id },
+            data: {
+              ...(notes !== null && { notes }),
+            },
+          });
+          return { reservation: updatedReservation, event: eventFromDb, existing: true };
         }
       }
 
+      // Controllo capienza atomico: include sia confirmed che pending_payment
       const event = await tx.event.findUnique({
         where: { id: eventFromDb.id },
         include: {
           reservations: {
-            where: { status: "confirmed" },
+            where: {
+              status: {
+                in: ["confirmed", "pending_payment"], // Include entrambi per evitare overbooking
+              },
+            },
             select: { guests: true },
           },
         },
@@ -96,7 +108,8 @@ export async function POST(req: Request) {
       if (!event) throw new Error(EVENT_NOT_FOUND);
       const booked = event.reservations.reduce((s, r) => s + r.guests, 0);
       const remaining = event.capacity - booked;
-      if (1 > remaining) {
+      // Bug fix: corretto da "1 > remaining" a "remaining < 1"
+      if (remaining < 1) {
         const err = new Error(NO_CAPACITY) as Error & { code?: string };
         err.code = NO_CAPACITY;
         throw err;

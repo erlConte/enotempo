@@ -19,7 +19,7 @@ const TULLPUKUNA_SLUG = "cena-tullpukuna";
 const GALLERY_COUNT = 9;
 
 // URL video per Cena a Tullpukuna (file in public/events/tullpukuna/)
-const TULLPUKUNA_VIDEO_URL = "/events/tullpukuna/enotempo video.mp4";
+const TULLPUKUNA_VIDEO_URL = "/events/tullpukuna/video.mp4";
 
 const TULLPUKUNA_WHATSAPP = "+39 327 449 4282";
 

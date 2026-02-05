@@ -132,16 +132,28 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
       };
 
       if (!response.ok) {
-        const message = data.error ?? data.message ?? "Richiesta non valida.";
+        let errorMessage = "Si è verificato un errore durante la prenotazione.";
+        
         if (response.status === 401) {
-          setError(message);
-          return;
+          errorMessage = "Sessione scaduta. Per favore, accedi nuovamente con FENAM.";
+        } else if (response.status === 409) {
+          // Messaggi specifici per conflitti
+          if (data.error?.includes("già prenotato") || data.error?.includes("ALREADY_CONFIRMED")) {
+            errorMessage = "Sei già prenotato per questo evento.";
+          } else if (data.error?.includes("posti") || data.error?.includes("NO_CAPACITY")) {
+            errorMessage = "Spiacenti, non ci sono più posti disponibili per questo evento.";
+          } else {
+            errorMessage = data.error ?? data.message ?? "Impossibile completare la prenotazione. Riprova più tardi.";
+          }
+        } else if (response.status === 429) {
+          errorMessage = "Troppe richieste. Attendi un momento e riprova.";
+        } else if (response.status >= 500) {
+          errorMessage = "Errore del server. Riprova più tardi o contatta il supporto.";
+        } else {
+          errorMessage = data.error ?? data.message ?? errorMessage;
         }
-        if (response.status === 409) {
-          setError(message);
-          return;
-        }
-        setError(`Errore prenotazione: (${response.status}) ${message}`);
+        
+        setError(errorMessage);
         return;
       }
 
@@ -366,10 +378,20 @@ export default function ReservationForm({ eventSlug }: ReservationFormProps) {
         <CardFooter className="pt-4 pb-6 px-6 md:px-8">
           <Button
             type="submit"
-            disabled={isLoading || !formData.rulesAccepted}
-            className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+            disabled={isLoading || !formData.rulesAccepted || !formData.dataConsent}
+            className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Invio in corso..." : t("submit")}
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Invio in corso...
+              </span>
+            ) : (
+              t("submit")
+            )}
           </Button>
         </CardFooter>
       </form>

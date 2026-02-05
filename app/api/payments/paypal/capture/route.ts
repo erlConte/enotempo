@@ -41,11 +41,19 @@ function safePayPalLog(
   });
 }
 
+/**
+ * Genera codice conferma univoco robusto usando crypto.randomUUID() come base
+ * Formato: TULL-XXXXXX dove XXXXXX è derivato da UUID per evitare collisioni
+ */
 function generateConfirmationCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  // Usa crypto.randomUUID() per garantire unicità
+  const uuid = crypto.randomUUID().replace(/-/g, "");
   let code = "TULL-";
+  // Prendi 6 caratteri dall'UUID convertendoli in base36 e mappandoli ai caratteri permessi
   for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    const idx = parseInt(uuid[i * 2] + uuid[i * 2 + 1], 16) % chars.length;
+    code += chars[idx];
   }
   return code;
 }
@@ -87,10 +95,16 @@ export async function POST(req: NextRequest) {
       where: { id: reservationId },
       include: { event: true, fenamMember: true },
     });
-    if (!reservation || reservation.fenamMemberId !== session.fenamMemberId) {
+    if (!reservation) {
       return NextResponse.json(
         { error: "Prenotazione non trovata" },
         { status: 404 }
+      );
+    }
+    if (reservation.fenamMemberId !== session.fenamMemberId) {
+      return NextResponse.json(
+        { error: "Non autorizzato ad accedere a questa prenotazione" },
+        { status: 403 }
       );
     }
 
@@ -137,7 +151,10 @@ export async function POST(req: NextRequest) {
         }
       }
       if (!confirmationCode) {
-        confirmationCode = `TULL-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+        // Fallback robusto: combina timestamp con UUID per evitare collisioni
+        const uuid = crypto.randomUUID().replace(/-/g, "").slice(0, 4);
+        const timestamp = Date.now().toString(36).toUpperCase().slice(-4);
+        confirmationCode = `TULL-${timestamp}${uuid}`.slice(0, 10); // TULL-XXXXXXXX
       }
     }
 
@@ -146,11 +163,20 @@ export async function POST(req: NextRequest) {
     // Transazione: ricontrollo capienza prima di confermare (anti-overbooking)
     try {
       await prisma.$transaction(async (tx) => {
+        // Controllo capienza atomico: include confirmed e altre pending_payment (escludendo questa)
         const eventWithCount = await tx.event.findUnique({
           where: { id: reservation.eventId },
           include: {
             reservations: {
-              where: { status: "confirmed" },
+              where: {
+                status: {
+                  in: ["confirmed", "pending_payment"],
+                },
+                // Escludi questa prenotazione dal conteggio (sta per essere confermata)
+                id: {
+                  not: reservationId,
+                },
+              },
               select: { guests: true },
             },
           },
@@ -179,8 +205,18 @@ export async function POST(req: NextRequest) {
       });
     } catch (txErr) {
       if (txErr instanceof Error && (txErr as Error & { code?: string }).code === "SOLD_OUT") {
+        // IMPORTANTE: Il pagamento PayPal è stato completato ma l'evento è esaurito
+        // Dobbiamo informare l'utente che il pagamento è stato processato ma la prenotazione non può essere confermata
+        logger.warn("Capture completed but event sold out", {
+          reservationId,
+          orderId,
+          captureId,
+        });
         return NextResponse.json(
-          { error: "SOLD_OUT" },
+          {
+            error: "SOLD_OUT",
+            message: "Il pagamento è stato completato ma l'evento è stato esaurito durante il processo. Contatta il supporto per il rimborso.",
+          },
           { status: 409 }
         );
       }

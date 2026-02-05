@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { getEvents } from "@/lib/events";
 import { getGallerySlice } from "@/lib/gallery";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// ISR: rigenera ogni 60 secondi
+export const revalidate = 60;
 
 const TULLPUKUNA_SLUG = "cena-tullpukuna";
 

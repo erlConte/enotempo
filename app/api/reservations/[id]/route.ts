@@ -40,10 +40,16 @@ export async function PATCH(
       where: { id: reservationId },
       include: { fenamMember: true },
     });
-    if (!reservation || reservation.fenamMemberId !== session.fenamMemberId) {
+    if (!reservation) {
       return NextResponse.json(
         { error: "Prenotazione non trovata" },
         { status: 404 }
+      );
+    }
+    if (reservation.fenamMemberId !== session.fenamMemberId) {
+      return NextResponse.json(
+        { error: "Non autorizzato ad accedere a questa prenotazione" },
+        { status: 403 }
       );
     }
     if (reservation.status !== "pending_payment") {

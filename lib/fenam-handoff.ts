@@ -7,7 +7,8 @@ import { createHmac, createHash, timingSafeEqual } from "crypto";
 import jwt from "jsonwebtoken";
 
 const ISS_FENAM = "fenam";
-const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 365; // 1 year
+const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 30; // 30 giorni (ridotto da 1 anno per sicurezza)
+const SESSION_REFRESH_THRESHOLD_SEC = 60 * 60 * 24 * 7; // Refresh se mancano meno di 7 giorni
 const CLOCK_TOLERANCE_SEC = 60;
 const JWT_CLOCK_TOLERANCE_SEC = 300; // 5 min per login redirect
 
@@ -181,6 +182,7 @@ export function verifyFenamToken(token: string): FenamHandoffPayload {
       (typeof decoded.sub === "string" && looksLikeEmail(decoded.sub) ? decoded.sub : null) ??
       (decoded.user && typeof decoded.user.email === "string" ? decoded.user.email : null) ??
       (decoded.claims && typeof decoded.claims.email === "string" ? decoded.claims.email : null);
+    // Per JWT, email è richiesta (non può essere null)
     if (!email || !email.trim()) throw errWithCode("Missing email/sub", "MissingClaims");
     const affiliationId =
       decoded.affiliationId ??
@@ -248,6 +250,7 @@ export function verifyFenamToken(token: string): FenamHandoffPayload {
   if (!stableId) {
     throw errWithCode("Missing stable identifier (sub/memberNumber/affiliationId/id/jti)", "MissingClaims");
   }
+  // Per HMAC, email può essere opzionale (usa placeholder se manca)
   const email =
     typeof raw.email === "string" && raw.email.trim() && looksLikeEmail(raw.email) ? raw.email.trim() : null;
   const affiliationId =
@@ -288,7 +291,8 @@ export function verifySessionToken(cookieValue: string | undefined): SessionPayl
     const [payloadB64, sigB64] = parts;
     const payloadJson = Buffer.from(payloadB64.replace(/-/g, "+").replace(/_/g, "/"), "base64url").toString("utf8");
     const payload = JSON.parse(payloadJson) as SessionPayload;
-    if (typeof payload.exp !== "number" || payload.exp * 1000 < Date.now()) return null;
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (typeof payload.exp !== "number" || payload.exp < nowSec) return null;
     const expectedSig = createHmac("sha256", secret).update(payloadB64).digest("base64url");
     if (expectedSig.length !== sigB64.length || !timingSafeEqual(Buffer.from(expectedSig, "utf8"), Buffer.from(sigB64, "utf8"))) {
       return null;
@@ -297,6 +301,13 @@ export function verifySessionToken(cookieValue: string | undefined): SessionPayl
   } catch {
     return null;
   }
+}
+
+/** Verifica se la sessione necessita refresh (entro SESSION_REFRESH_THRESHOLD_SEC dalla scadenza) */
+export function shouldRefreshSession(payload: SessionPayload): boolean {
+  const nowSec = Math.floor(Date.now() / 1000);
+  const timeUntilExpiry = payload.exp - nowSec;
+  return timeUntilExpiry < SESSION_REFRESH_THRESHOLD_SEC;
 }
 
 /** Per uso in pagine server: restituisce true solo se la sessione è valida (non lancia se secret mancante). */
@@ -329,7 +340,16 @@ export function buildPlaceholderEmail(stableId: string): string {
 }
 
 /** Host allowlisted per redirect dopo login (evita open redirect). www normalizzato a enotempo.it. */
-const ALLOWED_HOSTS = ["enotempo.it", "www.enotempo.it"];
+const ALLOWED_HOSTS = ["enotempo.it", "www.enotempo.it", "localhost"];
+
+/** Verifica se un host è sicuro per redirect (include domini Vercel preview) */
+function isSafeRedirectHost(host: string): boolean {
+  const hostLower = host.toLowerCase();
+  if (ALLOWED_HOSTS.includes(hostLower)) return true;
+  // Permetti domini Vercel preview (es. *.vercel.app)
+  if (hostLower.endsWith(".vercel.app")) return true;
+  return false;
+}
 
 /**
  * Restituisce l'URL di redirect completo solo se sicuro. Fallback silenzioso su input invalido.
@@ -352,9 +372,11 @@ export function getAllowlistedRedirectUrl(
   try {
     const u = new URL(trimmed);
     const hostLower = u.host.toLowerCase();
-    if (!ALLOWED_HOSTS.includes(hostLower)) return defaultFull;
-    // Forza https; normalizza www.enotempo.it → enotempo.it
-    u.protocol = "https:";
+    if (!isSafeRedirectHost(hostLower)) return defaultFull;
+    // Forza https (tranne localhost); normalizza www.enotempo.it → enotempo.it
+    if (hostLower !== "localhost" && !hostLower.includes("localhost:")) {
+      u.protocol = "https:";
+    }
     if (hostLower === "www.enotempo.it") u.hostname = "enotempo.it";
     return u.origin + u.pathname + u.search;
   } catch {

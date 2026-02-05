@@ -116,19 +116,31 @@ export default function PayPalButton({ reservationId, onSuccess, onError, before
                 });
                 const result = (await res.json()) as { ok?: boolean; error?: string };
                 if (res.status === 409 && result.error === "SOLD_OUT") {
-                  const errorMsg = "Evento esaurito. Non ci sono più posti disponibili.";
+                  // Messaggio più dettagliato se il pagamento è stato processato
+                  const errorMsg = result.message || "Spiacenti, l'evento è stato esaurito durante il pagamento. " +
+                    "Se il pagamento è stato completato, contatta il supporto per il rimborso.";
                   setScriptError(errorMsg);
                   onError?.(errorMsg);
                   return;
                 }
                 if (res.status === 503 && result.error === "PAYPAL_NOT_CONFIGURED") {
-                  const errorMsg = "Pagamento non disponibile. Riprova più tardi.";
+                  const errorMsg = "Il sistema di pagamento non è al momento disponibile. Riprova più tardi o contatta il supporto.";
                   setScriptError(errorMsg);
                   onError?.(errorMsg);
                   return;
                 }
                 if (!res.ok || !result.ok) {
-                  const errorMsg = result.error ?? "Pagamento non completato";
+                  // Messaggi di errore più specifici
+                  let errorMsg = "Il pagamento non è stato completato correttamente.";
+                  if (result.error) {
+                    if (result.error.includes("non trovata") || result.error.includes("not found")) {
+                      errorMsg = "Prenotazione non trovata. Contatta il supporto se il problema persiste.";
+                    } else if (result.error.includes("non valida") || result.error.includes("invalid")) {
+                      errorMsg = "La prenotazione non è più valida. Ricrea una nuova prenotazione.";
+                    } else {
+                      errorMsg = result.error;
+                    }
+                  }
                   setScriptError(errorMsg);
                   onError?.(errorMsg);
                   return;
@@ -174,11 +186,17 @@ export default function PayPalButton({ reservationId, onSuccess, onError, before
   }
 
   return (
-    <div className="min-h-[120px] flex items-center justify-center">
+    <div className="min-h-[120px] flex flex-col items-center justify-center gap-4">
       {loading && (
-        <p className="text-marrone-scuro/80">Caricamento PayPal...</p>
+        <div className="flex flex-col items-center gap-2">
+          <svg className="animate-spin h-8 w-8 text-borgogna" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p className="text-marrone-scuro/80 text-sm">Caricamento pulsante PayPal...</p>
+        </div>
       )}
-      <div ref={containerRef} className="min-w-[200px]" />
+      <div ref={containerRef} className="min-w-[200px] w-full" />
     </div>
   );
 }
