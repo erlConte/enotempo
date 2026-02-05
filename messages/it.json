@@ -116,7 +116,12 @@
   "checkout": {
     "title": "Checkout",
     "paymentInfo": "Pagamento online obbligatorio. 1 persona = 1 prenotazione.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "emailRequiredHint": "Per ricevere la conferma, inserisci la tua email.",
+    "emailAlreadyInUse": "Questa email è già associata a un altro account. Contatta il supporto."
+  },
+  "conferma": {
+    "emailNotSent": "Non siamo riusciti a inviare la mail: verifica l'indirizzo in checkout."
   },
   "reservations": {
     "title": "Prenotazione"

@@ -11,6 +11,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import PayPalButton from "@/components/payments/PayPalButton";
 import { isPlaceholderEmail } from "@/lib/fenam-handoff";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(s: string): boolean {
+  return typeof s === "string" && s.length > 0 && EMAIL_REGEX.test(s.trim());
+}
+
 export type CheckoutMember = {
   firstName: string;
   lastName: string;
@@ -39,38 +44,49 @@ export default function CheckoutFormWithPayPal({
 }: CheckoutFormWithPayPalProps) {
   const t = useTranslations("events.reservation");
   const tCheckout = useTranslations("checkout");
+  const emailIsPlaceholder = !member.email || isPlaceholderEmail(member.email);
   const [formData, setFormData] = useState({
     firstName: member.firstName ?? "",
     lastName: member.lastName ?? "",
     phone: member.phone ?? "",
+    email: emailIsPlaceholder ? "" : (member.email ?? ""),
     notes: initialNotes ?? "",
   });
   const [error, setError] = useState<string | null>(null);
   const [payPalKey, setPayPalKey] = useState(0);
 
   const saveFormBeforePay = useCallback(async () => {
+    const payload: Record<string, unknown> = {
+      firstName: formData.firstName.trim() || undefined,
+      lastName: formData.lastName.trim() || undefined,
+      phone: formData.phone.trim() || undefined,
+      notes: formData.notes.trim() || null,
+    };
+    if (emailIsPlaceholder && formData.email.trim()) {
+      payload.email = formData.email.trim().toLowerCase();
+    }
     const res = await fetch(`/api/reservations/${reservationId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({
-        firstName: formData.firstName.trim() || undefined,
-        lastName: formData.lastName.trim() || undefined,
-        phone: formData.phone.trim() || undefined,
-        notes: formData.notes.trim() || null,
-      }),
+      body: JSON.stringify(payload),
     });
+    const data = (await res.json()) as { error?: string };
+    if (res.status === 409 && data.error === "EMAIL_ALREADY_IN_USE") {
+      setError(tCheckout("emailAlreadyInUse"));
+      throw new Error(tCheckout("emailAlreadyInUse"));
+    }
     if (!res.ok) {
-      const data = (await res.json()) as { error?: string };
       throw new Error(data.error ?? "Salvataggio dati fallito");
     }
-  }, [reservationId, formData]);
+  }, [reservationId, formData, emailIsPlaceholder, tCheckout]);
 
   const handleSuccess = () => {
     window.location.href = `/${locale}/conferma/${reservationId}`;
   };
 
-  const emailIsPlaceholder = member.email ? isPlaceholderEmail(member.email) : false;
+  const emailRequiredAndValid =
+    !emailIsPlaceholder || (formData.email.trim().length > 0 && isValidEmail(formData.email));
 
   return (
     <Card>
@@ -127,10 +143,19 @@ export default function CheckoutFormWithPayPal({
 
           {emailIsPlaceholder ? (
             <div className="space-y-2">
-              <span className="text-base font-semibold text-marrone-scuro">{t("email")}</span>
-              <p className="text-sm text-marrone-scuro/80 rounded-xl border-2 border-marrone-scuro/20 bg-marrone-scuro/5 px-4 py-3">
-                {t("emailNotAvailableFromFenam")}
-              </p>
+              <Label htmlFor="checkout-email" className="text-base font-semibold text-marrone-scuro">
+                {t("email")} <span className="text-borgogna">*</span>
+              </Label>
+              <p className="text-sm text-marrone-scuro/80 mb-1">{tCheckout("emailRequiredHint")}</p>
+              <Input
+                id="checkout-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                className="h-11 rounded-xl border-2 border-marrone-scuro/20 focus:border-borgogna text-base px-4"
+                placeholder="email@esempio.it"
+                required
+              />
             </div>
           ) : (
             <div className="space-y-2">
@@ -180,14 +205,20 @@ export default function CheckoutFormWithPayPal({
           </Alert>
         )}
 
-        <div key={payPalKey}>
-          <PayPalButton
-            reservationId={reservationId}
-            onSuccess={handleSuccess}
-            onError={setError}
-            beforeCreateOrder={saveFormBeforePay}
-          />
-        </div>
+        {!emailRequiredAndValid ? (
+          <p className="text-marrone-scuro/80 text-sm rounded-xl bg-marrone-scuro/5 border border-marrone-scuro/20 px-4 py-3">
+            {tCheckout("emailRequiredHint")}
+          </p>
+        ) : (
+          <div key={payPalKey}>
+            <PayPalButton
+              reservationId={reservationId}
+              onSuccess={handleSuccess}
+              onError={setError}
+              beforeCreateOrder={saveFormBeforePay}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

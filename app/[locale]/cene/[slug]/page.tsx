@@ -317,35 +317,39 @@ export default async function CenaDetailPage({
           {/* 6) MEDIA (Video + Gallery) */}
           {isTullpukuna && (
             <section>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
                 {/* Colonna sinistra: Video verticale 9:16, full width */}
-                <div className="w-full">
-                  <EventVideo
-                    src={VIDEO_PATH}
-                    poster={videoPoster ?? undefined}
-                    alt={event.title}
-                    vertical={true}
-                  />
+                <div className="w-full h-full min-h-full">
+                  <div className="h-full">
+                    <EventVideo
+                      src={VIDEO_PATH}
+                      poster={videoPoster ?? undefined}
+                      alt={event.title}
+                      vertical={true}
+                    />
+                  </div>
                 </div>
 
                 {/* Colonna destra: Gallery che riempie la colonna */}
                 {eventGallery.length > 0 && (
-                  <div className="w-full">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                      {eventGallery.map((item) => (
-                        <div
-                          key={item.src}
-                          className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
-                        >
-                          <Image
-                            src={item.src}
-                            alt={`${event.title} - ${item.name}`}
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-300"
-                            sizes="(max-width: 768px) 50vw, 33vw"
-                          />
-                        </div>
-                      ))}
+                  <div className="w-full h-full min-h-full">
+                    <div className="h-full overflow-y-auto">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 h-full">
+                        {eventGallery.map((item) => (
+                          <div
+                            key={item.src}
+                            className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
+                          >
+                            <Image
+                              src={item.src}
+                              alt={`${event.title} - ${item.name}`}
+                              fill
+                              className="object-cover hover:scale-105 transition-transform duration-300"
+                              sizes="(max-width: 768px) 50vw, 33vw"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}

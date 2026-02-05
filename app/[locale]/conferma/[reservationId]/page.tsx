@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
-import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
+import { verifySessionToken, FENAM_SESSION_COOKIE, isPlaceholderEmail } from "@/lib/fenam-handoff";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,10 @@ export default async function ConfermaPage({
     notFound();
   }
 
+  const tConferma = await getTranslations("conferma");
   const event = reservation.event;
+  const memberEmail = reservation.fenamMember?.email ?? "";
+  const emailWasNotSent = !memberEmail || isPlaceholderEmail(memberEmail);
   const eventDate = event.date
     ? new Intl.DateTimeFormat("it-IT", {
         weekday: "long",
@@ -117,6 +121,11 @@ export default async function ConfermaPage({
               <p>
                 <strong>Contatti:</strong> per modifiche o informazioni contatta gli organizzatori.
               </p>
+              {emailWasNotSent && (
+                <p className="text-marrone-scuro/80 text-sm">
+                  {tConferma("emailNotSent")}
+                </p>
+              )}
               {reservation.notes && (
                 <p>
                   <strong>Note / allergie:</strong> {reservation.notes}

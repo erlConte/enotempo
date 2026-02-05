@@ -1,7 +1,8 @@
 /**
  * PATCH /api/reservations/:id
- * Aggiorna dati prenotazione (checkout: nome/cognome/telefono su FenamMember, note su reservation).
- * Solo proprietario, solo status pending_payment. Nessun PII nei log.
+ * Aggiorna dati prenotazione (checkout: nome/cognome/telefono/email su FenamMember, note su reservation).
+ * Solo proprietario, solo status pending_payment. Email: aggiorna solo se attuale è placeholder e arriva reale.
+ * P2002 (unique email) → 409 EMAIL_ALREADY_IN_USE. Nessun PII nei log.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -10,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { patchReservationSchema, type PatchReservationInput } from "@/lib/validation";
 import { handleApiError } from "@/lib/api-error";
 import { sanitizeTextFields } from "@/lib/sanitize";
-import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
+import { verifySessionToken, FENAM_SESSION_COOKIE, isPlaceholderEmail } from "@/lib/fenam-handoff";
 
 export async function PATCH(
   req: NextRequest,
@@ -52,20 +53,41 @@ export async function PATCH(
       );
     }
 
-    const memberData: { firstName?: string; lastName?: string; phone?: string | null } = {};
+    const memberData: { firstName?: string; lastName?: string; phone?: string | null; email?: string } = {};
     if (data.firstName != null) memberData.firstName = sanitizeTextFields({ firstName: data.firstName }).firstName;
     if (data.lastName != null) memberData.lastName = sanitizeTextFields({ lastName: data.lastName }).lastName;
     if (data.phone !== undefined) memberData.phone = data.phone ? sanitizeTextFields({ phone: data.phone }).phone : null;
 
+    const rawEmail = data.email != null && typeof data.email === "string" ? data.email.trim().toLowerCase() : "";
+    const newEmail = rawEmail && rawEmail.length > 0 ? rawEmail : null;
+    const currentEmail = reservation.fenamMember.email;
+    if (newEmail != null) {
+      if (isPlaceholderEmail(currentEmail) || !currentEmail?.trim()) {
+        memberData.email = newEmail;
+      }
+    }
+
     if (Object.keys(memberData).length > 0) {
-      await prisma.fenamMember.update({
-        where: { id: reservation.fenamMemberId },
-        data: {
-          ...(memberData.firstName !== undefined && { firstName: memberData.firstName }),
-          ...(memberData.lastName !== undefined && { lastName: memberData.lastName }),
-          ...(memberData.phone !== undefined && { phone: memberData.phone }),
-        },
-      });
+      try {
+        await prisma.fenamMember.update({
+          where: { id: reservation.fenamMemberId },
+          data: {
+            ...(memberData.firstName !== undefined && { firstName: memberData.firstName }),
+            ...(memberData.lastName !== undefined && { lastName: memberData.lastName }),
+            ...(memberData.phone !== undefined && { phone: memberData.phone }),
+            ...(memberData.email !== undefined && { email: memberData.email }),
+          },
+        });
+      } catch (e: unknown) {
+        const code = e && typeof e === "object" && "code" in e ? (e as { code?: string }).code : null;
+        if (code === "P2002") {
+          return NextResponse.json(
+            { error: "EMAIL_ALREADY_IN_USE" },
+            { status: 409 }
+          );
+        }
+        throw e;
+      }
     }
 
     if (data.notes !== undefined) {

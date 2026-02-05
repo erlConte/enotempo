@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { getEventById } from "@/lib/events";
 import { captureOrder, getPayPalConfigStatus } from "@/lib/paypal";
 import { sendReservationConfirmation } from "@/lib/email";
-import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
+import { verifySessionToken, FENAM_SESSION_COOKIE, isPlaceholderEmail } from "@/lib/fenam-handoff";
 import { logger } from "@/lib/logger";
 
 function safePayPalLog(
@@ -214,17 +214,26 @@ export async function POST(req: NextRequest) {
     const toEmail = reservationForEmail?.fenamMember?.email ?? reservation.fenamMember.email;
     const notesForEmail = reservationForEmail?.notes ?? reservation.notes;
 
-    sendReservationConfirmation({
-      to: toEmail,
-      eventTitle,
-      eventDate,
-      confirmationCode,
-      notes: notesForEmail,
-    }).then((r) => {
-      if (!r.ok) {
-        logger.warn("Email conferma non inviata", { reservationId, error: r.error });
+    if (!toEmail || !toEmail.trim() || isPlaceholderEmail(toEmail)) {
+      if (process.env.NODE_ENV !== "test") {
+        logger.warn("Email conferma non inviata (destinatario non reale)", {
+          reservationId,
+          reason: "missing_real_email",
+        });
       }
-    });
+    } else {
+      sendReservationConfirmation({
+        to: toEmail,
+        eventTitle,
+        eventDate,
+        confirmationCode,
+        notes: notesForEmail,
+      }).then((r) => {
+        if (!r.ok) {
+          logger.warn("Email conferma non inviata", { reservationId, error: r.error });
+        }
+      });
+    }
 
     return NextResponse.json({
       ok: true,

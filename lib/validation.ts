@@ -42,11 +42,17 @@ export const reservationSchema = z.object({
 
 export type ReservationInput = z.infer<typeof reservationSchema>;
 
+/** Email opzionale per PATCH (stringa vuota = non inviata; se presente deve essere valida) */
+const optionalEmailSchema = z
+  .union([z.string().email("Invalid email format").max(255, "Email too long"), z.literal("")])
+  .optional();
+
 /** Schema per PATCH reservation (checkout: salva dati prima di capture) */
 export const patchReservationSchema = z.object({
   firstName: nameSchema.optional(),
   lastName: nameSchema.optional(),
   phone: z.string().max(50).optional(),
+  email: optionalEmailSchema,
   notes: z.string().max(1000, "Notes too long").optional().nullable(),
 });
 export type PatchReservationInput = z.infer<typeof patchReservationSchema>;

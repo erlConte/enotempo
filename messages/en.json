@@ -117,7 +117,12 @@
   "checkout": {
     "title": "Checkout",
     "paymentInfo": "Online payment required. 1 person = 1 reservation.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "emailRequiredHint": "To receive the confirmation, enter your email.",
+    "emailAlreadyInUse": "This email is already associated with another account. Contact support."
+  },
+  "conferma": {
+    "emailNotSent": "We could not send the confirmation email: check the address at checkout."
   },
   "reservations": {
     "title": "Reservation"
