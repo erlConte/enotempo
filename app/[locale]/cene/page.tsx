@@ -70,20 +70,22 @@ export default async function CenePage({
                 href={eventHref}
                 className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-borgogna focus-visible:ring-offset-2 rounded-2xl"
               >
-                <Card className="flex flex-col h-full bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group-hover:-translate-y-0.5">
+                <Card className="flex flex-col h-full bg-white border-0 shadow-md hover:shadow-2xl transition-all duration-500 rounded-2xl overflow-hidden group-hover:-translate-y-2 group-hover:scale-[1.02]">
                   {heroImage ? (
                     <div className="h-48 relative overflow-hidden">
                       <Image
                         src={heroImage}
                         alt={event.title}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
+                      {/* Overlay al hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     </div>
                   ) : (
-                    <div className="h-48 bg-gradient-to-br from-borgogna/20 via-crema/30 to-verde/20 flex items-center justify-center">
-                      <span className="text-4xl font-serif font-bold text-borgogna/40">
+                    <div className="h-48 bg-gradient-to-br from-borgogna/20 via-crema/30 to-verde/20 flex items-center justify-center group-hover:from-borgogna/30 group-hover:via-crema/40 group-hover:to-verde/30 transition-all duration-500">
+                      <span className="text-4xl font-serif font-bold text-borgogna/40 group-hover:text-borgogna/60 transition-colors duration-500">
                         {initials}
                       </span>
                     </div>
@@ -137,8 +139,9 @@ export default async function CenePage({
                   </CardContent>
 
                   <CardFooter className="pt-4">
-                    <span className="inline-flex items-center justify-center w-full rounded-xl py-3 text-borgogna font-semibold border-2 border-borgogna/30 group-hover:border-borgogna/60 group-hover:bg-borgogna/5 transition-colors">
+                    <span className="inline-flex items-center justify-center w-full rounded-xl py-3 text-borgogna font-semibold border-2 border-borgogna/30 group-hover:border-borgogna group-hover:bg-borgogna/10 transition-all duration-300 group-hover:shadow-md">
                       {t("details")}
+                      <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
                     </span>
                   </CardFooter>
                 </Card>

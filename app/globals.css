@@ -115,12 +115,71 @@
 
   /* Stili per booking container */
   .booking-container {
-    max-width: 80%;
-    margin: 20px auto;
+    max-width: 100%;
+    margin: 0 auto;
   }
 
   .booking-description {
-    display: none;
+    display: block;
+  }
+
+  /* Stili per menu gallery items */
+  .menu-gallery-item {
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .menu-gallery-item:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Miglioramenti per video container */
+  .video-container {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .video-container:hover {
+    transform: scale(1.02);
+  }
+
+  /* Animazioni per gallery items */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .gallery-item {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  /* Stili per pulsanti con effetti */
+  .btn-booking {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-booking::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .btn-booking:hover::before {
+    width: 300px;
+    height: 300px;
   }
 }
 

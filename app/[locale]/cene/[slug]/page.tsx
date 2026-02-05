@@ -10,8 +10,12 @@ import BookingGate from "@/components/events/BookingGate";
 import EventVideo from "@/components/events/EventVideo";
 import EventMenu from "@/components/events/EventMenu";
 import EventMap from "@/components/events/EventMap";
+import MenuGallery from "@/components/events/MenuGallery";
+import ImageLightbox from "@/components/events/ImageLightbox";
+import SeatsProgressBar from "@/components/events/SeatsProgressBar";
 import { hasValidSession, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 import type { Metadata } from "next";
+import { Clock, MapPin, Euro, Users, AlertCircle, CreditCard, MessageCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +26,13 @@ const GALLERY_COUNT = 9;
 const TULLPUKUNA_VIDEO_URL = "/events/tullpukuna/video.mp4";
 
 const TULLPUKUNA_WHATSAPP = "+39 327 449 4282";
+
+// Immagini del menu da Blob Storage (esempio - da sostituire con URL reali)
+// Queste possono essere caricate dinamicamente o configurate per evento
+const TULLPUKUNA_MENU_IMAGES: Array<{ src: string; name: string; alt?: string }> = [
+  // Esempio: aggiungi qui gli URL delle immagini del menu da Blob Storage
+  // { src: "https://...", name: "menu-1.jpg", alt: "Menu Tullpukuna" },
+];
 
 // Menu per Tullpukuna con abbinamenti vino separati
 const TULLPUKUNA_MENU = [
@@ -147,12 +158,34 @@ export async function generateMetadata({
   const metadata: Metadata = {
     title,
     description,
+    keywords: [
+      "enotempo",
+      "cena",
+      "evento",
+      "vino",
+      "cucina",
+      "prenotazione",
+      event.title.toLowerCase(),
+      formatDateShort(event.date, locale).toLowerCase(),
+    ].filter(Boolean).join(", "),
+    authors: [{ name: "ENOTEMPO" }],
     openGraph: {
+      type: "website",
       title,
       description,
       url: canonicalUrl,
       siteName: "ENOTEMPO",
-      images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: event.title }] : undefined,
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              width: 1200,
+              height: 630,
+              alt: event.title,
+              type: "image/jpeg",
+            },
+          ]
+        : undefined,
       locale: locale === "it" ? "it_IT" : locale === "en" ? "en_US" : "es_ES",
     },
     twitter: {
@@ -160,8 +193,21 @@ export async function generateMetadata({
       title,
       description,
       images: ogImage ? [ogImage] : undefined,
+      creator: "@enotempo",
+      site: "@enotempo",
     },
     alternates: { canonical: canonicalUrl },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
   };
 
   return metadata;
@@ -278,13 +324,13 @@ export default async function CenaDetailPage({
           <div className="flex flex-wrap items-center gap-4 md:gap-6 text-base md:text-lg text-marrone-scuro/80">
             {/* Data + ora */}
             <span className="flex items-center gap-2">
-              <span>📅</span>
+              <Clock className="w-5 h-5 text-borgogna" />
               <span>{formatDateWithTime(event.date, locale)}</span>
             </span>
 
             {/* Luogo */}
             <span className="flex items-center gap-2">
-              <span>📍</span>
+              <MapPin className="w-5 h-5 text-borgogna" />
               <span>
                 {event.locationName}
                 {event.locationAddress ? `, ${event.locationAddress}` : ""}
@@ -294,8 +340,16 @@ export default async function CenaDetailPage({
             {/* Prezzo */}
             {event.price != null && (
               <span className="flex items-center gap-2 font-semibold text-borgogna">
-                <span>💰</span>
+                <Euro className="w-5 h-5" />
                 <span>{event.price} €</span>
+              </span>
+            )}
+
+            {/* Posti disponibili */}
+            {event.remainingSeats > 0 && (
+              <span className="flex items-center gap-2 font-semibold text-borgogna">
+                <Users className="w-5 h-5" />
+                <span>{event.remainingSeats} posti disponibili</span>
               </span>
             )}
           </div>
@@ -320,25 +374,54 @@ export default async function CenaDetailPage({
         {/* 3) BLOCCO PRENOTAZIONE */}
         {event.remainingSeats > 0 && (
           <section>
-            <div className="bg-gradient-to-br from-white to-borgogna/5 border-2 border-borgogna/20 rounded-3xl p-6 md:p-10 shadow-xl booking-container">
-              <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna mb-4">
-                {t("reservation.title")}
-              </h2>
-              <p className="text-base md:text-lg text-marrone-scuro/90 mb-4 font-medium booking-description">
-                {getBookingCopy(locale)}
-              </p>
-              {isTullpukuna && (
-                <p className="text-sm md:text-base text-marrone-scuro/80 mb-6 rounded-xl bg-borgogna/5 p-3 border border-borgogna/10 booking-description">
-                  {getWhatsappCopy(locale)}
-                </p>
-              )}
-              <div className="mt-6">
-                <BookingGate
-                  hasIdentity={hasIdentity}
-                  eventSlug={slug}
-                  locale={locale}
-                  simple={true}
-                />
+            <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
+              {/* Pattern decorativo di sfondo */}
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0" style={{
+                  backgroundImage: "radial-gradient(circle at 2px 2px, #8B0000 1px, transparent 0)",
+                  backgroundSize: "40px 40px"
+                }} />
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-borgogna/10 rounded-lg">
+                    <CreditCard className="w-6 h-6 text-borgogna" />
+                  </div>
+                  <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna">
+                    {t("reservation.title")}
+                  </h2>
+                </div>
+                
+                {/* Barra progresso posti */}
+                <div className="mb-6">
+                  <SeatsProgressBar
+                    remainingSeats={event.remainingSeats}
+                    capacity={event.capacity}
+                  />
+                </div>
+
+                <div className="bg-white/80 rounded-xl p-4 md:p-6 mb-6 border border-borgogna/20">
+                  <p className="text-base md:text-lg text-marrone-scuro/90 mb-3 font-medium flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
+                    <span>{getBookingCopy(locale)}</span>
+                  </p>
+                  {isTullpukuna && (
+                    <p className="text-sm md:text-base text-marrone-scuro/80 flex items-start gap-2">
+                      <MessageCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
+                      <span>{getWhatsappCopy(locale)}</span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-6">
+                  <BookingGate
+                    hasIdentity={hasIdentity}
+                    eventSlug={slug}
+                    locale={locale}
+                    simple={true}
+                  />
+                </div>
               </div>
             </div>
           </section>
@@ -353,6 +436,16 @@ export default async function CenaDetailPage({
                 {getMenuTitle(locale)}
               </h2>
               <EventMenu items={menuItems} />
+              
+              {/* Galleria immagini menu (se disponibili) */}
+              {isTullpukuna && TULLPUKUNA_MENU_IMAGES.length > 0 && (
+                <div className="mt-10 pt-10 border-t border-borgogna/10">
+                  <MenuGallery
+                    images={TULLPUKUNA_MENU_IMAGES}
+                    title={locale === "es" ? "Imágenes del Menú" : locale === "en" ? "Menu Images" : "Immagini del Menu"}
+                  />
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -360,32 +453,41 @@ export default async function CenaDetailPage({
         {/* 5) REGOLE - Elenco breve */}
         <section>
           <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
               {tRegole("title")}
             </h2>
-            <ul className="space-y-4 text-marrone-scuro/90 text-base md:text-lg">
-              <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1 text-xl">•</span>
-                <span className="leading-relaxed">{tRegole("punctuality")}</span>
+            <ul className="space-y-5 text-marrone-scuro/90 text-base md:text-lg">
+              <li className="flex items-start gap-4 group">
+                <div className="p-2 bg-borgogna/10 rounded-lg group-hover:bg-borgogna/20 transition-colors shrink-0">
+                  <Clock className="w-5 h-5 text-borgogna" />
+                </div>
+                <span className="leading-relaxed pt-1">{tRegole("punctuality")}</span>
               </li>
-              <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1 text-xl">•</span>
-                <span className="leading-relaxed">{tRegole("allergies")}</span>
+              <li className="flex items-start gap-4 group">
+                <div className="p-2 bg-borgogna/10 rounded-lg group-hover:bg-borgogna/20 transition-colors shrink-0">
+                  <AlertCircle className="w-5 h-5 text-borgogna" />
+                </div>
+                <span className="leading-relaxed pt-1">{tRegole("allergies")}</span>
               </li>
-              <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1 text-xl">•</span>
-                <span className="leading-relaxed">{tRegole("extraPaid")}</span>
+              <li className="flex items-start gap-4 group">
+                <div className="p-2 bg-borgogna/10 rounded-lg group-hover:bg-borgogna/20 transition-colors shrink-0">
+                  <Euro className="w-5 h-5 text-borgogna" />
+                </div>
+                <span className="leading-relaxed pt-1">{tRegole("extraPaid")}</span>
               </li>
-              <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1 text-xl">•</span>
-                <span className="leading-relaxed">{tRegole("limitedSeats")}</span>
+              <li className="flex items-start gap-4 group">
+                <div className="p-2 bg-borgogna/10 rounded-lg group-hover:bg-borgogna/20 transition-colors shrink-0">
+                  <Users className="w-5 h-5 text-borgogna" />
+                </div>
+                <span className="leading-relaxed pt-1">{tRegole("limitedSeats")}</span>
               </li>
             </ul>
             <Link
               href={`/${locale}/regole`}
-              className="inline-block text-borgogna font-semibold hover:text-borgogna/80 hover:underline mt-6 transition-colors"
+              className="inline-flex items-center gap-2 text-borgogna font-semibold hover:text-borgogna/80 hover:underline mt-8 transition-colors group"
             >
-              {tRegole("readMore")} →
+              <span>{tRegole("readMore")}</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </section>
@@ -407,22 +509,34 @@ export default async function CenaDetailPage({
                   </div>
                 </div>
 
-                {/* Colonna destra: Gallery grid con hover effects migliorati */}
+                {/* Colonna destra: Gallery grid con hover effects migliorati e lightbox */}
                 <div className="w-full gallery-container">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 w-full">
                     {eventGallery.map((item, idx) => (
-                      <div
+                      <ImageLightbox
                         key={`${item.src}-${idx}`}
-                        className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5 shadow-md hover:shadow-xl transition-all duration-300 group gallery-item"
-                      >
-                        <Image
-                          src={item.src}
-                          alt={`${event.title} - ${item.name}`}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          sizes="(max-width: 768px) 50vw, 33vw"
-                        />
-                      </div>
+                        images={eventGallery.map(g => ({ src: g.src, name: g.name, alt: `${event.title} - ${g.name}` }))}
+                        initialIndex={idx}
+                        trigger={
+                          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5 shadow-md hover:shadow-2xl transition-all duration-300 group gallery-item cursor-pointer">
+                            <Image
+                              src={item.src}
+                              alt={`${event.title} - ${item.name}`}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-500"
+                              sizes="(max-width: 768px) 50vw, 33vw"
+                            />
+                            {/* Overlay al hover */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="bg-borgogna/90 text-white px-3 py-1.5 rounded-lg font-semibold text-xs">
+                                  Clicca per ingrandire
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      />
                     ))}
                   </div>
                 </div>
@@ -434,7 +548,7 @@ export default async function CenaDetailPage({
         {/* 7) MAPPA - in fondo, solo embed + link */}
         {event.locationAddress && (
           <section>
-            <div className="rounded-3xl overflow-hidden shadow-lg">
+            <div className="rounded-3xl overflow-hidden shadow-lg transition-all duration-500 hover:shadow-2xl">
               <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
             </div>
           </section>

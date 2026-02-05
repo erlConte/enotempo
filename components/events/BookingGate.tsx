@@ -28,8 +28,10 @@ export default function BookingGate({
       // Versione semplificata per pagina evento (senza Card)
       return (
         <Link href={`/${locale}/accedi-fenam?returnUrl=${encodeURIComponent(returnUrl)}`}>
-          <Button className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-base md:text-lg font-semibold shadow-md">
-            {t("cta")}
+          <Button className="w-full bg-gradient-to-r from-borgogna to-borgogna/90 text-bianco-caldo hover:from-borgogna/90 hover:to-borgogna rounded-xl py-6 text-base md:text-lg font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group">
+            <span className="relative z-10">{t("cta")}</span>
+            {/* Effetto shimmer al hover */}
+            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           </Button>
         </Link>
       );
@@ -45,8 +47,10 @@ export default function BookingGate({
         </CardHeader>
         <CardContent className="px-8 pb-8">
           <Link href={`/${locale}/accedi-fenam?returnUrl=${encodeURIComponent(returnUrl)}`}>
-            <Button className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-7 text-lg font-semibold shadow-md">
-              {t("cta")}
+            <Button className="w-full bg-gradient-to-r from-borgogna to-borgogna/90 text-bianco-caldo hover:from-borgogna/90 hover:to-borgogna rounded-xl py-7 text-lg font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group">
+              <span className="relative z-10">{t("cta")}</span>
+              {/* Effetto shimmer al hover */}
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </Button>
           </Link>
         </CardContent>
