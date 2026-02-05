@@ -16,36 +16,89 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 const TULLPUKUNA_SLUG = "cena-tullpukuna";
-const GALLERY_COUNT = 6;
-const VIDEO_PATH = "/events/tullpukuna/video.mp4";
+const GALLERY_COUNT = 9;
 
-// Menu per Tullpukuna (hardcoded per ora, da estendere in futuro con DB)
+// URL video per Cena a Tullpukuna (file in public/events/tullpukuna/)
+export const TULLPUKUNA_VIDEO_URL = "/events/tullpukuna/enotempo video.mp4";
+
+const TULLPUKUNA_WHATSAPP = "+39 327 449 4282";
+
+// Menu per Tullpukuna (uguale per tutte le lingue; cambia solo il titolo sezione)
 const TULLPUKUNA_MENU = [
   {
-    course: "Antipasto",
-    dish: "Ceviche di pesce con avocado e mais",
-    wine: "Selezione vini bianchi italiani",
+    course: "1)",
+    dish: "Cazuela de mariscos — San Severo Rosato DOP",
   },
   {
-    course: "Primo",
-    dish: "Causa rellena con pollo e olive",
-    wine: "Vini bianchi e rosati",
+    course: "2)",
+    dish: "Ceviche de camarones — Bombino IGP",
   },
   {
-    course: "Secondo",
-    dish: "Lomo saltado con riso e patate",
-    wine: "Vini rossi italiani e sudamericani",
+    course: "3)",
+    dish: "Adobado de cerdo — Nero di Troia IGP",
   },
   {
-    course: "Pre-dolce",
-    dish: "Formaggi andini con miele",
-    wine: "Vini da dessert",
+    course: "4)",
+    dish: "Bife Angus — Primitivo IGP",
   },
   {
-    course: "Dolce",
-    dish: "Suspiro a la limeña",
+    course: "5)",
+    dish: "Arroz con leche — San Severo Bianco DOP",
   },
 ];
+
+const TULLPUKUNA_DESCRIPTIONS: Record<"it" | "en" | "es", string> = {
+  es: `¡Hola!
+Nos da mucho gusto invitarle a una velada muy especial, concebida como una experiencia de encuentro, sabor y diálogo. Compartiremos mesa en un ambiente cálido y elegante, para realizar un recorrido por los sabores más representativos de la cocina sudamericana, cuidadosamente maridados con vinos italianos de gran calidad.
+El menú ha sido diseñado y creado especialmente para la ocasión por nuestro chef, quien ha pensado cada plato como una experiencia sensorial que une tradición, creatividad y armonía.
+Será una noche dedicada al gusto, a la conversación y al encuentro entre la riqueza gastronómica de Sudamérica y la elegancia del vino italiano.
+Será un verdadero honor contar con su presencia y compartir juntos esta experiencia que, estoy seguro, permanecerá en la memoria y en el corazón.
+Con estima,`,
+  it: `Ciao!
+Siamo lieti di invitarLa a una serata davvero speciale, concepita come un’esperienza di incontro, gusto e dialogo. Condivideremo la tavola in un ambiente caldo ed elegante, per intraprendere un viaggio attraverso i sapori più rappresentativi della cucina sudamericana, accuratamente abbinati a vini italiani di grande qualità.
+Il menù è stato ideato e preparato appositamente per l’occasione dal nostro chef, che ha pensato ogni piatto come un’esperienza sensoriale capace di unire tradizione, creatività e armonia.
+Sarà una serata dedicata al gusto, alla conversazione e all’incontro tra la ricchezza gastronomica del Sud America e l’eleganza del vino italiano.
+Sarà un vero onore poterLa avere con noi e condividere insieme questa esperienza che, ne siamo certi, rimarrà nella memoria e nel cuore.
+Con stima,`,
+  en: `Hello!
+We are delighted to invite you to a truly special evening, designed as an experience of encounter, taste and conversation. We will share the table in a warm and elegant atmosphere, travelling through some of the most representative flavours of South American cuisine, carefully paired with high‑quality Italian wines.
+The menu has been created especially for this occasion by our chef, who has conceived each course as a sensory journey that brings together tradition, creativity and harmony.
+It will be a night dedicated to flavour, dialogue and the meeting between the richness of South American gastronomy and the elegance of Italian wine.
+It would be an honour to welcome you and share with you an experience that, we are sure, will remain in both memory and heart.
+With esteem,`,
+};
+
+function getTullpukunaDescription(locale: string): string {
+  if (locale === "es") return TULLPUKUNA_DESCRIPTIONS.es;
+  if (locale === "en") return TULLPUKUNA_DESCRIPTIONS.en;
+  return TULLPUKUNA_DESCRIPTIONS.it;
+}
+
+function getMenuTitle(locale: string): string {
+  if (locale === "es") return "Menú";
+  if (locale === "en") return "Menu";
+  return "Menu";
+}
+
+function getBookingCopy(locale: string): string {
+  if (locale === "es") {
+    return "Pago en línea obligatorio. La reserva se considera confirmada solo después del pago.";
+  }
+  if (locale === "en") {
+    return "Online payment required. Your reservation is confirmed only once payment has been completed.";
+  }
+  return "Pagamento online obbligatorio. Prenotazione confermata solo dopo il pagamento.";
+}
+
+function getWhatsappCopy(locale: string): string {
+  if (locale === "es") {
+    return `Para cualquier información sobre disponibilidad y detalles de la velada, puedes escribirnos por WhatsApp al ${TULLPUKUNA_WHATSAPP}.`;
+  }
+  if (locale === "en") {
+    return `For any information about availability or details of the evening, you can write to us on WhatsApp at ${TULLPUKUNA_WHATSAPP}.`;
+  }
+  return `Per informazioni su disponibilità e dettagli della serata, puoi scriverci su WhatsApp al ${TULLPUKUNA_WHATSAPP}.`;
+}
 
 function buildBaseUrl(): string {
   const site = process.env.NEXT_PUBLIC_SITE_URL;
@@ -161,6 +214,9 @@ export default async function CenaDetailPage({
   const heroImage = event.image ?? (eventGallery[0]?.src ?? null);
   const videoPoster = eventGallery[0]?.src ?? null;
   const menuItems = isTullpukuna ? TULLPUKUNA_MENU : [];
+  const description = isTullpukuna
+    ? getTullpukunaDescription(locale)
+    : event.description ?? event.subtitle ?? "";
 
   return (
     <div className="min-h-screen bg-bianco-caldo">
@@ -245,28 +301,36 @@ export default async function CenaDetailPage({
       <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-16 md:space-y-20">
         {/* 2) BLOCCO PRENOTAZIONE */}
         {event.remainingSeats > 0 && (
-              <section className="space-y-4">
-                <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
-                  <p className="text-sm md:text-base text-marrone-scuro/80 mb-6">
-                    PRENOTAZIONE 
-                  </p>
-                  <BookingGate
-                    hasIdentity={hasIdentity}
-                    eventSlug={slug}
-                    locale={locale}
-                    simple={true}
-                  />
-                </div>
-              </section>
-            )}
+          <section className="space-y-4">
+            <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
+              <p className="text-sm md:text-base text-marrone-scuro/80 mb-3">
+                {t("reservation.title")}
+              </p>
+              <p className="text-sm md:text-base text-marrone-scuro/90 mb-3">
+                {getBookingCopy(locale)}
+              </p>
+              {isTullpukuna && (
+                <p className="text-xs md:text-sm text-marrone-scuro/80 mb-6">
+                  {getWhatsappCopy(locale)}
+                </p>
+              )}
+              <BookingGate
+                hasIdentity={hasIdentity}
+                eventSlug={slug}
+                locale={locale}
+                simple={true}
+              />
+            </div>
+          </section>
+        )}
 
          
           {/* 3) DESCRIZIONE */}
-          {(event.description ?? event.subtitle) && (
+          {description && (
             <section>
               <div className="prose prose-lg max-w-none">
                 <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
-                  {event.description ?? event.subtitle ?? ""}
+                  {description}
                 </p>
               </div>
             </section>
@@ -277,7 +341,7 @@ export default async function CenaDetailPage({
           {menuItems.length > 0 && (
             <section>
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
-                Menu
+                {getMenuTitle(locale)}
               </h2>
               <EventMenu items={menuItems} />
             </section>
@@ -322,7 +386,7 @@ export default async function CenaDetailPage({
                 <div className="w-full h-full min-h-full">
                   <div className="h-full">
                     <EventVideo
-                      src={VIDEO_PATH}
+                      src={TULLPUKUNA_VIDEO_URL}
                       poster={videoPoster ?? undefined}
                       alt={event.title}
                       vertical={true}

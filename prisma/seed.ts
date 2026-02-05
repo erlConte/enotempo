@@ -25,12 +25,16 @@ async function main() {
   const eventPayload = {
     slug: "cena-tullpukuna",
     title: "Cena a Tullpukuna",
-    subtitle: "Cucina andina contemporanea e vini in abbinamento",
+    subtitle: "Cucina sudamericana e vini italiani",
     date: eventDate,
-    locationName: "Tullpukuna",
+    locationName: "Ristorante Tullpukuna",
     locationAddress: "Piazza Dante 5, Roma",
-    description:
-      "Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.\n\nEsperienza conviviale con cucina andina contemporanea, vini in abbinamento e atmosfera unica. Posti limitati.",
+    description: `Ciao!
+Siamo lieti di invitarLa a una serata davvero speciale, concepita come un'esperienza di incontro, gusto e dialogo. Condivideremo la tavola in un ambiente caldo ed elegante, per intraprendere un viaggio attraverso i sapori più rappresentativi della cucina sudamericana, accuratamente abbinati a vini italiani di grande qualità.
+Il menù è stato ideato e preparato appositamente per l'occasione dal nostro chef, che ha pensato ogni piatto come un'esperienza sensoriale capace di unire tradizione, creatività e armonia.
+Sarà una serata dedicata al gusto, alla conversazione e all'incontro tra la ricchezza gastronomica del Sud America e l'eleganza del vino italiano.
+Sarà un vero onore poterLa avere con noi e condividere insieme questa esperienza che, ne siamo certi, rimarrà nella memoria e nel cuore.
+Con stima,`,
     capacity: 30,
     priceCents: 7000,
     status: "published",
