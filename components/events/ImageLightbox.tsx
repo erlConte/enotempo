@@ -27,15 +27,19 @@ export default function ImageLightbox({
   const [open, setOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
+  // Assicuriamoci che images sia sempre un array valido
+  const validImages = images && images.length > 0 ? images : [];
+  const imagesLength = validImages.length;
+
   // Gestione navigazione da tastiera
   useEffect(() => {
-    if (!open) return;
+    if (!open || imagesLength === 0) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" && currentIndex > 0) {
         e.preventDefault();
         setCurrentIndex((prev) => prev - 1);
-      } else if (e.key === "ArrowRight" && currentIndex < images.length - 1) {
+      } else if (e.key === "ArrowRight" && currentIndex < imagesLength - 1) {
         e.preventDefault();
         setCurrentIndex((prev) => prev + 1);
       } else if (e.key === "Escape") {
@@ -45,14 +49,12 @@ export default function ImageLightbox({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, currentIndex, images.length]);
+  }, [open, currentIndex, imagesLength]);
 
-  // Return condizionale DOPO tutti gli hooks
-  if (!images || images.length === 0) return null;
-
-  const currentImage = images[currentIndex];
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < images.length - 1;
+  // Calcoli per il rendering - sempre eseguiti dopo gli hooks
+  const currentImage = imagesLength > 0 ? validImages[currentIndex] : null;
+  const hasPrevious = currentIndex > 0 && imagesLength > 0;
+  const hasNext = currentIndex < imagesLength - 1 && imagesLength > 0;
 
   const goToPrevious = () => {
     if (hasPrevious) {
@@ -73,62 +75,69 @@ export default function ImageLightbox({
     }
   };
 
+  // Render senza return condizionale - gestiamo il caso vuoto nel JSX
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent
-        className="max-w-7xl w-full h-[95vh] p-0 bg-black/95 border-none overflow-hidden"
-      >
-        <div className="relative w-full h-full flex items-center justify-center">
-          {/* Immagine principale */}
-          <div className="relative w-full h-full flex items-center justify-center">
-            <Image
-              src={currentImage.src}
-              alt={currentImage.alt || currentImage.name || "Gallery image"}
-              fill
-              className="object-contain"
-              sizes="100vw"
-              priority
-            />
-          </div>
-
-          {/* Pulsante chiudi */}
-          <button
-            onClick={() => setOpen(false)}
-            className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
-            aria-label="Chiudi"
+    <>
+      {imagesLength === 0 || !currentImage ? (
+        <>{trigger}</>
+      ) : (
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+          <DialogTrigger asChild>{trigger}</DialogTrigger>
+          <DialogContent
+            className="max-w-7xl w-full h-[95vh] p-0 bg-black/95 border-none overflow-hidden"
           >
-            <X className="w-6 h-6" />
-          </button>
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Immagine principale */}
+              <div className="relative w-full h-full flex items-center justify-center">
+                <Image
+                  src={currentImage.src}
+                  alt={currentImage.alt || currentImage.name || "Gallery image"}
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                  priority
+                />
+              </div>
 
-          {/* Navigazione precedente */}
-          {hasPrevious && (
-            <button
-              onClick={goToPrevious}
-              className="absolute left-4 z-50 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
-              aria-label="Immagine precedente"
-            >
-              <ChevronLeft className="w-8 h-8" />
-            </button>
-          )}
+              {/* Pulsante chiudi */}
+              <button
+                onClick={() => setOpen(false)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                aria-label="Chiudi"
+              >
+                <X className="w-6 h-6" />
+              </button>
 
-          {/* Navigazione successiva */}
-          {hasNext && (
-            <button
-              onClick={goToNext}
-              className="absolute right-4 z-50 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
-              aria-label="Immagine successiva"
-            >
-              <ChevronRight className="w-8 h-8" />
-            </button>
-          )}
+              {/* Navigazione precedente */}
+              {hasPrevious && (
+                <button
+                  onClick={goToPrevious}
+                  className="absolute left-4 z-50 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                  aria-label="Immagine precedente"
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </button>
+              )}
 
-          {/* Indicatore posizione */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-black/50 text-white text-sm">
-            {currentIndex + 1} / {images.length}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+              {/* Navigazione successiva */}
+              {hasNext && (
+                <button
+                  onClick={goToNext}
+                  className="absolute right-4 z-50 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                  aria-label="Immagine successiva"
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </button>
+              )}
+
+              {/* Indicatore posizione */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-black/50 text-white text-sm">
+                {currentIndex + 1} / {imagesLength}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
