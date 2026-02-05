@@ -27,11 +27,16 @@ const TULLPUKUNA_VIDEO_URL = "/events/tullpukuna/video.mp4";
 
 const TULLPUKUNA_WHATSAPP = "+39 327 449 4282";
 
-// Immagini del menu da Blob Storage (esempio - da sostituire con URL reali)
-// Queste possono essere caricate dinamicamente o configurate per evento
+// Immagini del menu per Tullpukuna
+// Le immagini devono essere caricate nella cartella: public/events/tullpukuna/menu/
+// Nome file suggerito: menu-1.jpg, menu-2.jpg, menu-3.jpg, ecc.
+// Dopo aver caricato le immagini, aggiorna questo array con i path corretti
 const TULLPUKUNA_MENU_IMAGES: Array<{ src: string; name: string; alt?: string }> = [
-  // Esempio: aggiungi qui gli URL delle immagini del menu da Blob Storage
-  // { src: "https://...", name: "menu-1.jpg", alt: "Menu Tullpukuna" },
+  // TODO: Aggiungi qui i path delle immagini del menu dopo averle caricate
+  // Esempio di path (da decommentare e aggiornare dopo il caricamento):
+  // { src: "/events/tullpukuna/menu/menu-1.jpg", name: "menu-1.jpg", alt: "Menu Tullpukuna - Antipasti" },
+  // { src: "/events/tullpukuna/menu/menu-2.jpg", name: "menu-2.jpg", alt: "Menu Tullpukuna - Primi" },
+  // { src: "/events/tullpukuna/menu/menu-3.jpg", name: "menu-3.jpg", alt: "Menu Tullpukuna - Secondi" },
 ];
 
 // Menu per Tullpukuna con abbinamenti vino separati

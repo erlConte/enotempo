@@ -27,6 +27,27 @@ export default function ImageLightbox({
   const [open, setOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
+  // Gestione navigazione da tastiera
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" && currentIndex > 0) {
+        e.preventDefault();
+        setCurrentIndex((prev) => prev - 1);
+      } else if (e.key === "ArrowRight" && currentIndex < images.length - 1) {
+        e.preventDefault();
+        setCurrentIndex((prev) => prev + 1);
+      } else if (e.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, currentIndex, images.length]);
+
+  // Return condizionale DOPO tutti gli hooks
   if (!images || images.length === 0) return null;
 
   const currentImage = images[currentIndex];
@@ -51,26 +72,6 @@ export default function ImageLightbox({
       setCurrentIndex(initialIndex);
     }
   };
-
-  // Gestione navigazione da tastiera
-  useEffect(() => {
-    if (!open) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" && currentIndex > 0) {
-        e.preventDefault();
-        setCurrentIndex((prev) => prev - 1);
-      } else if (e.key === "ArrowRight" && currentIndex < images.length - 1) {
-        e.preventDefault();
-        setCurrentIndex((prev) => prev + 1);
-      } else if (e.key === "Escape") {
-        setOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, currentIndex, images.length]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
