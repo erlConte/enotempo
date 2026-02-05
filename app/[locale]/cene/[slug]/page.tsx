@@ -359,7 +359,6 @@ export default async function CenaDetailPage({
               <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
             </section>
           )}
-        </div>
       </div>
     </div>
   );
