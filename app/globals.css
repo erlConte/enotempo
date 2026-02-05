@@ -181,5 +181,44 @@
     width: 300px;
     height: 300px;
   }
+
+  /* Layout a due colonne per prenotazione e video */
+  .reservation-video-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .reservation-section {
+    flex: 1;
+  }
+
+  .video-section {
+    flex: 1;
+    max-width: 100%;
+  }
+
+  .video-section .video-container {
+    width: 100%;
+    height: auto;
+  }
+
+  .video-section video {
+    width: 100%;
+    height: auto;
+  }
+
+  /* Layout desktop: due colonne affiancate */
+  @media (min-width: 768px) {
+    .reservation-video-container {
+      flex-direction: row;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .video-section {
+      max-width: 600px;
+    }
+  }
 }
 

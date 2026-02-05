@@ -365,69 +365,87 @@ export default async function CenaDetailPage({
         {/* 2) DESCRIZIONE - Prima di tutto */}
         {description && (
           <section>
-            <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
-              <div className="prose prose-lg max-w-none">
-                <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg lg:text-xl whitespace-pre-line font-light">
-                  {description}
-                </p>
-              </div>
+            <div className="prose prose-lg max-w-none">
+              <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg lg:text-xl whitespace-pre-line font-light">
+                {description}
+              </p>
             </div>
           </section>
         )}
 
-        {/* 3) BLOCCO PRENOTAZIONE */}
+        {/* 3) BLOCCO PRENOTAZIONE E VIDEO - Layout a due colonne per desktop */}
         {event.remainingSeats > 0 && (
-          <section>
-            <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
-              {/* Pattern decorativo di sfondo */}
-              <div className="absolute inset-0 opacity-5">
-                <div className="absolute inset-0" style={{
-                  backgroundImage: "radial-gradient(circle at 2px 2px, #8B0000 1px, transparent 0)",
-                  backgroundSize: "40px 40px"
-                }} />
-              </div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-borgogna/10 rounded-lg">
-                    <CreditCard className="w-6 h-6 text-borgogna" />
-                  </div>
-                  <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna">
-                    {t("reservation.title")}
-                  </h2>
+          <section className="reservation-video-container">
+            <div className="reservation-section flex-1">
+              <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
+                {/* Pattern decorativo di sfondo */}
+                <div className="absolute inset-0 opacity-5">
+                  <div className="absolute inset-0" style={{
+                    backgroundImage: "radial-gradient(circle at 2px 2px, #8B0000 1px, transparent 0)",
+                    backgroundSize: "40px 40px"
+                  }} />
                 </div>
                 
-                {/* Barra progresso posti */}
-                <div className="mb-6">
-                  <SeatsProgressBar
-                    remainingSeats={event.remainingSeats}
-                    capacity={event.capacity}
-                  />
-                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-borgogna/10 rounded-lg">
+                      <CreditCard className="w-6 h-6 text-borgogna" />
+                    </div>
+                    <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna">
+                      {t("reservation.title")}
+                    </h2>
+                  </div>
+                  
+                  {/* Barra progresso posti */}
+                  <div className="mb-6">
+                    <SeatsProgressBar
+                      remainingSeats={event.remainingSeats}
+                      capacity={event.capacity}
+                    />
+                  </div>
 
-                <div className="bg-white/80 rounded-xl p-4 md:p-6 mb-6 border border-borgogna/20">
-                  <p className="text-base md:text-lg text-marrone-scuro/90 mb-3 font-medium flex items-start gap-2">
-                    <AlertCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
-                    <span>{getBookingCopy(locale)}</span>
-                  </p>
-                  {isTullpukuna && (
-                    <p className="text-sm md:text-base text-marrone-scuro/80 flex items-start gap-2">
-                      <MessageCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
-                      <span>{getWhatsappCopy(locale)}</span>
+                  <div className="bg-white/80 rounded-xl p-4 md:p-6 mb-6 border border-borgogna/20">
+                    <p className="text-base md:text-lg text-marrone-scuro/90 mb-3 font-medium flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
+                      <span>{getBookingCopy(locale)}</span>
                     </p>
-                  )}
-                </div>
+                    {isTullpukuna && (
+                      <p className="text-sm md:text-base text-marrone-scuro/80 flex items-start gap-2">
+                        <MessageCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
+                        <span>{getWhatsappCopy(locale)}</span>
+                      </p>
+                    )}
+                  </div>
 
-                <div className="mt-6">
-                  <BookingGate
-                    hasIdentity={hasIdentity}
-                    eventSlug={slug}
-                    locale={locale}
-                    simple={true}
-                  />
+                  <div className="mt-6">
+                    <BookingGate
+                      hasIdentity={hasIdentity}
+                      eventSlug={slug}
+                      locale={locale}
+                      simple={true}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+            
+            {/* Video Section - Solo per Tullpukuna */}
+            {isTullpukuna && eventGallery.length > 0 && (
+              <div className="video-section flex-1 max-w-full md:max-w-[600px]">
+                <div className="video-container aspect-[9/16] w-full max-h-[80vh] rounded-xl overflow-hidden bg-marrone-scuro/10 shadow-lg">
+                  <video 
+                    width="100%" 
+                    height="auto" 
+                    controls
+                    className="w-full h-full object-contain"
+                    poster={videoPoster ?? undefined}
+                  >
+                    <source src={TULLPUKUNA_VIDEO_URL} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+            )}
           </section>
         )}
             
@@ -435,22 +453,20 @@ export default async function CenaDetailPage({
         {/* 4) MENU - Sezione dedicata */}
         {menuItems.length > 0 && (
           <section>
-            <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
-                {getMenuTitle(locale)}
-              </h2>
-              <EventMenu items={menuItems} />
-              
-              {/* Galleria immagini menu (se disponibili) */}
-              {isTullpukuna && TULLPUKUNA_MENU_IMAGES.length > 0 && (
-                <div className="mt-10 pt-10 border-t border-borgogna/10">
-                  <MenuGallery
-                    images={TULLPUKUNA_MENU_IMAGES}
-                    title={locale === "es" ? "Imágenes del Menú" : locale === "en" ? "Menu Images" : "Immagini del Menu"}
-                  />
-                </div>
-              )}
-            </div>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
+              {getMenuTitle(locale)}
+            </h2>
+            <EventMenu items={menuItems} />
+            
+            {/* Galleria immagini menu (se disponibili) */}
+            {isTullpukuna && TULLPUKUNA_MENU_IMAGES.length > 0 && (
+              <div className="mt-10 pt-10 border-t border-borgogna/10">
+                <MenuGallery
+                  images={TULLPUKUNA_MENU_IMAGES}
+                  title={locale === "es" ? "Imágenes del Menú" : locale === "en" ? "Menu Images" : "Immagini del Menu"}
+                />
+              </div>
+            )}
           </section>
         )}
 
@@ -496,58 +512,37 @@ export default async function CenaDetailPage({
           </div>
         </section>
 
-        {/* 6) MEDIA (Video + Gallery) - Solo per Tullpukuna */}
+        {/* 6) GALLERY - Solo per Tullpukuna */}
         {isTullpukuna && eventGallery.length > 0 && (
           <section>
-            <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 lg:gap-10 items-end">
-                {/* Colonna sinistra: Video verticale 9:16 (ridotta larghezza e altezza per allineamento con immagini) */}
-                <div className="flex items-end justify-center lg:justify-start">
-                  <div className="video-container aspect-[9/16] w-full max-h-[80vh] rounded-xl overflow-hidden bg-marrone-scuro/10 shadow-lg">
-                    <video 
-                      width="100%" 
-                      height="auto" 
-                      controls
-                      className="w-full h-full object-contain"
-                      poster={videoPoster ?? undefined}
-                    >
-                      <source src={TULLPUKUNA_VIDEO_URL} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                </div>
-
-                {/* Colonna destra: Gallery grid con hover effects migliorati e lightbox */}
-                <div className="w-full gallery-container">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 w-full">
-                    {eventGallery.map((item, idx) => (
-                      <ImageLightbox
-                        key={`${item.src}-${idx}`}
-                        images={eventGallery.map(g => ({ src: g.src, name: g.name, alt: `${event.title} - ${g.name}` }))}
-                        initialIndex={idx}
-                        trigger={
-                          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5 shadow-md hover:shadow-2xl transition-all duration-300 group gallery-item cursor-pointer">
-                            <Image
-                              src={item.src}
-                              alt={`${event.title} - ${item.name}`}
-                              fill
-                              className="object-cover group-hover:scale-110 transition-transform duration-500"
-                              sizes="(max-width: 768px) 50vw, 33vw"
-                            />
-                            {/* Overlay al hover */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div className="bg-borgogna/90 text-white px-3 py-1.5 rounded-lg font-semibold text-xs">
-                                  Clicca per ingrandire
-                                </div>
-                              </div>
+            <div className="w-full gallery-container">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 w-full">
+                {eventGallery.map((item, idx) => (
+                  <ImageLightbox
+                    key={`${item.src}-${idx}`}
+                    images={eventGallery.map(g => ({ src: g.src, name: g.name, alt: `${event.title} - ${g.name}` }))}
+                    initialIndex={idx}
+                    trigger={
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5 shadow-md hover:shadow-2xl transition-all duration-300 group gallery-item cursor-pointer">
+                        <Image
+                          src={item.src}
+                          alt={`${event.title} - ${item.name}`}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                        />
+                        {/* Overlay al hover */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="bg-borgogna/90 text-white px-3 py-1.5 rounded-lg font-semibold text-xs">
+                              Clicca per ingrandire
                             </div>
                           </div>
-                        }
-                      />
-                    ))}
-                  </div>
-                </div>
+                        </div>
+                      </div>
+                    }
+                  />
+                ))}
               </div>
             </div>
           </section>
