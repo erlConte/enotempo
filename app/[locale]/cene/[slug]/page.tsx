@@ -12,6 +12,7 @@ import EventMap from "@/components/events/EventMap";
 import MenuGallery from "@/components/events/MenuGallery";
 import ImageLightbox from "@/components/events/ImageLightbox";
 import SeatsProgressBar from "@/components/events/SeatsProgressBar";
+import VideoWithModal from "@/components/events/VideoWithModal";
 import { hasValidSession, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 import type { Metadata } from "next";
 import { Clock, MapPin, Euro, Users, AlertCircle, CreditCard, MessageCircle } from "lucide-react";
@@ -431,20 +432,10 @@ export default async function CenaDetailPage({
             
             {/* Video Section - Solo per Tullpukuna */}
             {isTullpukuna && eventGallery.length > 0 && (
-              <div className="video-section flex-1 max-w-full md:max-w-[600px]">
-                <div className="video-container aspect-[9/16] w-full max-h-[80vh] rounded-xl overflow-hidden bg-marrone-scuro/10 shadow-lg">
-                  <video 
-                    width="100%" 
-                    height="auto" 
-                    controls
-                    className="w-full h-full object-contain"
-                    poster={videoPoster ?? undefined}
-                  >
-                    <source src={TULLPUKUNA_VIDEO_URL} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              </div>
+              <VideoWithModal
+                videoUrl={TULLPUKUNA_VIDEO_URL}
+                poster={videoPoster ?? undefined}
+              />
             )}
           </section>
         )}
