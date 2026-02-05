@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { getEventBySlug } from "@/lib/events";
 import { getGallerySlice, getFilledGallery } from "@/lib/gallery";
 import BookingGate from "@/components/events/BookingGate";
-import EventVideo from "@/components/events/EventVideo";
 import EventMenu from "@/components/events/EventMenu";
 import EventMap from "@/components/events/EventMap";
 import MenuGallery from "@/components/events/MenuGallery";
@@ -22,8 +21,8 @@ export const dynamic = "force-dynamic";
 const TULLPUKUNA_SLUG = "cena-tullpukuna";
 const GALLERY_COUNT = 9;
 
-// URL video per Cena a Tullpukuna (file in public/events/tullpukuna/)
-const TULLPUKUNA_VIDEO_URL = "/events/tullpukuna/video.mp4";
+// URL video per Cena a Tullpukuna (Supabase Storage)
+const TULLPUKUNA_VIDEO_URL = "https://qxuhqfbetljqqcvfsrls.supabase.co/storage/v1/object/sign/media/enotempo%20video.mp4?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8xMDZmZjRmZS04ZGEyLTQ1YjEtYWM0MC1mYmIwYjM1NTc5ZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtZWRpYS9lbm90ZW1wbyB2aWRlby5tcDQiLCJpYXQiOjE3NzAzMDUwMjcsImV4cCI6MzMzMDYzMDUwMjd9.rkj9MZVDLusJF3775oeoDuZred3ZbVGVrzAzehWAQbQ";
 
 const TULLPUKUNA_WHATSAPP = "+39 327 449 4282";
 
@@ -504,13 +503,17 @@ export default async function CenaDetailPage({
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 lg:gap-10 items-end">
                 {/* Colonna sinistra: Video verticale 9:16 (ridotta larghezza e altezza per allineamento con immagini) */}
                 <div className="flex items-end justify-center lg:justify-start">
-                  <div className="video-container">
-                    <EventVideo
-                      src={TULLPUKUNA_VIDEO_URL}
+                  <div className="video-container aspect-[9/16] w-full max-h-[80vh] rounded-xl overflow-hidden bg-marrone-scuro/10 shadow-lg">
+                    <video 
+                      width="100%" 
+                      height="auto" 
+                      controls
+                      className="w-full h-full object-contain"
                       poster={videoPoster ?? undefined}
-                      alt={event.title}
-                      vertical={true}
-                    />
+                    >
+                      <source src={TULLPUKUNA_VIDEO_URL} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
                 </div>
 
