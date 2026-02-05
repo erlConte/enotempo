@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,6 @@ interface CheckoutGateProps {
 export default function CheckoutGate({ eventSlug }: CheckoutGateProps) {
   const t = useTranslations("events.reservation");
   const tRegole = useTranslations("regole");
-  const tCheckout = useTranslations("checkout");
   const locale = useLocale();
   const [formData, setFormData] = useState({
     rulesAccepted: false,
@@ -79,16 +78,8 @@ export default function CheckoutGate({ eventSlug }: CheckoutGateProps) {
 
   return (
     <Card className="w-full max-w-xl mx-auto border-0 shadow-lg rounded-2xl bg-white">
-      <CardHeader className="pb-4 pt-6 px-6 md:px-8">
-        <CardTitle className="text-2xl md:text-3xl font-serif text-borgogna">
-          {t("title")}
-        </CardTitle>
-        <p className="text-sm text-marrone-scuro/70 mt-1">
-          {tCheckout("paymentInfo")}
-        </p>
-      </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-5 px-6 md:px-8 pb-6">
+        <CardContent className="space-y-6 px-8 md:px-10 py-8 md:py-10">
           {error && (
             <Alert variant="destructive" className="rounded-xl">
               <AlertDescription>{error}</AlertDescription>
