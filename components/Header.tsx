@@ -31,9 +31,9 @@ const LanguageSwitcher = ({
 
   const current = languages.find((l) => l.code === locale) ?? languages[0];
 
-  // Chiudi dropdown quando si clicca fuori
+  // Chiudi dropdown quando si clicca fuori (supporta sia mouse che touch)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
@@ -42,12 +42,23 @@ const LanguageSwitcher = ({
       }
     };
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
     if (open) {
+      // Supporta sia mouse che touch events per mobile
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [open]);
 

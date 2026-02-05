@@ -137,7 +137,7 @@ export async function generateMetadata({
   const event = await getEventBySlug(slug);
   if (!event) return { title: "Cena" };
 
-  const title = `${event.title} — ${formatDateShort(event.date, "it")} ${formatTime(event.date)}`;
+  const title = `${event.title} — ${formatDateShort(event.date, locale)} ${formatTime(event.date)}`;
   const description = [
     event.title,
     formatDateShort(event.date, locale),
