@@ -298,136 +298,100 @@ export default async function CenaDetailPage({
       </section>
 
       {/* Container centrale per tutto il contenuto */}
-      <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-16 md:space-y-20">
-        {/* 2) BLOCCO PRENOTAZIONE + DESCRIZIONE con Video a sinistra (solo Tullpukuna) */}
-        {isTullpukuna && event.remainingSeats > 0 ? (
+      <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-12 md:space-y-16">
+        {/* 2) DESCRIZIONE - Prima di tutto */}
+        {description && (
           <section>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-              {/* Colonna sinistra: Video verticale 9:16 */}
-              <div className="w-full order-2 lg:order-1">
-                <EventVideo
-                  src={TULLPUKUNA_VIDEO_URL}
-                  poster={videoPoster ?? undefined}
-                  alt={event.title}
-                  vertical={true}
-                />
-              </div>
-
-              {/* Colonna destra: Prenotazione + Descrizione */}
-              <div className="w-full space-y-6 order-1 lg:order-2">
-                {/* Blocco Prenotazione */}
-                <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
-                  <p className="text-sm md:text-base text-marrone-scuro/80 mb-3">
-                    {t("reservation.title")}
-                  </p>
-                  <p className="text-sm md:text-base text-marrone-scuro/90 mb-3">
-                    {getBookingCopy(locale)}
-                  </p>
-                  <p className="text-xs md:text-sm text-marrone-scuro/80 mb-6">
-                    {getWhatsappCopy(locale)}
-                  </p>
-                  <BookingGate
-                    hasIdentity={hasIdentity}
-                    eventSlug={slug}
-                    locale={locale}
-                    simple={true}
-                  />
-                </div>
-
-                {/* Descrizione */}
-                {description && (
-                  <div className="prose prose-lg max-w-none">
-                    <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
-                      {description}
-                    </p>
-                  </div>
-                )}
+            <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
+              <div className="prose prose-lg max-w-none">
+                <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg lg:text-xl whitespace-pre-line font-light">
+                  {description}
+                </p>
               </div>
             </div>
           </section>
-        ) : (
-          <>
-            {/* Blocco Prenotazione standard (non Tullpukuna) */}
-            {event.remainingSeats > 0 && (
-              <section className="space-y-4">
-                <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
-                  <p className="text-sm md:text-base text-marrone-scuro/80 mb-3">
-                    {t("reservation.title")}
-                  </p>
-                  <p className="text-sm md:text-base text-marrone-scuro/90 mb-3">
-                    {getBookingCopy(locale)}
-                  </p>
-                  <BookingGate
-                    hasIdentity={hasIdentity}
-                    eventSlug={slug}
-                    locale={locale}
-                    simple={true}
-                  />
-                </div>
-              </section>
-            )}
+        )}
 
-            {/* Descrizione standard (non Tullpukuna) */}
-            {description && (
-              <section>
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
-                    {description}
-                  </p>
-                </div>
-              </section>
-            )}
-          </>
+        {/* 3) BLOCCO PRENOTAZIONE */}
+        {event.remainingSeats > 0 && (
+          <section>
+            <div className="bg-gradient-to-br from-white to-borgogna/5 border-2 border-borgogna/20 rounded-3xl p-6 md:p-10 shadow-xl">
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna mb-4">
+                {t("reservation.title")}
+              </h2>
+              <p className="text-base md:text-lg text-marrone-scuro/90 mb-4 font-medium">
+                {getBookingCopy(locale)}
+              </p>
+              {isTullpukuna && (
+                <p className="text-sm md:text-base text-marrone-scuro/80 mb-6 rounded-xl bg-borgogna/5 p-3 border border-borgogna/10">
+                  {getWhatsappCopy(locale)}
+                </p>
+              )}
+              <div className="mt-6">
+                <BookingGate
+                  hasIdentity={hasIdentity}
+                  eventSlug={slug}
+                  locale={locale}
+                  simple={true}
+                />
+              </div>
+            </div>
+          </section>
         )}
             
 
-          {/* 4) MENU - Sezione dedicata */}
-          {menuItems.length > 0 && (
-            <section>
+        {/* 4) MENU - Sezione dedicata */}
+        {menuItems.length > 0 && (
+          <section>
+            <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-8">
                 {getMenuTitle(locale)}
               </h2>
               <EventMenu items={menuItems} />
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-          {/* 5) REGOLE - Elenco breve, senza box */}
-          <section>
+        {/* 5) REGOLE - Elenco breve */}
+        <section>
+          <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
               {tRegole("title")}
             </h2>
-            <ul className="space-y-3 text-marrone-scuro/90 text-base md:text-lg">
+            <ul className="space-y-4 text-marrone-scuro/90 text-base md:text-lg">
               <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1">•</span>
-                <span>{tRegole("punctuality")}</span>
+                <span className="text-borgogna mt-1 text-xl">•</span>
+                <span className="leading-relaxed">{tRegole("punctuality")}</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1">•</span>
-                <span>{tRegole("allergies")}</span>
+                <span className="text-borgogna mt-1 text-xl">•</span>
+                <span className="leading-relaxed">{tRegole("allergies")}</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1">•</span>
-                <span>{tRegole("extraPaid")}</span>
+                <span className="text-borgogna mt-1 text-xl">•</span>
+                <span className="leading-relaxed">{tRegole("extraPaid")}</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-borgogna mt-1">•</span>
-                <span>{tRegole("limitedSeats")}</span>
+                <span className="text-borgogna mt-1 text-xl">•</span>
+                <span className="leading-relaxed">{tRegole("limitedSeats")}</span>
               </li>
             </ul>
             <Link
               href={`/${locale}/regole`}
-              className="inline-block text-borgogna font-medium hover:underline mt-4"
+              className="inline-block text-borgogna font-semibold hover:text-borgogna/80 hover:underline mt-6 transition-colors"
             >
               {tRegole("readMore")} →
             </Link>
-          </section>
+          </div>
+        </section>
 
-          {/* 6) MEDIA (Video + Gallery) - Solo per Tullpukuna */}
-          {isTullpukuna && eventGallery.length > 0 && (
-            <section>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
-                {/* Colonna sinistra: Video verticale 9:16 */}
-                <div className="w-full">
+        {/* 6) MEDIA (Video + Gallery) - Solo per Tullpukuna */}
+        {isTullpukuna && eventGallery.length > 0 && (
+          <section>
+            <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 lg:gap-10 items-start">
+                {/* Colonna sinistra: Video verticale 9:16 (ridotta larghezza) */}
+                <div className="w-full max-w-sm mx-auto lg:mx-0">
                   <EventVideo
                     src={TULLPUKUNA_VIDEO_URL}
                     poster={videoPoster ?? undefined}
@@ -436,19 +400,19 @@ export default async function CenaDetailPage({
                   />
                 </div>
 
-                {/* Colonna destra: Gallery grid senza spazi vuoti */}
+                {/* Colonna destra: Gallery grid senza spazi vuoti (più spazio) */}
                 <div className="w-full">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
                     {eventGallery.map((item, idx) => (
                       <div
                         key={`${item.src}-${idx}`}
-                        className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
+                        className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5 shadow-md hover:shadow-xl transition-all duration-300 group"
                       >
                         <Image
                           src={item.src}
                           alt={`${event.title} - ${item.name}`}
                           fill
-                          className="object-cover hover:scale-105 transition-transform duration-300"
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
                           sizes="(max-width: 768px) 50vw, 33vw"
                         />
                       </div>
@@ -456,15 +420,18 @@ export default async function CenaDetailPage({
                   </div>
                 </div>
               </div>
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-          {/* 7) MAPPA - in fondo, solo embed + link */}
-          {event.locationAddress && (
-            <section>
+        {/* 7) MAPPA - in fondo, solo embed + link */}
+        {event.locationAddress && (
+          <section>
+            <div className="rounded-3xl overflow-hidden shadow-lg">
               <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
-            </section>
-          )}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

@@ -35,77 +35,108 @@ export default function PayPalButton({ reservationId, onSuccess, onError, before
       return;
     }
 
+    // Se PayPal è già caricato e il container ha già pulsanti, non ricaricare
     if (window.paypal && containerRef.current?.children.length) {
       setLoading(false);
       return;
+    }
+
+    // Rimuovi eventuali script PayPal esistenti prima di crearne uno nuovo
+    const existingScript = document.querySelector('script[src*="paypal.com/sdk"]');
+    if (existingScript) {
+      existingScript.remove();
     }
 
     const script = document.createElement("script");
     script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture`;
     script.async = true;
     script.onload = () => {
-      if (!window.paypal || !containerRef.current) {
+      if (!window.paypal) {
+        setScriptError("PayPal SDK non disponibile dopo il caricamento");
         setLoading(false);
         return;
       }
-      window.paypal
-        .Buttons({
-          createOrder: async () => {
-            if (beforeCreateOrder) {
-              try {
-                await beforeCreateOrder();
-              } catch (e) {
-                const msg = e instanceof Error ? e.message : "Salvataggio dati fallito";
-                onError?.(msg);
-                throw new Error(msg);
+      if (!containerRef.current) {
+        setLoading(false);
+        return;
+      }
+
+      // Pulisci il container prima di renderizzare
+      containerRef.current.innerHTML = "";
+
+      try {
+        window.paypal
+          .Buttons({
+            createOrder: async () => {
+              if (beforeCreateOrder) {
+                try {
+                  await beforeCreateOrder();
+                } catch (e) {
+                  const msg = e instanceof Error ? e.message : "Salvataggio dati fallito";
+                  onError?.(msg);
+                  throw new Error(msg);
+                }
               }
-            }
-            const res = await fetch("/api/payments/paypal/create-order", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ reservationId }),
-            });
-            const data = (await res.json()) as { orderId?: string; error?: string };
-            if (res.status === 503 && data.error === "PAYPAL_NOT_CONFIGURED") {
-              onError?.("Pagamento non disponibile. Riprova più tardi.");
-              throw new Error("PAYPAL_NOT_CONFIGURED");
-            }
-            if (!res.ok || !data.orderId) {
-              throw new Error(data.error ?? "Errore creazione ordine");
-            }
-            return data.orderId;
-          },
-          onApprove: async (data: { orderID: string }) => {
-            const res = await fetch("/api/payments/paypal/capture", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ reservationId, orderId: data.orderID }),
-            });
-            const result = (await res.json()) as { ok?: boolean; error?: string };
-            if (res.status === 409 && result.error === "SOLD_OUT") {
-              onError?.("Evento esaurito. Non ci sono più posti disponibili.");
-              return;
-            }
-            if (res.status === 503 && result.error === "PAYPAL_NOT_CONFIGURED") {
-              onError?.("Pagamento non disponibile. Riprova più tardi.");
-              return;
-            }
-            if (!res.ok || !result.ok) {
-              onError?.(result.error ?? "Pagamento non completato");
-              return;
-            }
-            onSuccess();
-          },
-          style: { layout: "vertical", color: "gold" },
-        })
-        .render(containerRef.current)
-        .catch(() => setScriptError("Impossibile caricare il pulsante PayPal"))
-        .finally(() => setLoading(false));
+              const res = await fetch("/api/payments/paypal/create-order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ reservationId }),
+              });
+              const data = (await res.json()) as { orderId?: string; error?: string };
+              if (res.status === 503 && data.error === "PAYPAL_NOT_CONFIGURED") {
+                onError?.("Pagamento non disponibile. Riprova più tardi.");
+                throw new Error("PAYPAL_NOT_CONFIGURED");
+              }
+              if (!res.ok || !data.orderId) {
+                throw new Error(data.error ?? "Errore creazione ordine");
+              }
+              return data.orderId;
+            },
+            onApprove: async (data: { orderID: string }) => {
+              const res = await fetch("/api/payments/paypal/capture", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ reservationId, orderId: data.orderID }),
+              });
+              const result = (await res.json()) as { ok?: boolean; error?: string };
+              if (res.status === 409 && result.error === "SOLD_OUT") {
+                onError?.("Evento esaurito. Non ci sono più posti disponibili.");
+                return;
+              }
+              if (res.status === 503 && result.error === "PAYPAL_NOT_CONFIGURED") {
+                onError?.("Pagamento non disponibile. Riprova più tardi.");
+                return;
+              }
+              if (!res.ok || !result.ok) {
+                onError?.(result.error ?? "Pagamento non completato");
+                return;
+              }
+              onSuccess();
+            },
+            onError: (err: unknown) => {
+              const msg = err instanceof Error ? err.message : "Errore PayPal";
+              setScriptError(`Errore PayPal: ${msg}`);
+              onError?.(msg);
+            },
+            style: { layout: "vertical", color: "gold" },
+          })
+          .render(containerRef.current)
+          .catch((err: unknown) => {
+            const msg = err instanceof Error ? err.message : "Errore sconosciuto";
+            setScriptError(`Impossibile caricare il pulsante PayPal: ${msg}`);
+            onError?.(msg);
+          })
+          .finally(() => setLoading(false));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Errore inizializzazione PayPal";
+        setScriptError(msg);
+        setLoading(false);
+      }
     };
     script.onerror = () => {
-      setScriptError("Impossibile caricare PayPal");
+      setScriptError("Impossibile caricare lo script PayPal. Verifica la connessione.");
       setLoading(false);
     };
     document.body.appendChild(script);
