@@ -12,7 +12,7 @@ import { getEventById } from "@/lib/events";
 import { createOrder, getPayPalConfigStatus } from "@/lib/paypal";
 import { verifySessionToken, FENAM_SESSION_COOKIE } from "@/lib/fenam-handoff";
 
-const DEFAULT_EVENT_PRICE_EUR = "75.00"; // Cena Tullpukuna
+const DEFAULT_EVENT_PRICE_EUR = "70.00"; // Cena Tullpukuna
 
 function safePayPalLog(
   stage: "create-order" | "capture",

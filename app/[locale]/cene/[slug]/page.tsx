@@ -314,67 +314,51 @@ export default async function CenaDetailPage({
             </Link>
           </section>
 
-          {/* 6) MAPPA - Embed Google Maps */}
-          {event.locationAddress && (
+          {/* 6) MEDIA (Video + Gallery) */}
+          {isTullpukuna && (
             <section>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
-                Dove
-              </h2>
-              <div className="space-y-4">
-                <p className="text-marrone-scuro/90 text-base md:text-lg">
-                  {event.locationName}, {event.locationAddress}
-                </p>
-                <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+                {/* Colonna sinistra: Video verticale 9:16, full width */}
+                <div className="w-full">
+                  <EventVideo
+                    src={VIDEO_PATH}
+                    poster={videoPoster ?? undefined}
+                    alt={event.title}
+                    vertical={true}
+                  />
+                </div>
+
+                {/* Colonna destra: Gallery che riempie la colonna */}
+                {eventGallery.length > 0 && (
+                  <div className="w-full">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                      {eventGallery.map((item) => (
+                        <div
+                          key={item.src}
+                          className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
+                        >
+                          <Image
+                            src={item.src}
+                            alt={`${event.title} - ${item.name}`}
+                            fill
+                            className="object-cover hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           )}
 
-
-
-          {/* Grid desktop 2 colonne (Video sinistra, Prenotazione+Descrizione destra); mobile stack verticale */}
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 lg:gap-12 items-start">
-            {/* Colonna sinistra: Video (9:16, max-width controllata) */}
-            {isTullpukuna && (
-              <section className="w-full max-w-sm lg:max-w-md">
-                <EventVideo
-                  src={VIDEO_PATH}
-                  poster={videoPoster ?? undefined}
-                  alt={event.title}
-                  vertical={true}
-                />
-              </section>
-            )}
-
-            {/* Colonna destra */}
-            {/* 8) GALLERY - Griglia immagini finale */}
-            {isTullpukuna && eventGallery.length > 0 && (
-              <section>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                  {eventGallery.map((item) => (
-                    <div
-                      key={item.src}
-                      className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
-                    >
-                      <Image
-                        src={item.src}
-                        alt={`${event.title} - ${item.name}`}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {/* 6) MAPPA - Embed Google Maps */}
-            {event.locationAddress && (
-              <section>
-                <div className="space-y-4">
-                  <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
-                </div>
-              </section>
-            )}
+          {/* 7) MAPPA - in fondo, solo embed + link */}
+          {event.locationAddress && (
+            <section>
+              <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
+            </section>
+          )}
         </div>
       </div>
     </div>

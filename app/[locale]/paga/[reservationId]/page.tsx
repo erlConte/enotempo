@@ -98,7 +98,7 @@ export default async function PagaPage({
     : "";
 
   const amount =
-    event.priceCents != null ? (event.priceCents / 100).toFixed(2) : "75.00";
+    event.priceCents != null ? (event.priceCents / 100).toFixed(2) : "70.00";
 
   const paypalStatus = getPayPalConfigStatus();
   const member = reservation.fenamMember;

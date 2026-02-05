@@ -14,7 +14,7 @@ interface EventVideoProps {
 export default function EventVideo({ src, poster, alt, vertical = false }: EventVideoProps) {
   const [failed, setFailed] = useState(false);
 
-  const aspectClass = vertical ? "aspect-[9/16] max-w-md mx-auto" : "aspect-video";
+  const aspectClass = vertical ? "aspect-[9/16] w-full" : "aspect-video";
 
   if (failed) {
     return (

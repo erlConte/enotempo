@@ -28,7 +28,7 @@ VALUES (
   'Piazza Dante 5, Roma',
   'Pagamento online obbligatorio prima della conferma. 1 persona = 1 prenotazione.' || E'\n\n' || 'Esperienza conviviale con cucina andina contemporanea, vini in abbinamento e atmosfera unica. Posti limitati.',
   30,
-  7500,
+  7000,
   'published',
   NOW()
 )
