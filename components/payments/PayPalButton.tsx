@@ -68,57 +68,77 @@ export default function PayPalButton({ reservationId, onSuccess, onError, before
         window.paypal
           .Buttons({
             createOrder: async () => {
-              if (beforeCreateOrder) {
-                try {
-                  await beforeCreateOrder();
-                } catch (e) {
-                  const msg = e instanceof Error ? e.message : "Salvataggio dati fallito";
-                  onError?.(msg);
-                  throw new Error(msg);
+              try {
+                if (beforeCreateOrder) {
+                  try {
+                    await beforeCreateOrder();
+                  } catch (e) {
+                    const msg = e instanceof Error ? e.message : "Salvataggio dati fallito";
+                    setScriptError(msg);
+                    onError?.(msg);
+                    throw new Error(msg);
+                  }
                 }
+                const res = await fetch("/api/payments/paypal/create-order", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ reservationId }),
+                });
+                const data = (await res.json()) as { orderId?: string; error?: string };
+                if (res.status === 503 && data.error === "PAYPAL_NOT_CONFIGURED") {
+                  const errorMsg = "Pagamento non disponibile. Riprova più tardi.";
+                  setScriptError(errorMsg);
+                  onError?.(errorMsg);
+                  throw new Error("PAYPAL_NOT_CONFIGURED");
+                }
+                if (!res.ok || !data.orderId) {
+                  const errorMsg = data.error ?? "Errore creazione ordine";
+                  setScriptError(errorMsg);
+                  onError?.(errorMsg);
+                  throw new Error(errorMsg);
+                }
+                return data.orderId;
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : "Errore creazione ordine PayPal";
+                setScriptError(msg);
+                onError?.(msg);
+                throw err;
               }
-              const res = await fetch("/api/payments/paypal/create-order", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ reservationId }),
-              });
-              const data = (await res.json()) as { orderId?: string; error?: string };
-              if (res.status === 503 && data.error === "PAYPAL_NOT_CONFIGURED") {
-                onError?.("Pagamento non disponibile. Riprova più tardi.");
-                throw new Error("PAYPAL_NOT_CONFIGURED");
-              }
-              if (!res.ok || !data.orderId) {
-                throw new Error(data.error ?? "Errore creazione ordine");
-              }
-              return data.orderId;
             },
             onApprove: async (data: { orderID: string }) => {
-              const res = await fetch("/api/payments/paypal/capture", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ reservationId, orderId: data.orderID }),
-              });
-              const result = (await res.json()) as { ok?: boolean; error?: string };
-              if (res.status === 409 && result.error === "SOLD_OUT") {
-                onError?.("Evento esaurito. Non ci sono più posti disponibili.");
-                return;
+              try {
+                const res = await fetch("/api/payments/paypal/capture", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ reservationId, orderId: data.orderID }),
+                });
+                const result = (await res.json()) as { ok?: boolean; error?: string };
+                if (res.status === 409 && result.error === "SOLD_OUT") {
+                  const errorMsg = "Evento esaurito. Non ci sono più posti disponibili.";
+                  setScriptError(errorMsg);
+                  onError?.(errorMsg);
+                  return;
+                }
+                if (res.status === 503 && result.error === "PAYPAL_NOT_CONFIGURED") {
+                  const errorMsg = "Pagamento non disponibile. Riprova più tardi.";
+                  setScriptError(errorMsg);
+                  onError?.(errorMsg);
+                  return;
+                }
+                if (!res.ok || !result.ok) {
+                  const errorMsg = result.error ?? "Pagamento non completato";
+                  setScriptError(errorMsg);
+                  onError?.(errorMsg);
+                  return;
+                }
+                onSuccess();
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : "Errore durante il pagamento";
+                setScriptError(msg);
+                onError?.(msg);
               }
-              if (res.status === 503 && result.error === "PAYPAL_NOT_CONFIGURED") {
-                onError?.("Pagamento non disponibile. Riprova più tardi.");
-                return;
-              }
-              if (!res.ok || !result.ok) {
-                onError?.(result.error ?? "Pagamento non completato");
-                return;
-              }
-              onSuccess();
-            },
-            onError: (err: unknown) => {
-              const msg = err instanceof Error ? err.message : "Errore PayPal";
-              setScriptError(`Errore PayPal: ${msg}`);
-              onError?.(msg);
             },
             style: { layout: "vertical", color: "gold" },
           })
