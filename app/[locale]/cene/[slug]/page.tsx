@@ -23,27 +23,32 @@ const TULLPUKUNA_VIDEO_URL = "/events/tullpukuna/video.mp4";
 
 const TULLPUKUNA_WHATSAPP = "+39 327 449 4282";
 
-// Menu per Tullpukuna (uguale per tutte le lingue; cambia solo il titolo sezione)
+// Menu per Tullpukuna con abbinamenti vino separati
 const TULLPUKUNA_MENU = [
   {
     course: "1)",
-    dish: "Cazuela de mariscos — San Severo Rosato DOP",
+    dish: "Cazuela de mariscos",
+    wine: "San Severo Rosato DOP",
   },
   {
     course: "2)",
-    dish: "Ceviche de camarones — Bombino IGP",
+    dish: "Ceviche de camarones",
+    wine: "Bombino IGP",
   },
   {
     course: "3)",
-    dish: "Adobado de cerdo — Nero di Troia IGP",
+    dish: "Adobado de cerdo",
+    wine: "Nero di Troia IGP",
   },
   {
     course: "4)",
-    dish: "Bife Angus — Primitivo IGP",
+    dish: "Bife Angus",
+    wine: "Primitivo IGP",
   },
   {
     course: "5)",
-    dish: "Arroz con leche — San Severo Bianco DOP",
+    dish: "Arroz con leche",
+    wine: "San Severo Bianco DOP",
   },
 ];
 
@@ -389,24 +394,26 @@ export default async function CenaDetailPage({
         {isTullpukuna && eventGallery.length > 0 && (
           <section>
             <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 lg:gap-10 items-start">
-                {/* Colonna sinistra: Video verticale 9:16 (ridotta larghezza) */}
-                <div className="w-full max-w-sm mx-auto lg:mx-0">
-                  <EventVideo
-                    src={TULLPUKUNA_VIDEO_URL}
-                    poster={videoPoster ?? undefined}
-                    alt={event.title}
-                    vertical={true}
-                  />
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 lg:gap-10 items-end">
+                {/* Colonna sinistra: Video verticale 9:16 (ridotta larghezza e altezza per allineamento con immagini) */}
+                <div className="w-full max-w-sm mx-auto lg:mx-0 flex items-end">
+                  <div className="w-full video-container">
+                    <EventVideo
+                      src={TULLPUKUNA_VIDEO_URL}
+                      poster={videoPoster ?? undefined}
+                      alt={event.title}
+                      vertical={true}
+                    />
+                  </div>
                 </div>
 
-                {/* Colonna destra: Gallery grid senza spazi vuoti (più spazio) */}
-                <div className="w-full">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
+                {/* Colonna destra: Gallery grid con hover effects migliorati */}
+                <div className="w-full gallery-container">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 w-full">
                     {eventGallery.map((item, idx) => (
                       <div
                         key={`${item.src}-${idx}`}
-                        className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5 shadow-md hover:shadow-xl transition-all duration-300 group"
+                        className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-marrone-scuro/5 shadow-md hover:shadow-xl transition-all duration-300 group gallery-item"
                       >
                         <Image
                           src={item.src}

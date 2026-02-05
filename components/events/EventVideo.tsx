@@ -14,7 +14,8 @@ interface EventVideoProps {
 export default function EventVideo({ src, poster, alt, vertical = false }: EventVideoProps) {
   const [failed, setFailed] = useState(false);
 
-  const aspectClass = vertical ? "aspect-[9/16] w-full" : "aspect-video";
+  // Per video verticale, usa altezza ridotta per allinearsi con le immagini
+  const aspectClass = vertical ? "aspect-[9/16] w-full max-h-[80vh]" : "aspect-video";
 
   if (failed) {
     return (
@@ -38,12 +39,13 @@ export default function EventVideo({ src, poster, alt, vertical = false }: Event
   }
 
   return (
-    <div className={`relative ${aspectClass} rounded-xl overflow-hidden bg-marrone-scuro/10`}>
+    <div className={`relative ${aspectClass} rounded-xl overflow-hidden bg-marrone-scuro/10 video-container`}>
       <video
         controls
         preload="metadata"
         playsInline
-        className="w-full h-full object-contain"
+        className={`w-full ${vertical ? "h-auto max-h-[80vh] object-contain" : "h-full object-contain"}`}
+        style={vertical ? { height: "auto", maxHeight: "80vh" } : undefined}
         poster={poster ?? undefined}
         src={src}
         onError={() => setFailed(true)}
