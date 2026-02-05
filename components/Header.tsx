@@ -53,30 +53,32 @@ const LanguageSwitcher = ({
 
   if (variant === "mobile") {
     return (
-      <div className="relative w-full">
+      <div className="relative w-full" ref={dropdownRef}>
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between rounded-full border border-borgogna px-4 py-2 text-sm font-semibold text-borgogna hover:bg-borgogna hover:text-bianco-caldo transition-colors"
+          className="flex w-full items-center justify-between rounded-full border border-borgogna px-4 py-3 text-base font-semibold text-borgogna hover:bg-borgogna hover:text-bianco-caldo transition-colors"
+          aria-label="Seleziona lingua"
+          aria-expanded={open}
         >
           <span>{current.label}</span>
           <ChevronDown
-            className={cn("h-4 w-4 transition-transform", open && "rotate-180")}
+            className={cn("h-5 w-5 transition-transform duration-200", open && "rotate-180")}
           />
         </button>
 
         {open && (
-          <div className="absolute left-0 right-0 mt-2 w-full rounded-xl border border-marrone-scuro/10 bg-white shadow-lg z-50">
+          <div className="absolute left-0 right-0 mt-2 w-full rounded-xl border border-marrone-scuro/10 bg-white shadow-xl z-[60] overflow-hidden">
             {languages.map((lang) => (
               <Link
                 key={lang.code}
                 href={`/${lang.code}${pathWithoutLocale}`}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "block w-full px-4 py-2.5 text-left text-sm transition-colors",
+                  "block w-full px-4 py-3 text-left text-base transition-colors",
                   lang.code === locale
-                    ? "bg-borgogna/5 font-semibold text-borgogna"
-                    : "text-marrone-scuro/80 hover:bg-bianco-caldo"
+                    ? "bg-borgogna/10 font-semibold text-borgogna"
+                    : "text-marrone-scuro/80 hover:bg-bianco-caldo hover:text-borgogna"
                 )}
               >
                 {lang.label}
@@ -94,26 +96,28 @@ const LanguageSwitcher = ({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 rounded-full border border-borgogna px-3 py-1.5 text-xs font-semibold text-borgogna hover:bg-borgogna hover:text-bianco-caldo transition-colors whitespace-nowrap"
+        className="flex items-center gap-1.5 rounded-full border border-borgogna px-4 py-2 text-sm font-semibold text-borgogna hover:bg-borgogna hover:text-bianco-caldo transition-colors whitespace-nowrap"
+        aria-label="Seleziona lingua"
+        aria-expanded={open}
       >
         {current.label}
         <ChevronDown
-          className={cn("h-3 w-3 transition-transform", open && "rotate-180")}
+          className={cn("h-4 w-4 transition-transform duration-200", open && "rotate-180")}
         />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-28 rounded-xl border border-marrone-scuro/10 bg-white shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-32 rounded-xl border border-marrone-scuro/10 bg-white shadow-xl z-[60] overflow-hidden">
           {languages.map((lang) => (
             <Link
               key={lang.code}
               href={`/${lang.code}${pathWithoutLocale}`}
               onClick={() => setOpen(false)}
               className={cn(
-                "block w-full px-3 py-2 text-left text-xs transition-colors",
+                "block w-full px-4 py-2.5 text-left text-sm transition-colors",
                 lang.code === locale
-                  ? "bg-borgogna/5 font-semibold text-borgogna"
-                  : "text-marrone-scuro/80 hover:bg-bianco-caldo"
+                  ? "bg-borgogna/10 font-semibold text-borgogna"
+                  : "text-marrone-scuro/80 hover:bg-bianco-caldo hover:text-borgogna"
               )}
             >
               {lang.label}
@@ -179,7 +183,7 @@ export default function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 md:gap-4 shrink-0 min-w-0">
             <div className="hidden lg:block">
               <LanguageSwitcher variant="desktop" />
             </div>
@@ -187,7 +191,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => setIsOpen((v) => !v)}
-              className="inline-flex items-center justify-center rounded-full border border-marrone-scuro/20 p-2 text-marrone-scuro hover:bg-bianco-caldo/70 lg:hidden transition-colors"
+              className="inline-flex items-center justify-center rounded-full border border-marrone-scuro/20 p-2 text-marrone-scuro hover:bg-bianco-caldo/70 lg:hidden transition-colors shrink-0"
               aria-label="Toggle navigation"
             >
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -212,7 +216,7 @@ export default function Header() {
           isOpen ? "translate-y-0" : "-translate-y-3 pointer-events-none opacity-0"
         )}
       >
-        <nav className="flex flex-col gap-1 px-4 py-4 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto">
+        <nav className="flex flex-col gap-1 px-4 py-4 pb-6 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -224,7 +228,7 @@ export default function Header() {
             </Link>
           ))}
 
-          <div className="mt-4">
+          <div className="mt-6 pt-4 border-t border-marrone-scuro/10">
             <LanguageSwitcher variant="mobile" />
           </div>
         </nav>
