@@ -64,38 +64,36 @@
 @layer components {
   /* Stili per video container - allineamento con immagini */
   .video-container {
-    height: auto;
-    max-width: 100%;
+    width: 90%;
+    height: 80%;
     margin-bottom: 0;
   }
 
-  .video-container video {
+  .video-container video,
+  .video-container iframe {
     width: 100%;
-    height: auto;
-    max-height: 80vh;
-    object-fit: contain;
+    height: 100%;
   }
 
   /* Stili per menu elegante con wine pairing */
   .menu-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: 12px;
+    padding: 10px;
   }
 
   .menu-item {
     display: flex;
     justify-content: space-between;
-    margin: 1rem 0;
-    font-family: var(--font-serif), serif;
-    font-size: 1rem;
-    color: hsl(var(--foreground));
+    font-size: 18px;
+    font-family: 'Garamond', 'Cormorant Garamond', serif;
+    color: #4A4A4A;
   }
 
   .wine-pairing {
-    font-weight: 600;
-    color: #581D27; /* borgogna */
-    font-style: italic;
+    font-weight: bold;
+    color: #8B0000;
   }
 
   /* Stili per gallery container */
@@ -112,7 +110,17 @@
 
   .gallery-item:hover {
     transform: scale(1.05);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Stili per booking container */
+  .booking-container {
+    max-width: 80%;
+    margin: 20px auto;
+  }
+
+  .booking-description {
+    display: none;
   }
 }
 

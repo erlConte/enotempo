@@ -39,13 +39,12 @@ export default function EventVideo({ src, poster, alt, vertical = false }: Event
   }
 
   return (
-    <div className={`relative ${aspectClass} rounded-xl overflow-hidden bg-marrone-scuro/10 video-container`}>
+    <div className={`relative rounded-xl overflow-hidden bg-marrone-scuro/10 video-container`}>
       <video
         controls
         preload="metadata"
         playsInline
-        className={`w-full ${vertical ? "h-auto max-h-[80vh] object-contain" : "h-full object-contain"}`}
-        style={vertical ? { height: "auto", maxHeight: "80vh" } : undefined}
+        className="w-full h-full object-contain"
         poster={poster ?? undefined}
         src={src}
         onError={() => setFailed(true)}

@@ -320,15 +320,15 @@ export default async function CenaDetailPage({
         {/* 3) BLOCCO PRENOTAZIONE */}
         {event.remainingSeats > 0 && (
           <section>
-            <div className="bg-gradient-to-br from-white to-borgogna/5 border-2 border-borgogna/20 rounded-3xl p-6 md:p-10 shadow-xl">
+            <div className="bg-gradient-to-br from-white to-borgogna/5 border-2 border-borgogna/20 rounded-3xl p-6 md:p-10 shadow-xl booking-container">
               <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna mb-4">
                 {t("reservation.title")}
               </h2>
-              <p className="text-base md:text-lg text-marrone-scuro/90 mb-4 font-medium">
+              <p className="text-base md:text-lg text-marrone-scuro/90 mb-4 font-medium booking-description">
                 {getBookingCopy(locale)}
               </p>
               {isTullpukuna && (
-                <p className="text-sm md:text-base text-marrone-scuro/80 mb-6 rounded-xl bg-borgogna/5 p-3 border border-borgogna/10">
+                <p className="text-sm md:text-base text-marrone-scuro/80 mb-6 rounded-xl bg-borgogna/5 p-3 border border-borgogna/10 booking-description">
                   {getWhatsappCopy(locale)}
                 </p>
               )}
@@ -396,8 +396,8 @@ export default async function CenaDetailPage({
             <div className="bg-white/90 border border-borgogna/10 rounded-3xl p-6 md:p-10 shadow-lg">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 lg:gap-10 items-end">
                 {/* Colonna sinistra: Video verticale 9:16 (ridotta larghezza e altezza per allineamento con immagini) */}
-                <div className="w-full max-w-sm mx-auto lg:mx-0 flex items-end">
-                  <div className="w-full video-container">
+                <div className="flex items-end justify-center lg:justify-start">
+                  <div className="video-container">
                     <EventVideo
                       src={TULLPUKUNA_VIDEO_URL}
                       poster={videoPoster ?? undefined}
