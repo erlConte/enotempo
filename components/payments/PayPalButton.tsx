@@ -114,11 +114,11 @@ export default function PayPalButton({ reservationId, onSuccess, onError, before
                   credentials: "include",
                   body: JSON.stringify({ reservationId, orderId: data.orderID }),
                 });
-                const result = (await res.json()) as { ok?: boolean; error?: string };
+                type CaptureResponse = { ok?: boolean; error?: string; message?: string };
+                const result = (await res.json()) as CaptureResponse;
                 if (res.status === 409 && result.error === "SOLD_OUT") {
                   // Messaggio più dettagliato se il pagamento è stato processato
-                  const errorMsg = result.message || "Spiacenti, l'evento è stato esaurito durante il pagamento. " +
-                    "Se il pagamento è stato completato, contatta il supporto per il rimborso.";
+                  const errorMsg = result.message ?? "Spiacenti, l'evento è stato esaurito durante il pagamento. Se il pagamento è stato completato, contatta il supporto per il rimborso.";
                   setScriptError(errorMsg);
                   onError?.(errorMsg);
                   return;
