@@ -35,10 +35,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# assets pesanti - non committare per evitare problemi con deploy Vercel
-/public/gallery/
-/public/events/
-/public/branding/
 
 # cartelle locali immagini (fuori repo) - aggiungi qui il path della tua cartella locale
 /_assets/

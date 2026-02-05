@@ -5,7 +5,7 @@ import Image from "next/image";
 import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
 import { getEventBySlug } from "@/lib/events";
-import { getGallerySlice } from "@/lib/gallery";
+import { getGallerySlice, getFilledGallery } from "@/lib/gallery";
 import BookingGate from "@/components/events/BookingGate";
 import EventVideo from "@/components/events/EventVideo";
 import EventMenu from "@/components/events/EventMenu";
@@ -210,7 +210,7 @@ export default async function CenaDetailPage({
   }
 
   const isTullpukuna = slug === TULLPUKUNA_SLUG;
-  const eventGallery = isTullpukuna ? getGallerySlice(GALLERY_COUNT) : [];
+  const eventGallery = isTullpukuna ? getFilledGallery(GALLERY_COUNT) : [];
   const heroImage = event.image ?? (eventGallery[0]?.src ?? null);
   const videoPoster = eventGallery[0]?.src ?? null;
   const menuItems = isTullpukuna ? TULLPUKUNA_MENU : [];
@@ -299,42 +299,86 @@ export default async function CenaDetailPage({
 
       {/* Container centrale per tutto il contenuto */}
       <div className="container mx-auto max-w-6xl px-4 pb-16 md:pb-24 space-y-16 md:space-y-20">
-        {/* 2) BLOCCO PRENOTAZIONE */}
-        {event.remainingSeats > 0 && (
-          <section className="space-y-4">
-            <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
-              <p className="text-sm md:text-base text-marrone-scuro/80 mb-3">
-                {t("reservation.title")}
-              </p>
-              <p className="text-sm md:text-base text-marrone-scuro/90 mb-3">
-                {getBookingCopy(locale)}
-              </p>
-              {isTullpukuna && (
-                <p className="text-xs md:text-sm text-marrone-scuro/80 mb-6">
-                  {getWhatsappCopy(locale)}
-                </p>
-              )}
-              <BookingGate
-                hasIdentity={hasIdentity}
-                eventSlug={slug}
-                locale={locale}
-                simple={true}
-              />
+        {/* 2) BLOCCO PRENOTAZIONE + DESCRIZIONE con Video a sinistra (solo Tullpukuna) */}
+        {isTullpukuna && event.remainingSeats > 0 ? (
+          <section>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              {/* Colonna sinistra: Video verticale 9:16 */}
+              <div className="w-full order-2 lg:order-1">
+                <EventVideo
+                  src={TULLPUKUNA_VIDEO_URL}
+                  poster={videoPoster ?? undefined}
+                  alt={event.title}
+                  vertical={true}
+                />
+              </div>
+
+              {/* Colonna destra: Prenotazione + Descrizione */}
+              <div className="w-full space-y-6 order-1 lg:order-2">
+                {/* Blocco Prenotazione */}
+                <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
+                  <p className="text-sm md:text-base text-marrone-scuro/80 mb-3">
+                    {t("reservation.title")}
+                  </p>
+                  <p className="text-sm md:text-base text-marrone-scuro/90 mb-3">
+                    {getBookingCopy(locale)}
+                  </p>
+                  <p className="text-xs md:text-sm text-marrone-scuro/80 mb-6">
+                    {getWhatsappCopy(locale)}
+                  </p>
+                  <BookingGate
+                    hasIdentity={hasIdentity}
+                    eventSlug={slug}
+                    locale={locale}
+                    simple={true}
+                  />
+                </div>
+
+                {/* Descrizione */}
+                {description && (
+                  <div className="prose prose-lg max-w-none">
+                    <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
+                      {description}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </section>
-        )}
+        ) : (
+          <>
+            {/* Blocco Prenotazione standard (non Tullpukuna) */}
+            {event.remainingSeats > 0 && (
+              <section className="space-y-4">
+                <div className="bg-white/80 border border-borgogna/20 rounded-2xl p-6 md:p-8 shadow-sm">
+                  <p className="text-sm md:text-base text-marrone-scuro/80 mb-3">
+                    {t("reservation.title")}
+                  </p>
+                  <p className="text-sm md:text-base text-marrone-scuro/90 mb-3">
+                    {getBookingCopy(locale)}
+                  </p>
+                  <BookingGate
+                    hasIdentity={hasIdentity}
+                    eventSlug={slug}
+                    locale={locale}
+                    simple={true}
+                  />
+                </div>
+              </section>
+            )}
 
-         
-          {/* 3) DESCRIZIONE */}
-          {description && (
-            <section>
-              <div className="prose prose-lg max-w-none">
-                <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
-                  {description}
-                </p>
-              </div>
-            </section>
-          )}
+            {/* Descrizione standard (non Tullpukuna) */}
+            {description && (
+              <section>
+                <div className="prose prose-lg max-w-none">
+                  <p className="text-marrone-scuro/90 leading-relaxed text-base md:text-lg whitespace-pre-line">
+                    {description}
+                  </p>
+                </div>
+              </section>
+            )}
+          </>
+        )}
             
 
           {/* 4) MENU - Sezione dedicata */}
@@ -378,45 +422,39 @@ export default async function CenaDetailPage({
             </Link>
           </section>
 
-          {/* 6) MEDIA (Video + Gallery) */}
-          {isTullpukuna && (
+          {/* 6) MEDIA (Video + Gallery) - Solo per Tullpukuna */}
+          {isTullpukuna && eventGallery.length > 0 && (
             <section>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
-                {/* Colonna sinistra: Video verticale 9:16, full width */}
-                <div className="w-full h-full min-h-full">
-                  <div className="h-full">
-                    <EventVideo
-                      src={TULLPUKUNA_VIDEO_URL}
-                      poster={videoPoster ?? undefined}
-                      alt={event.title}
-                      vertical={true}
-                    />
-                  </div>
+                {/* Colonna sinistra: Video verticale 9:16 */}
+                <div className="w-full">
+                  <EventVideo
+                    src={TULLPUKUNA_VIDEO_URL}
+                    poster={videoPoster ?? undefined}
+                    alt={event.title}
+                    vertical={true}
+                  />
                 </div>
 
-                {/* Colonna destra: Gallery che riempie la colonna */}
-                {eventGallery.length > 0 && (
-                  <div className="w-full h-full min-h-full">
-                    <div className="h-full overflow-y-auto">
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 h-full">
-                        {eventGallery.map((item) => (
-                          <div
-                            key={item.src}
-                            className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
-                          >
-                            <Image
-                              src={item.src}
-                              alt={`${event.title} - ${item.name}`}
-                              fill
-                              className="object-cover hover:scale-105 transition-transform duration-300"
-                              sizes="(max-width: 768px) 50vw, 33vw"
-                            />
-                          </div>
-                        ))}
+                {/* Colonna destra: Gallery grid senza spazi vuoti */}
+                <div className="w-full">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                    {eventGallery.map((item, idx) => (
+                      <div
+                        key={`${item.src}-${idx}`}
+                        className="relative aspect-[4/3] overflow-hidden rounded-xl bg-marrone-scuro/5"
+                      >
+                        <Image
+                          src={item.src}
+                          alt={`${event.title} - ${item.name}`}
+                          fill
+                          className="object-cover hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                        />
                       </div>
-                    </div>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
             </section>
           )}
