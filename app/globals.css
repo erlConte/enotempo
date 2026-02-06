@@ -240,28 +240,37 @@
     width: 100%;
   }
 
-  /* Layout desktop: Grid quadrato diviso in 50% video, 25% mappa, 25% prenotazione */
+  /* Layout desktop: Dimensioni fisse basate sul video (9/16 verticale) */
+  /* Video: 50% larghezza, 100% altezza | Mappa: 50% larghezza, 50% altezza | Prenotazione: 50% larghezza, 50% altezza */
   @media (min-width: 768px) {
     .video-map-reservation-container {
-      grid-template-columns: 1fr 1fr; /* 50% e 50% */
-      grid-template-rows: 1fr 1fr; /* 50% e 50% */
-      aspect-ratio: 1 / 1; /* Quadrato perfetto */
-      max-width: 100%;
+      grid-template-columns: 1fr 1fr; /* 50% video, 50% colonna destra */
+      grid-template-rows: 1fr 1fr; /* 50% mappa, 50% prenotazione */
+      /* Aspect ratio calcolato dal video: se video è 9/16 (W/H = 9/16, quindi H = W * 16/9)
+         Container: larghezza = 2W, altezza = H = W * 16/9
+         Aspect ratio = 2W / (W * 16/9) = 2 * 9/16 = 18/16 = 9/8 */
+      aspect-ratio: 9 / 8;
+      width: 100%;
+      max-width: 1200px; /* Limite massimo per mantenere proporzioni */
+      margin: 0 auto;
       height: auto;
     }
 
-    /* Video section occupa tutta la colonna sinistra (2 righe) - altezza = H */
+    /* Video section occupa tutta la colonna sinistra (2 righe) - 50% larghezza, 100% altezza */
     .video-section {
       grid-column: 1;
       grid-row: span 2;
       height: 100%;
+      width: 100%;
       display: flex;
       align-items: stretch;
+      position: relative;
     }
 
     .video-section .video-container {
       height: 100%;
       width: 100%;
+      aspect-ratio: 9 / 16; /* Mantiene proporzioni del video */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -273,26 +282,31 @@
       object-fit: contain;
     }
 
-    /* Mappa nella colonna destra, riga superiore - altezza = H/3 */
+    /* Mappa nella colonna destra, riga superiore - 50% larghezza, 50% altezza */
     .map-container {
       grid-column: 2;
       grid-row: 1;
       height: 100%;
+      width: 100%;
       min-height: 0;
+      position: relative;
     }
 
     .map-container > div {
       height: 100%;
+      width: 100%;
     }
 
-    /* Prenotazione nella colonna destra, riga inferiore - altezza = 2H/3 */
+    /* Prenotazione nella colonna destra, riga inferiore - 50% larghezza, 50% altezza */
     .reservation-form-container {
       grid-column: 2;
       grid-row: 2;
       height: 100%;
+      width: 100%;
       min-height: 0;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
     .reservation-form-container > div {
