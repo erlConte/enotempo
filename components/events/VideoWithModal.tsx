@@ -24,6 +24,9 @@ export default function VideoWithModal({ videoUrl, poster, className = "" }: Vid
             width="100%" 
             height="auto" 
             controls
+            autoPlay
+            muted
+            playsInline
             className="w-full h-full object-contain"
             poster={poster}
             onClick={(e) => {

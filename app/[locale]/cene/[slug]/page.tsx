@@ -308,15 +308,17 @@ export default async function CenaDetailPage({
       <section className="w-full">
         {/* Immagine hero */}
         {heroImage && (
-          <div className="relative w-full aspect-[4/5] md:aspect-[21/9] overflow-hidden bg-marrone-scuro/10">
-            <Image
-              src={heroImage}
-              alt={event.title}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
+          <div className="relative w-full max-h-[500px] overflow-hidden bg-marrone-scuro/10">
+            <div className="relative w-full aspect-[4/5] md:aspect-[21/9] max-h-[500px]">
+              <Image
+                src={heroImage}
+                alt={event.title}
+                fill
+                className="object-cover"
+                priority
+                sizes="100vw"
+              />
+            </div>
           </div>
         )}
 
@@ -374,69 +376,84 @@ export default async function CenaDetailPage({
           </section>
         )}
 
-        {/* 3) BLOCCO PRENOTAZIONE E VIDEO - Layout a due colonne per desktop */}
+        {/* 3) BLOCCO VIDEO E PRENOTAZIONE - Layout a due colonne: video a sinistra, mappa e prenotazione a destra */}
         {event.remainingSeats > 0 && (
-          <section className="reservation-video-container">
-            <div className="reservation-section flex-1">
-              <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
-                {/* Pattern decorativo di sfondo */}
-                <div className="absolute inset-0 opacity-5">
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: "radial-gradient(circle at 2px 2px, #8B0000 1px, transparent 0)",
-                    backgroundSize: "40px 40px"
-                  }} />
+          <section className="video-map-reservation-container">
+            {/* Video Section - Solo per Tullpukuna, a sinistra */}
+            {isTullpukuna && eventGallery.length > 0 && (
+              <div className="video-section">
+                <VideoWithModal
+                  videoUrl={TULLPUKUNA_VIDEO_URL}
+                  poster={videoPoster ?? undefined}
+                />
+              </div>
+            )}
+
+            {/* Sezione Mappa e Prenotazione - a destra */}
+            <div className="reservation-section">
+              {/* Mappa sopra la prenotazione */}
+              {event.locationAddress && (
+                <div className="map-container mb-6">
+                  <div className="rounded-3xl overflow-hidden shadow-lg transition-all duration-500 hover:shadow-2xl">
+                    <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
+                  </div>
                 </div>
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-borgogna/10 rounded-lg">
-                      <CreditCard className="w-6 h-6 text-borgogna" />
-                    </div>
-                    <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna">
-                      {t("reservation.title")}
-                    </h2>
+              )}
+
+              {/* Form prenotazione */}
+              <div className="reservation-form-container">
+                <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
+                  {/* Pattern decorativo di sfondo */}
+                  <div className="absolute inset-0 opacity-5">
+                    <div className="absolute inset-0" style={{
+                      backgroundImage: "radial-gradient(circle at 2px 2px, #8B0000 1px, transparent 0)",
+                      backgroundSize: "40px 40px"
+                    }} />
                   </div>
                   
-                  {/* Barra progresso posti */}
-                  <div className="mb-6">
-                    <SeatsProgressBar
-                      remainingSeats={event.remainingSeats}
-                      capacity={event.capacity}
-                    />
-                  </div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-borgogna/10 rounded-lg">
+                        <CreditCard className="w-6 h-6 text-borgogna" />
+                      </div>
+                      <h2 className="font-serif text-2xl md:text-3xl font-bold text-borgogna">
+                        {t("reservation.title")}
+                      </h2>
+                    </div>
+                    
+                    {/* Barra progresso posti */}
+                    <div className="mb-6">
+                      <SeatsProgressBar
+                        remainingSeats={event.remainingSeats}
+                        capacity={event.capacity}
+                      />
+                    </div>
 
-                  <div className="bg-white/80 rounded-xl p-4 md:p-6 mb-6 border border-borgogna/20">
-                    <p className="text-base md:text-lg text-marrone-scuro/90 mb-3 font-medium flex items-start gap-2">
-                      <AlertCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
-                      <span>{getBookingCopy(locale)}</span>
-                    </p>
-                    {isTullpukuna && (
-                      <p className="text-sm md:text-base text-marrone-scuro/80 flex items-start gap-2">
-                        <MessageCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
-                        <span>{getWhatsappCopy(locale)}</span>
+                    <div className="bg-white/80 rounded-xl p-4 md:p-6 mb-6 border border-borgogna/20">
+                      <p className="text-base md:text-lg text-marrone-scuro/90 mb-3 font-medium flex items-start gap-2">
+                        <AlertCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
+                        <span>{getBookingCopy(locale)}</span>
                       </p>
-                    )}
-                  </div>
+                      {isTullpukuna && (
+                        <p className="text-sm md:text-base text-marrone-scuro/80 flex items-start gap-2">
+                          <MessageCircle className="w-5 h-5 text-borgogna mt-0.5 shrink-0" />
+                          <span>{getWhatsappCopy(locale)}</span>
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="mt-6">
-                    <BookingGate
-                      hasIdentity={hasIdentity}
-                      eventSlug={slug}
-                      locale={locale}
-                      simple={true}
-                    />
+                    <div className="mt-6">
+                      <BookingGate
+                        hasIdentity={hasIdentity}
+                        eventSlug={slug}
+                        locale={locale}
+                        simple={true}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            {/* Video Section - Solo per Tullpukuna */}
-            {isTullpukuna && eventGallery.length > 0 && (
-              <VideoWithModal
-                videoUrl={TULLPUKUNA_VIDEO_URL}
-                poster={videoPoster ?? undefined}
-              />
-            )}
           </section>
         )}
             
@@ -539,14 +556,6 @@ export default async function CenaDetailPage({
           </section>
         )}
 
-        {/* 7) MAPPA - in fondo, solo embed + link */}
-        {event.locationAddress && (
-          <section>
-            <div className="rounded-3xl overflow-hidden shadow-lg transition-all duration-500 hover:shadow-2xl">
-              <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );

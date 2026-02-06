@@ -7,24 +7,23 @@ interface EventMenuProps {
 }
 
 /**
- * Componente Menu per evento - stile ristorante, NON form.
- * Mostra elenco piatti con eventuali vini abbinati.
+ * Componente Menu per evento - stile ristorante con card interattive.
+ * Mostra elenco piatti con eventuali vini abbinati in un layout a griglia.
  */
 export default function EventMenu({ items }: EventMenuProps) {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="menu-container">
+    <div className="menu-card-container">
       {items.map((item, idx) => (
-        <div key={idx} className="menu-item">
-          <div className="flex-1">
-            <span className="font-semibold">{item.course} </span>
-            <span>{item.dish}</span>
+        <div key={idx} className="menu-card">
+          <div className="course-title">
+            {item.course} {item.dish}
           </div>
           {item.wine && (
-            <span className="wine-pairing ml-4 flex-shrink-0 whitespace-nowrap">
-              {item.wine}
-            </span>
+            <div className="wine-pairing">
+              Wine pairing: {item.wine}
+            </div>
           )}
         </div>
       ))}
