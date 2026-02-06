@@ -398,7 +398,7 @@ export default async function CenaDetailPage({
 
             {/* Form prenotazione sotto a destra */}
             <div className="reservation-form-container">
-              <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
+              <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-4 md:p-6 shadow-2xl booking-container relative overflow-visible">
                   {/* Pattern decorativo di sfondo */}
                   <div className="absolute inset-0 opacity-5">
                     <div className="absolute inset-0" style={{

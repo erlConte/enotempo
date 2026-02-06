@@ -240,17 +240,17 @@
     width: 100%;
   }
 
-  /* Layout desktop: Grid con proporzioni specifiche - mappa e prenotazione combinate = dimensioni del video */
+  /* Layout desktop: Grid con proporzioni specifiche - colonne della stessa larghezza */
   @media (min-width: 768px) {
     .video-map-reservation-container {
-      grid-template-columns: 1fr 2fr;
+      grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 2fr;
-      /* Aspect ratio calcolato: video è 9/16 verticale, colonna sinistra 1fr, destra 2fr
+      /* Aspect ratio calcolato: video è 9/16 verticale, colonne 1fr 1fr (stessa larghezza)
          Se video ha larghezza W e altezza H (H = W * 16/9), allora:
-         - Container larghezza = 3W (1fr + 2fr)
+         - Container larghezza = 2W (1fr + 1fr)
          - Container altezza = H (stessa del video)
-         - Aspect ratio = 3W / H = 3W / (W * 16/9) = 27/16 */
-      aspect-ratio: 27 / 16;
+         - Aspect ratio = 2W / H = 2W / (W * 16/9) = 2 * 9/16 = 18/16 = 9/8 */
+      aspect-ratio: 9 / 8;
       max-width: 100%;
       height: auto;
     }
@@ -302,7 +302,23 @@
 
     .reservation-form-container > div {
       height: 100%;
-      overflow-y: auto;
+      overflow-y: visible;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reservation-form-container .booking-container {
+      padding: 1rem 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reservation-form-container .relative.z-10 {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: visible;
     }
   }
 
