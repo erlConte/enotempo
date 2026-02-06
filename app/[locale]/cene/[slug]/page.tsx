@@ -387,20 +387,18 @@ export default async function CenaDetailPage({
               </div>
             )}
 
-            {/* Sezione Mappa e Prenotazione - a destra, divisa in 2 righe */}
-            <div className="reservation-map-section">
-              {/* Mappa sopra la prenotazione */}
-              {event.locationAddress && (
-                <div className="map-container">
-                  <div className="rounded-3xl overflow-hidden shadow-lg transition-all duration-500 hover:shadow-2xl">
-                    <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
-                  </div>
+            {/* Mappa sopra a destra */}
+            {event.locationAddress && (
+              <div className="map-container">
+                <div className="rounded-3xl overflow-hidden shadow-lg transition-all duration-500 hover:shadow-2xl h-full">
+                  <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Form prenotazione */}
-              <div className="reservation-form-container">
-                <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
+            {/* Form prenotazione sotto a destra */}
+            <div className="reservation-form-container">
+              <div className="bg-gradient-to-br from-white via-borgogna/5 to-borgogna/10 border-2 border-borgogna/30 rounded-3xl p-6 md:p-10 shadow-2xl booking-container relative overflow-hidden">
                   {/* Pattern decorativo di sfondo */}
                   <div className="absolute inset-0 opacity-5">
                     <div className="absolute inset-0" style={{
@@ -449,7 +447,6 @@ export default async function CenaDetailPage({
                       />
                     </div>
                   </div>
-                </div>
               </div>
             </div>
           </section>

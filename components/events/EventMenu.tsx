@@ -7,22 +7,22 @@ interface EventMenuProps {
 }
 
 /**
- * Componente Menu per evento - stile ristorante con card interattive.
- * Mostra elenco piatti con nome piatto a sinistra e vino abbinato a destra.
+ * Componente Menu per evento - layout a due colonne senza box.
+ * Portate a sinistra, vini abbinati a destra.
  */
 export default function EventMenu({ items }: EventMenuProps) {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="menu-card-container">
+    <div className="menu-list-container">
       {items.map((item, idx) => (
-        <div key={idx} className="menu-card">
+        <div key={idx} className="menu-row">
           <div className="course-title">
             {item.course} {item.dish}
           </div>
           {item.wine && (
             <div className="wine-pairing">
-              Abbinamento vino: {item.wine}
+              {item.wine}
             </div>
           )}
         </div>

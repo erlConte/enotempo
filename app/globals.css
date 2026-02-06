@@ -75,45 +75,51 @@
     height: 100%;
   }
 
-  /* Stili per menu elegante con wine pairing - Layout a griglia con card */
-  .menu-card-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+  /* Stili per menu - Layout a due colonne senza box */
+  .menu-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     margin-top: 20px;
   }
 
-  .menu-card {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
-    text-align: left;
+  .menu-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(139, 0, 0, 0.1);
   }
 
-  .menu-card:hover {
-    transform: translateY(-10px);
+  .menu-row:last-child {
+    border-bottom: none;
   }
 
-  .menu-card .course-title {
+  .menu-row .course-title {
     font-size: 1.2rem;
     font-weight: bold;
     color: #8B0000;
-    margin-bottom: 5px;
     font-family: 'Cormorant Garamond', serif;
+    text-align: left;
   }
 
-  .menu-card .wine-pairing {
+  .menu-row .wine-pairing {
     font-size: 1rem;
     color: #555;
     font-family: 'Inter', sans-serif;
+    text-align: right;
   }
 
   /* Responsività per menu */
   @media (max-width: 768px) {
-    .menu-card-container {
+    .menu-row {
       grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .menu-row .wine-pairing {
+      text-align: left;
     }
   }
 
@@ -203,11 +209,12 @@
     height: 300px;
   }
 
-  /* Layout Grid per video e prenotazione con mappa */
+  /* Layout Grid per video e prenotazione con mappa - Rettangolo con proporzioni specifiche */
   .video-map-reservation-container {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
+    width: 100%;
   }
 
   .video-section {
@@ -225,12 +232,6 @@
     cursor: pointer;
   }
 
-  .reservation-map-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
   .map-container {
     width: 100%;
   }
@@ -239,22 +240,50 @@
     width: 100%;
   }
 
-  /* Layout desktop: Grid con colonne 1fr 2fr */
+  /* Layout desktop: Grid con proporzioni specifiche - rettangolo con larghezza doppia dell'altezza del video */
   @media (min-width: 768px) {
     .video-map-reservation-container {
       grid-template-columns: 1fr 2fr;
-    }
-
-    /* Video section occupa 2 righe della colonna sinistra */
-    .video-section {
-      grid-row: span 2;
-    }
-
-    /* Mappa e prenotazione nella colonna destra, divisa in 2 righe */
-    .reservation-map-section {
-      display: grid;
       grid-template-rows: 1fr 2fr;
-      gap: 20px;
+      aspect-ratio: 27 / 16; /* Container rettangolare: se video è 9/16 verticale, colonna sinistra 1fr, destra 2fr, totale 3fr, altezza = altezza video */
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Video section occupa tutta la colonna sinistra (2 righe) */
+    .video-section {
+      grid-column: 1;
+      grid-row: span 2;
+      height: 100%;
+    }
+
+    .video-section .video-container {
+      height: 100%;
+      width: 100%;
+    }
+
+    .video-section video {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    /* Mappa nella colonna destra, riga superiore */
+    .map-container {
+      grid-column: 2;
+      grid-row: 1;
+      height: 100%;
+    }
+
+    .map-container > div {
+      height: 100%;
+    }
+
+    /* Prenotazione nella colonna destra, riga inferiore */
+    .reservation-form-container {
+      grid-column: 2;
+      grid-row: 2;
+      height: 100%;
     }
   }
 
