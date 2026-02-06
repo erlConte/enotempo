@@ -240,17 +240,12 @@
     width: 100%;
   }
 
-  /* Layout desktop: Grid con proporzioni specifiche - colonne della stessa larghezza */
+  /* Layout desktop: Grid quadrato diviso in 50% video, 25% mappa, 25% prenotazione */
   @media (min-width: 768px) {
     .video-map-reservation-container {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 2fr;
-      /* Aspect ratio calcolato: video è 9/16 verticale, colonne 1fr 1fr (stessa larghezza)
-         Se video ha larghezza W e altezza H (H = W * 16/9), allora:
-         - Container larghezza = 2W (1fr + 1fr)
-         - Container altezza = H (stessa del video)
-         - Aspect ratio = 2W / H = 2W / (W * 16/9) = 2 * 9/16 = 18/16 = 9/8 */
-      aspect-ratio: 9 / 8;
+      grid-template-columns: 1fr 1fr; /* 50% e 50% */
+      grid-template-rows: 1fr 1fr; /* 50% e 50% */
+      aspect-ratio: 1 / 1; /* Quadrato perfetto */
       max-width: 100%;
       height: auto;
     }
