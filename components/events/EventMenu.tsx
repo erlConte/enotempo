@@ -8,7 +8,7 @@ interface EventMenuProps {
 
 /**
  * Componente Menu per evento - stile ristorante con card interattive.
- * Mostra elenco piatti con eventuali vini abbinati in un layout a griglia.
+ * Mostra elenco piatti con nome piatto a sinistra e vino abbinato a destra.
  */
 export default function EventMenu({ items }: EventMenuProps) {
   if (!items || items.length === 0) return null;
@@ -22,7 +22,7 @@ export default function EventMenu({ items }: EventMenuProps) {
           </div>
           {item.wine && (
             <div className="wine-pairing">
-              Wine pairing: {item.wine}
+              Abbinamento vino: {item.wine}
             </div>
           )}
         </div>

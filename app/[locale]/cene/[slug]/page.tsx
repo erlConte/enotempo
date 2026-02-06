@@ -69,20 +69,18 @@ const TULLPUKUNA_MENU = [
 ];
 
 const TULLPUKUNA_DESCRIPTIONS: Record<"it" | "en" | "es", string> = {
-  es: `¡Hola!
-Nos da mucho gusto invitarle a una velada muy especial, concebida como una experiencia de encuentro, sabor y diálogo. Compartiremos mesa en un ambiente cálido y elegante, para realizar un recorrido por los sabores más representativos de la cocina sudamericana, cuidadosamente maridados con vinos italianos de gran calidad.
+  es: `Nos da mucho gusto invitarle a una velada muy especial, concebida como una experiencia de encuentro, sabor y diálogo. Compartiremos mesa en un ambiente cálido y elegante, para realizar un recorrido por los sabores más representativos de la cocina sudamericana, cuidadosamente maridados con vinos italianos de gran calidad.
 El menú ha sido diseñado y creado especialmente para la ocasión por nuestro chef, quien ha pensado cada plato como una experiencia sensorial que une tradición, creatividad y armonía.
 Será una noche dedicada al gusto, a la conversación y al encuentro entre la riqueza gastronómica de Sudamérica y la elegancia del vino italiano.
 Será un verdadero honor contar con su presencia y compartir juntos esta experiencia que, estoy seguro, permanecerá en la memoria y en el corazón.
 Con estima,`,
-  it: `Ciao!
+  it: `
 Siamo lieti di invitarLa a una serata davvero speciale, concepita come un’esperienza di incontro, gusto e dialogo. Condivideremo la tavola in un ambiente caldo ed elegante, per intraprendere un viaggio attraverso i sapori più rappresentativi della cucina sudamericana, accuratamente abbinati a vini italiani di grande qualità.
 Il menù è stato ideato e preparato appositamente per l’occasione dal nostro chef, che ha pensato ogni piatto come un’esperienza sensoriale capace di unire tradizione, creatività e armonia.
 Sarà una serata dedicata al gusto, alla conversazione e all’incontro tra la ricchezza gastronomica del Sud America e l’eleganza del vino italiano.
 Sarà un vero onore poterLa avere con noi e condividere insieme questa esperienza che, ne siamo certi, rimarrà nella memoria e nel cuore.
 Con stima,`,
-  en: `Hello!
-We are delighted to invite you to a truly special evening, designed as an experience of encounter, taste and conversation. We will share the table in a warm and elegant atmosphere, travelling through some of the most representative flavours of South American cuisine, carefully paired with high‑quality Italian wines.
+  en: `We are delighted to invite you to a truly special evening, designed as an experience of encounter, taste and conversation. We will share the table in a warm and elegant atmosphere, travelling through some of the most representative flavours of South American cuisine, carefully paired with high‑quality Italian wines.
 The menu has been created especially for this occasion by our chef, who has conceived each course as a sensory journey that brings together tradition, creativity and harmony.
 It will be a night dedicated to flavour, dialogue and the meeting between the richness of South American gastronomy and the elegance of Italian wine.
 It would be an honour to welcome you and share with you an experience that, we are sure, will remain in both memory and heart.
@@ -376,10 +374,10 @@ export default async function CenaDetailPage({
           </section>
         )}
 
-        {/* 3) BLOCCO VIDEO E PRENOTAZIONE - Layout a due colonne: video a sinistra, mappa e prenotazione a destra */}
+        {/* 3) BLOCCO VIDEO E PRENOTAZIONE - Layout Grid: video a sinistra (span 2 righe), mappa e prenotazione a destra */}
         {event.remainingSeats > 0 && (
           <section className="video-map-reservation-container">
-            {/* Video Section - Solo per Tullpukuna, a sinistra */}
+            {/* Video Section - Solo per Tullpukuna, a sinistra, occupa 2 righe */}
             {isTullpukuna && eventGallery.length > 0 && (
               <div className="video-section">
                 <VideoWithModal
@@ -389,11 +387,11 @@ export default async function CenaDetailPage({
               </div>
             )}
 
-            {/* Sezione Mappa e Prenotazione - a destra */}
-            <div className="reservation-section">
+            {/* Sezione Mappa e Prenotazione - a destra, divisa in 2 righe */}
+            <div className="reservation-map-section">
               {/* Mappa sopra la prenotazione */}
               {event.locationAddress && (
-                <div className="map-container mb-6">
+                <div className="map-container">
                   <div className="rounded-3xl overflow-hidden shadow-lg transition-all duration-500 hover:shadow-2xl">
                     <EventMap locationName={event.locationName} locationAddress={event.locationAddress} />
                   </div>
