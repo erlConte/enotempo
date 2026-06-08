@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -8,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { locales } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
+
+const LOGO_URL = "https://8ud5gz3z3ejgzjpg.public.blob.vercel-storage.com/gallery/logo-borgogna-UgcW4ZgaHLzDGdpjkjcwqNF67u6TP1.jpg";
 
 // Language Switcher Component
 const LanguageSwitcher = ({
@@ -150,10 +153,10 @@ export default function Header() {
     { href: `/${locale}`, label: t("home") },
     { href: `/${locale}/cene`, label: t("dinners") },
     { href: `/${locale}/gallery`, label: t("gallery") },
-    { href: `/${locale}/formazione`, label: t("formazione") },
     { href: `/${locale}/partners`, label: t("partners") },
     { href: `/${locale}/chefs`, label: t("chefs") },
     { href: `/${locale}/contact`, label: t("contact") },
+    // { href: `/${locale}/formazione`, label: t("formazione") },
   ];
 
   const closeMobileMenu = () => setIsOpen(false);
@@ -176,9 +179,19 @@ export default function Header() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:h-20 min-w-0">
           <Link
             href={`/${locale}`}
-            className="shrink-0 font-serif text-2xl md:text-3xl font-bold text-borgogna hover:text-borgogna/80 transition-colors whitespace-nowrap"
+            className="shrink-0 flex items-center gap-2 hover:opacity-80 transition-opacity whitespace-nowrap"
           >
-            EnoTempo
+            <Image
+              src={LOGO_URL}
+              alt="Enotempo Logo"
+              width={36}
+              height={36}
+              className="object-contain"
+              priority
+            />
+            <span className="font-serif text-xl md:text-2xl font-bold text-borgogna tracking-widest">
+              ENOTEMPO
+            </span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8">

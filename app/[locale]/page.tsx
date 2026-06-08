@@ -16,7 +16,6 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("hero");
   const tHome = await getTranslations("home");
   const nextEventFromDb = await getNextUpcomingEvent();
 
@@ -57,71 +56,14 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen">
-      {/* Intro Section - Snello e centrato */}
-      <section className="py-16 md:py-24 px-4 bg-white">
-        <div className="container mx-auto max-w-3xl text-center">
-          <h1 className="font-serif text-5xl md:text-6xl font-bold text-borgogna mb-8">
-            Enotempo
-          </h1>
-          <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-12">
-            {t("subtitle")}
-          </p>
-
-          {/* Bottoni: riga su desktop, colonna su mobile */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
-            <Link
-              href={`/${locale}/cene`}
-              className="inline-flex items-center justify-center rounded-full bg-borgogna px-8 py-3 text-base font-semibold text-bianco-caldo shadow-sm hover:bg-borgogna/90 transition-colors"
-            >
-              {t("ctaPrimary")}
-            </Link>
-
-            <Link
-              href="#chi-siamo"
-              className="inline-flex items-center justify-center rounded-full border border-borgogna px-8 py-3 text-base font-semibold text-borgogna hover:bg-borgogna/10 transition-colors"
-            >
-              {t("ctaSecondary")}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Come funziona */}
-      <section className="py-20 px-4 bg-bianco-caldo">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-16 text-center">
-            {tHome("howItWorks.title")}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((step) => (
-              <Card
-                key={step}
-                className="border-0 shadow-sm rounded-2xl bg-bianco-caldo hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="pb-4">
-                  <div className="w-16 h-16 rounded-full bg-borgogna/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-borgogna">{step}</span>
-                  </div>
-                  <CardTitle className="font-serif text-2xl text-borgogna">
-                    {tHome(`howItWorks.step${step}.title`)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-marrone-scuro/70 leading-relaxed">
-                    {tHome(`howItWorks.step${step}.description`)}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Chi è Enotempo */}
-      <section id="chi-siamo" className="py-20 px-4 bg-white">
+      <section id="chi-siamo" className="py-20 md:py-28 px-4 bg-bianco-caldo">
         <div className="container mx-auto max-w-5xl">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-8">
+          <div className="text-center mb-16">
+            <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-4">
+              Chi siamo
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-8 tracking-tight">
               Chi è Enotempo
             </h2>
             <div className="max-w-4xl mx-auto space-y-6 text-left">
@@ -158,11 +100,53 @@ export default async function HomePage({
         </div>
       </section>
 
+      {/* Instagram Feed */}
+      <InstagramFeed />
+
+      {/* Come funziona */}
+      <section className="py-20 md:py-28 px-4 bg-bianco-caldo">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-4">
+              Percorso
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-8 tracking-tight">
+              {tHome("howItWorks.title")}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[1, 2, 3].map((step) => (
+              <Card
+                key={step}
+                className="rounded-2xl border border-borgogna/10 bg-white shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+              >
+                <CardHeader className="pb-4">
+                  <div className="w-16 h-16 rounded-full bg-borgogna/10 flex items-center justify-center mb-4">
+                    <span className="text-2xl font-bold text-borgogna">{step}</span>
+                  </div>
+                  <CardTitle className="font-serif text-2xl text-borgogna">
+                    {tHome(`howItWorks.step${step}.title`)}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-marrone-scuro/70 leading-relaxed">
+                    {tHome(`howItWorks.step${step}.description`)}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Box Donazioni */}
-      <section className="py-20 px-4 bg-bianco-caldo">
+      <section className="py-20 md:py-28 px-4 bg-white">
         <div className="container mx-auto max-w-5xl">
-          <Card className="border-2 border-borgogna/20 rounded-2xl shadow-sm bg-bianco-caldo">
+          <Card className="border border-borgogna/10 rounded-2xl shadow-sm bg-bianco-caldo">
             <CardHeader className="text-center pb-4">
+              <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-3">
+                Impatto
+              </p>
               <CardTitle className="font-serif text-3xl md:text-4xl text-borgogna">
                 {tHome("donationBox.title")}
               </CardTitle>
@@ -176,18 +160,18 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* Instagram Feed */}
-      <InstagramFeed />
-
       {/* Newsletter */}
-      <section className="py-20 px-4 bg-bianco-caldo">
+      <section className="py-20 md:py-28 px-4 bg-bianco-caldo">
         <div className="container mx-auto max-w-3xl">
-          <Card className="border-0 shadow-sm rounded-2xl bg-white">
+          <Card className="border border-borgogna/10 rounded-2xl shadow-sm bg-white">
             <CardHeader className="text-center pb-4">
+              <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-3">
+                Rimani connesso
+              </p>
               <CardTitle className="font-serif text-3xl md:text-4xl text-borgogna">
                 {tHome("newsletter.title")}
               </CardTitle>
-              <p className="text-base md:text-lg text-marrone-scuro/70 mt-2">
+              <p className="text-base md:text-lg text-marrone-scuro/70 mt-3">
                 {tHome("newsletter.description")}
               </p>
             </CardHeader>
