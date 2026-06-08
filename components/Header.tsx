@@ -148,7 +148,6 @@ export default function Header() {
 
   const navLinks = [
     { href: `/${locale}`, label: t("home") },
-    { href: `/${locale}/about`, label: t("about") },
     { href: `/${locale}/cene`, label: t("dinners") },
     { href: `/${locale}/gallery`, label: t("gallery") },
     { href: `/${locale}/formazione`, label: t("formazione") },

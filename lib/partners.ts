@@ -10,9 +10,17 @@ export type Partner = {
   expectations?: string;
 };
 
-// IMPORTANT: per evitare contenuti fittizi, lasciamo l'elenco vuoto
-// finché non sono disponibili partner reali verificati.
-export const partners: Partner[] = [];
+export const partners: Partner[] = [
+  {
+    slug: "tullpukuna",
+    name: "Ristorante Tullpukuna",
+    type: "restaurant",
+    city: "Roma",
+    country: "Italia",
+    whyEnotempo: "Sede delle cene Enotempo a Roma: cucina andina contemporanea che dialoga con i vini italiani.",
+    about: "Ristorante di cucina peruviana e andina contemporanea nel cuore di Roma (Piazza Dante 5). Cura colori, sapori e presentazione in ogni piatto. È la casa delle esperienze Enotempo, dove lo chef Gherson Melgarejo firma i menu.",
+  },
+];
 
 export function getPartners() {
   return partners;

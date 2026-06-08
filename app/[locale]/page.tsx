@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NextDinnerPopup from "@/components/home/NextDinnerPopup";
 import NewsletterForm from "@/components/home/NewsletterForm";
+import InstagramFeed from "@/components/home/InstagramFeed";
 import { getNextUpcomingEvent } from "@/lib/events";
 
 // ISR: rigenera ogni 60 secondi per bilanciare performance e dati aggiornati
@@ -56,24 +57,13 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section 
-        className="w-full relative min-h-[520px] flex items-center justify-center px-4 py-12 md:py-20"
-        style={{
-          backgroundImage: "url(https://8ud5gz3z3ejgzjpg.public.blob.vercel-storage.com/gallery/logo-borgogna-UgcW4ZgaHLzDGdpjkjcwqNF67u6TP1.jpg)",
-          backgroundRepeat: "repeat",
-          backgroundSize: "800px auto",
-          backgroundPosition: "center",
-          backgroundAttachment: "scroll"
-        }}
-      >
-        {/* Overlay per leggibilità */}
-        <div className="absolute inset-0 bg-bianco-caldo/80 backdrop-blur-[1px]" />
-        
-        {/* Contenuto centrato */}
-        <div className="relative z-10 mx-auto max-w-5xl flex flex-col items-center text-center mt-[330px] md:mt-[394px]">
-          {/* Testo centrato */}
-          <p className="max-w-2xl text-lg md:text-xl text-marrone-scuro/90 font-medium mb-10">
+      {/* Intro Section - Snello e centrato */}
+      <section className="py-16 md:py-24 px-4 bg-white">
+        <div className="container mx-auto max-w-3xl text-center">
+          <h1 className="font-serif text-5xl md:text-6xl font-bold text-borgogna mb-8">
+            Enotempo
+          </h1>
+          <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-12">
             {t("subtitle")}
           </p>
 
@@ -87,7 +77,7 @@ export default async function HomePage({
             </Link>
 
             <Link
-              href={`/${locale}/about`}
+              href="#chi-siamo"
               className="inline-flex items-center justify-center rounded-full border border-borgogna px-8 py-3 text-base font-semibold text-borgogna hover:bg-borgogna/10 transition-colors"
             >
               {t("ctaSecondary")}
@@ -97,7 +87,7 @@ export default async function HomePage({
       </section>
 
       {/* Come funziona */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-bianco-caldo">
         <div className="container mx-auto max-w-6xl">
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-16 text-center">
             {tHome("howItWorks.title")}
@@ -128,7 +118,7 @@ export default async function HomePage({
       </section>
 
       {/* Chi è Enotempo */}
-      <section className="py-20 px-4 bg-bianco-caldo">
+      <section id="chi-siamo" className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-8">
@@ -164,25 +154,12 @@ export default async function HomePage({
                 <li>Promozione della cultura latinoamericana attraverso format creativi che celebrano le radici e valorizzano l&apos;incontro tra culture.</li>
               </ul>
             </div>
-
-            {/* Link a Chi siamo */}
-            <div className="mt-12">
-              <Link href={`/${locale}/about`}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-borgogna text-borgogna hover:bg-borgogna hover:text-bianco-caldo px-8 py-6 text-lg rounded-2xl shadow-sm"
-                >
-                  Scopri di più su Enotempo
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Box Donazioni */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-bianco-caldo">
         <div className="container mx-auto max-w-5xl">
           <Card className="border-2 border-borgogna/20 rounded-2xl shadow-sm bg-bianco-caldo">
             <CardHeader className="text-center pb-4">
@@ -198,6 +175,9 @@ export default async function HomePage({
           </Card>
         </div>
       </section>
+
+      {/* Instagram Feed */}
+      <InstagramFeed />
 
       {/* Newsletter */}
       <section className="py-20 px-4 bg-bianco-caldo">
