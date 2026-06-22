@@ -8,7 +8,11 @@
     "formazione": "Formación",
     "contact": "Contacto",
     "partners": "Partners",
-    "chefs": "Chefs y Colaboradores"
+    "chefs": "Chefs y Colaboradores",
+    "instagram": "Instagram",
+    "login": "Acceder",
+    "logout": "Salir",
+    "myArea": "Área FENAM"
   },
   "auth": {
     "fenam": {
@@ -93,6 +97,12 @@
     "details": "Detalles y reserva",
     "price": "Precio",
     "chef": "Chef",
+    "pastBadge": "Cena finalizada",
+    "upcomingSection": "Próximas cenas",
+    "pastSection": "Cenas pasadas",
+    "discoverUpcoming": "Descubre las próximas cenas",
+    "detailsOnly": "Ver los detalles",
+    "noUpcoming": "No hay cenas programadas por el momento. ¡Vuelve pronto!",
     "reservation": {
       "title": "Reserva",
       "firstName": "Nombre",
@@ -211,6 +221,23 @@
     "detail": {
       "backToList": "Volver a chefs"
     }
+  },
+  "footer": {
+    "tagline": "Cenas & vino · experiencias",
+    "exploreTitle": "Explorar",
+    "infoTitle": "Info",
+    "copyright": "Todos los derechos reservados.",
+    "donationDisclaimer": "Los importes abonados en el sitio son donaciones voluntarias vinculadas a actividades asociativas."
+  },
+  "social": {
+    "eyebrow": "Síguenos",
+    "title": "Enotempo en Instagram",
+    "description": "Momentos, eventos e historias de las experiencias Enotempo.",
+    "openProfile": "Abrir perfil",
+    "viewAll": "Ver todo en Instagram",
+    "noPosts": "No hay contenido disponible por el momento. ¡Vuelve pronto!",
+    "metaTitle": "Instagram — Enotempo",
+    "metaDescription": "Descubre los momentos de nuestras cenas en Instagram."
   },
   "privacy": {
     "title": "Política de privacidad sobre el tratamiento de datos personales",

@@ -23,6 +23,11 @@ export type EventWithRemaining = {
   image?: string;
 };
 
+/** True solo se l'evento è pubblicato, non è ancora passato e ha posti disponibili */
+export function isEventBookable(event: EventWithRemaining): boolean {
+  return event.status === "published" && event.date > new Date() && event.remainingSeats > 0;
+}
+
 /** Lista eventi pubblicati con posti rimasti (include confirmed e pending_payment per evitare overbooking) */
 export async function getEvents(): Promise<EventWithRemaining[]> {
   if (!process.env.DATABASE_URL) return [];
@@ -35,7 +40,7 @@ export async function getEvents(): Promise<EventWithRemaining[]> {
           reservations: {
             where: {
               status: {
-                in: ["confirmed", "pending_payment"], // Include entrambi per calcolo corretto
+                in: ["confirmed", "pending_payment"],
               },
             },
           },
@@ -68,7 +73,21 @@ export async function getEvents(): Promise<EventWithRemaining[]> {
   }));
 }
 
-/** Evento per slug con posti rimanenti; null se non trovato o non published (include confirmed e pending_payment) */
+/** Separa gli eventi pubblicati in upcoming (data >= ora, ASC) e past (data < ora, DESC) */
+export async function getEventsSplit(): Promise<{
+  upcoming: EventWithRemaining[];
+  past: EventWithRemaining[];
+}> {
+  const events = await getEvents();
+  const now = new Date();
+  const upcoming = events.filter((e) => e.date >= now);
+  const past = events
+    .filter((e) => e.date < now)
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+  return { upcoming, past };
+}
+
+/** Evento per slug con posti rimanenti; null se non trovato o non published */
 export async function getEventBySlug(slug: string): Promise<EventWithRemaining | null> {
   if (!process.env.DATABASE_URL) return null;
   const event = await prisma.event.findUnique({
@@ -77,7 +96,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithRemaining |
       reservations: {
         where: {
           status: {
-            in: ["confirmed", "pending_payment"], // Include entrambi per calcolo corretto
+            in: ["confirmed", "pending_payment"],
           },
         },
         select: { guests: true },
@@ -103,7 +122,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithRemaining |
   };
 }
 
-/** Evento per id (solo published); null se non trovato (include confirmed e pending_payment) */
+/** Evento per id (solo published); null se non trovato */
 export async function getEventById(id: string): Promise<EventWithRemaining | null> {
   if (!process.env.DATABASE_URL) return null;
   const event = await prisma.event.findUnique({
@@ -112,7 +131,7 @@ export async function getEventById(id: string): Promise<EventWithRemaining | nul
       reservations: {
         where: {
           status: {
-            in: ["confirmed", "pending_payment"], // Include entrambi per calcolo corretto
+            in: ["confirmed", "pending_payment"],
           },
         },
         select: { guests: true },
@@ -145,7 +164,6 @@ export async function getNextUpcomingEvent(): Promise<EventWithRemaining | null>
   const upcoming = events.filter((e) => e.date > now).sort((a, b) => a.date.getTime() - b.date.getTime());
   const result = upcoming[0] ?? null;
 
-  // Debug logging solo in sviluppo (NO PII)
   if (process.env.NODE_ENV === "development") {
     if (result) {
       console.log("[DEBUG] getNextUpcomingEvent() - DB event:", {

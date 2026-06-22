@@ -1,10 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 
 type Props = {
-  /** URL completo verso FENAM (già costruito server-side: base?source=enotempo&returnUrl=encoded). */
   fenamRedirectUrl: string;
 };
 
@@ -17,18 +15,19 @@ export default function AccediFenamClient({ fenamRedirectUrl }: Props) {
 
   if (!fenamRedirectUrl || !fenamRedirectUrl.startsWith("http")) {
     return (
-      <p className="text-marrone-scuro/80 text-sm">
+      <p className="text-marrone-scuro/70 text-sm">
         {t("notConfigured")}
       </p>
     );
   }
 
   return (
-    <Button
+    <button
+      type="button"
       onClick={handleRedirect}
-      className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-base font-semibold"
+      className="w-full inline-flex items-center justify-center rounded-[2px] bg-borgogna text-bianco-caldo px-6 py-3 text-sm font-medium hover:bg-borgogna/90 transition-colors"
     >
       {t("cta")}
-    </Button>
+    </button>
   );
 }

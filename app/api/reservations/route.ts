@@ -52,6 +52,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // Guard: rifiuta prenotazioni su eventi già passati
+    if (eventFromDb.date < new Date()) {
+      return NextResponse.json(
+        { error: "DATE_PASSED" },
+        { status: 409 }
+      );
+    }
+
     const notes = data.notes ? sanitizeTextFields({ notes: data.notes }).notes : null;
     type MemberUpdateFields = { firstName: string; lastName: string; phone: string };
     const memberUpdate: MemberUpdateFields | null =
@@ -80,7 +88,6 @@ export async function POST(req: Request) {
           throw err;
         }
         if (existing.status === "pending_payment") {
-          // Aggiorna la prenotazione esistente con nuovi dati invece di ritornarla così com'è
           const updatedReservation = await tx.reservation.update({
             where: { id: existing.id },
             data: {
@@ -98,7 +105,7 @@ export async function POST(req: Request) {
           reservations: {
             where: {
               status: {
-                in: ["confirmed", "pending_payment"], // Include entrambi per evitare overbooking
+                in: ["confirmed", "pending_payment"],
               },
             },
             select: { guests: true },
@@ -108,7 +115,6 @@ export async function POST(req: Request) {
       if (!event) throw new Error(EVENT_NOT_FOUND);
       const booked = event.reservations.reduce((s, r) => s + r.guests, 0);
       const remaining = event.capacity - booked;
-      // Bug fix: corretto da "1 > remaining" a "remaining < 1"
       if (remaining < 1) {
         const err = new Error(NO_CAPACITY) as Error & { code?: string };
         err.code = NO_CAPACITY;

@@ -1,10 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NextDinnerPopup from "@/components/home/NextDinnerPopup";
 import NewsletterForm from "@/components/home/NewsletterForm";
 import InstagramFeed from "@/components/home/InstagramFeed";
+import { Section } from "@/components/ui/Section";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getNextUpcomingEvent } from "@/lib/events";
 
 // ISR: rigenera ogni 60 secondi per bilanciare performance e dati aggiornati
@@ -19,7 +18,6 @@ export default async function HomePage({
   const tHome = await getTranslations("home");
   const nextEventFromDb = await getNextUpcomingEvent();
 
-  // Debug logging server-side solo in sviluppo (NO PII)
   if (process.env.NODE_ENV === "development") {
     if (nextEventFromDb) {
       console.log("[DEBUG] getNextUpcomingEvent() returned:", {
@@ -39,13 +37,12 @@ export default async function HomePage({
       ? {
           title: nextEventFromDb.title,
           slug: nextEventFromDb.slug,
-          date: nextEventFromDb.date.getTime(), // Timestamp numerico (stesso momento della pagina evento)
+          date: nextEventFromDb.date.getTime(),
           locationName: nextEventFromDb.locationName,
           locationAddress: nextEventFromDb.locationAddress ?? null,
         }
       : null;
 
-  // Debug logging solo in sviluppo
   if (process.env.NODE_ENV === "development" && nextEvent) {
     console.log("[DEBUG] nextEvent passed to popup:", {
       slug: nextEvent.slug,
@@ -56,135 +53,124 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen">
-      {/* Chi è Enotempo */}
-      <section id="chi-siamo" className="py-20 md:py-28 px-4 bg-bianco-caldo">
-        <div className="container mx-auto max-w-5xl">
-          <div className="text-center mb-16">
-            <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-4">
-              Chi siamo
-            </p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-8 tracking-tight">
-              Chi è Enotempo
-            </h2>
-            <div className="max-w-4xl mx-auto space-y-6 text-left">
-              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed">
-                Enotempo nasce come uno spazio d&apos;incontro tra le tradizioni della comunità latinoamericana presente in Italia e le eccellenze del territorio italiano.
-              </p>
-              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed">
-                Crediamo che il cibo, il vino e le storie siano ponti culturali capaci di unire persone, ricordi e identità. Per questo, il nostro progetto celebra l&apos;autenticità dei sapori, la ricchezza delle culture e la bellezza della condivisione.
-              </p>
-              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed">
-                Siamo un gruppo appassionato di enogastronomia, cultura e narrazione: professionisti, creativi e amanti del buon vivere che desiderano creare esperienze che restano nella memoria. Ogni nostro evento nasce dal desiderio di valorizzare ciò che è vero, locale e significativo, unendo due mondi che convivono ogni giorno nelle città italiane: l&apos;anima vibrante dell&apos;America Latina e l&apos;eleganza del patrimonio italiano.
-              </p>
-            </div>
-
-            {/* Cosa facciamo */}
-            <div className="mt-16 max-w-4xl mx-auto text-left">
-              <h3 className="font-serif text-3xl md:text-4xl font-bold text-borgogna mb-6">
-                Cosa facciamo
-              </h3>
-              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-4">
-                In Enotempo curiamo esperienze enogastronomiche che raccontano le tradizioni latinoamericane attraverso il dialogo con i prodotti italiani d&apos;eccellenza. Non proponiamo semplici degustazioni: creiamo eventi multisensoriali in cui vino, gastronomia e cultura si intrecciano per offrire momenti autentici e profondi.
-              </p>
-              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-6">
-                {tHome("formatText")}
-              </p>
-              <ul className="list-disc list-inside space-y-3 text-lg md:text-xl text-marrone-scuro/80 leading-relaxed ml-4">
-                <li>Eventi di degustazione eno-gastronomica con vini italiani e latinoamericani abbinati a piatti tipici, raccontati con storie e identità culturali.</li>
-                <li>Percorsi tematici e narrativi che combinano sapori, musica, tradizioni e racconti per un viaggio che stimola i sensi e la memoria.</li>
-                <li>Collaborazioni con produttori, chef e realtà culturali per creare esperienze eleganti, educative e ricche di contenuto.</li>
-                <li>Promozione della cultura latinoamericana attraverso format creativi che celebrano le radici e valorizzano l&apos;incontro tra culture.</li>
-              </ul>
-            </div>
-          </div>
+      {/* ── Chi è Enotempo ───────────────────────────────────────────── */}
+      <Section id="chi-siamo" bg="bianco-caldo" py="lg">
+        <SectionHeading
+          eyebrow="Chi siamo"
+          title="Chi è Enotempo"
+          align="center"
+          className="mb-12"
+        />
+        <div className="max-w-4xl mx-auto space-y-6 text-left">
+          <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed">
+            Enotempo nasce come uno spazio d&apos;incontro tra le tradizioni della comunità latinoamericana
+            presente in Italia e le eccellenze del territorio italiano.
+          </p>
+          <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed">
+            Crediamo che il cibo, il vino e le storie siano ponti culturali capaci di unire persone, ricordi
+            e identità. Per questo, il nostro progetto celebra l&apos;autenticità dei sapori, la ricchezza
+            delle culture e la bellezza della condivisione.
+          </p>
+          <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed">
+            Siamo un gruppo appassionato di enogastronomia, cultura e narrazione: professionisti, creativi e
+            amanti del buon vivere che desiderano creare esperienze che restano nella memoria. Ogni nostro
+            evento nasce dal desiderio di valorizzare ciò che è vero, locale e significativo, unendo due
+            mondi che convivono ogni giorno nelle città italiane: l&apos;anima vibrante dell&apos;America
+            Latina e l&apos;eleganza del patrimonio italiano.
+          </p>
         </div>
-      </section>
 
-      {/* Instagram Feed */}
-      <InstagramFeed />
-
-      {/* Come funziona */}
-      <section className="py-20 md:py-28 px-4 bg-bianco-caldo">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-4">
-              Percorso
-            </p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-borgogna mb-8 tracking-tight">
-              {tHome("howItWorks.title")}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((step) => (
-              <Card
-                key={step}
-                className="rounded-2xl border border-borgogna/10 bg-white shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
-              >
-                <CardHeader className="pb-4">
-                  <div className="w-16 h-16 rounded-full bg-borgogna/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-borgogna">{step}</span>
-                  </div>
-                  <CardTitle className="font-serif text-2xl text-borgogna">
-                    {tHome(`howItWorks.step${step}.title`)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-marrone-scuro/70 leading-relaxed">
-                    {tHome(`howItWorks.step${step}.description`)}
-                  </p>
-                </CardContent>
-              </Card>
+        {/* Cosa facciamo */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <h3 className="font-serif text-2xl md:text-3xl font-medium text-borgogna mb-6">
+            Cosa facciamo
+          </h3>
+          <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-4">
+            In Enotempo curiamo esperienze enogastronomiche che raccontano le tradizioni latinoamericane
+            attraverso il dialogo con i prodotti italiani d&apos;eccellenza. Non proponiamo semplici
+            degustazioni: creiamo eventi multisensoriali in cui vino, gastronomia e cultura si intrecciano
+            per offrire momenti autentici e profondi.
+          </p>
+          <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed mb-6">
+            {tHome("formatText")}
+          </p>
+          <ul className="space-y-3 text-lg md:text-xl text-marrone-scuro/80 leading-relaxed">
+            {[
+              "Eventi di degustazione eno-gastronomica con vini italiani e latinoamericani abbinati a piatti tipici, raccontati con storie e identità culturali.",
+              "Percorsi tematici e narrativi che combinano sapori, musica, tradizioni e racconti per un viaggio che stimola i sensi e la memoria.",
+              "Collaborazioni con produttori, chef e realtà culturali per creare esperienze eleganti, educative e ricche di contenuto.",
+              "Promozione della cultura latinoamericana attraverso format creativi che celebrano le radici e valorizzano l'incontro tra culture.",
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-2 w-1.5 h-1.5 rounded-[1px] bg-verde shrink-0" />
+                {item}
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
-      </section>
+      </Section>
 
-      {/* Box Donazioni */}
-      <section className="py-20 md:py-28 px-4 bg-white">
-        <div className="container mx-auto max-w-5xl">
-          <Card className="border border-borgogna/10 rounded-2xl shadow-sm bg-bianco-caldo">
-            <CardHeader className="text-center pb-4">
-              <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-3">
-                Impatto
-              </p>
-              <CardTitle className="font-serif text-3xl md:text-4xl text-borgogna">
-                {tHome("donationBox.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center">
-              <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed max-w-3xl mx-auto">
-                {tHome("donationBox.description")}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+      {/* ── Instagram Feed (ha il proprio <Section bg="crema">) ──────── */}
+      <InstagramFeed locale={locale} />
 
-      {/* Newsletter */}
-      <section className="py-20 md:py-28 px-4 bg-bianco-caldo">
-        <div className="container mx-auto max-w-3xl">
-          <Card className="border border-borgogna/10 rounded-2xl shadow-sm bg-white">
-            <CardHeader className="text-center pb-4">
-              <p className="text-xs md:text-sm font-semibold tracking-widest text-borgogna/70 uppercase mb-3">
-                Rimani connesso
+      {/* ── Come funziona ────────────────────────────────────────────── */}
+      <Section bg="bianco-caldo" py="lg">
+        <SectionHeading
+          eyebrow="Percorso"
+          title={tHome("howItWorks.title")}
+          align="center"
+          className="mb-14"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {([1, 2, 3] as const).map((step) => (
+            <div key={step} className="flex flex-col">
+              <div className="w-14 h-14 rounded-[2px] bg-borgogna/10 flex items-center justify-center mb-6">
+                <span className="font-serif text-xl font-medium text-borgogna">{step}</span>
+              </div>
+              <h3 className="font-serif text-xl md:text-2xl font-medium text-borgogna mb-3">
+                {tHome(`howItWorks.step${step}.title`)}
+              </h3>
+              <p className="text-marrone-scuro/70 leading-relaxed">
+                {tHome(`howItWorks.step${step}.description`)}
               </p>
-              <CardTitle className="font-serif text-3xl md:text-4xl text-borgogna">
-                {tHome("newsletter.title")}
-              </CardTitle>
-              <p className="text-base md:text-lg text-marrone-scuro/70 mt-3">
-                {tHome("newsletter.description")}
-              </p>
-            </CardHeader>
-            <CardContent className="px-8 pb-8">
-              <NewsletterForm />
-            </CardContent>
-          </Card>
+            </div>
+          ))}
         </div>
-      </section>
+      </Section>
+
+      {/* ── Donazioni ────────────────────────────────────────────────── */}
+      <Section bg="crema" py="md">
+        <div className="max-w-3xl mx-auto border border-borgogna/15 rounded-[2px] p-8 md:p-12 text-center">
+          <SectionHeading
+            eyebrow="Importante"
+            title={tHome("donationBox.title")}
+            align="center"
+            className="mb-4"
+          />
+          <p className="text-lg text-marrone-scuro/80 leading-relaxed mt-6">
+            {tHome("donationBox.description")}
+          </p>
+        </div>
+      </Section>
+
+      {/* ── Newsletter ───────────────────────────────────────────────── */}
+      <Section bg="bianco-caldo" py="md">
+        <div className="max-w-3xl mx-auto text-center">
+          <SectionHeading
+            eyebrow="Rimani connesso"
+            title={tHome("newsletter.title")}
+            align="center"
+            className="mb-3"
+          />
+          <p className="text-marrone-scuro/70 text-base md:text-lg mb-10">
+            {tHome("newsletter.description")}
+          </p>
+          <NewsletterForm />
+        </div>
+      </Section>
 
       {/* Popup prossima cena (dati da DB) */}
       <NextDinnerPopup locale={locale} nextEvent={nextEvent} />
     </div>
   );
 }
-

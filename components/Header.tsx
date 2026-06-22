@@ -1,100 +1,80 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { locales } from "@/lib/i18n/config";
+import { Menu, X, ChevronDown, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const LOGO_URL = "https://8ud5gz3z3ejgzjpg.public.blob.vercel-storage.com/gallery/logo-borgogna-UgcW4ZgaHLzDGdpjkjcwqNF67u6TP1.jpg";
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-// Language Switcher Component
-const LanguageSwitcher = ({
-  variant = "desktop",
-}: {
-  variant?: "desktop" | "mobile";
-}) => {
+type AuthMember = { id: string; firstName: string; lastName: string; email: string };
+type AuthState =
+  | { status: "loading" }
+  | { status: "logged-out" }
+  | { status: "logged-in"; member: AuthMember };
+
+// ── Language Switcher ─────────────────────────────────────────────────────────
+
+const LanguageSwitcher = ({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) => {
   const locale = useLocale();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  // Rimuove il prefisso locale dal path
   const pathWithoutLocale = pathname.replace(/^\/(it|en|es)/, "") || "/";
-
   const languages = [
     { code: "it", label: "IT" },
     { code: "en", label: "EN" },
     { code: "es", label: "ES" },
   ];
-
   const current = languages.find((l) => l.code === locale) ?? languages[0];
 
-  // Chiudi dropdown quando si clicca fuori (supporta sia mouse che touch)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
+    const handleOutside = (e: MouseEvent | TouchEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    };
-
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     if (open) {
-      // Supporta sia mouse che touch events per mobile
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-      document.addEventListener("keydown", handleEscape);
+      document.addEventListener("mousedown", handleOutside);
+      document.addEventListener("touchstart", handleOutside);
+      document.addEventListener("keydown", handleEsc);
     }
-
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+      document.removeEventListener("keydown", handleEsc);
     };
   }, [open]);
 
+  const dropdownCls = "absolute mt-1 rounded-[2px] border border-borgogna/20 bg-bianco-caldo shadow-lg z-[60] overflow-hidden";
+  const itemCls = (code: string) =>
+    cn(
+      "block px-4 py-2.5 text-sm transition-colors",
+      code === locale
+        ? "bg-borgogna/8 font-semibold text-borgogna"
+        : "text-marrone-scuro/80 hover:bg-borgogna/5 hover:text-borgogna"
+    );
+
   if (variant === "mobile") {
     return (
-      <div className="relative w-full" ref={dropdownRef}>
+      <div className="relative w-full" ref={ref}>
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between rounded-full border border-borgogna px-4 py-3 text-base font-semibold text-borgogna hover:bg-borgogna hover:text-bianco-caldo transition-colors"
-          aria-label="Seleziona lingua"
+          className="flex w-full items-center justify-between rounded-[2px] border border-crema/40 px-4 py-3 text-sm font-semibold text-crema hover:bg-crema/10 transition-colors"
           aria-expanded={open}
+          aria-label="Seleziona lingua"
         >
           <span>{current.label}</span>
-          <ChevronDown
-            className={cn("h-5 w-5 transition-transform duration-200", open && "rotate-180")}
-          />
+          <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", open && "rotate-180")} />
         </button>
-
         {open && (
-          <div className="absolute left-0 right-0 mt-2 w-full rounded-xl border border-marrone-scuro/10 bg-white shadow-xl z-[60] overflow-hidden">
+          <div className={cn(dropdownCls, "left-0 right-0 w-full")}>
             {languages.map((lang) => (
-              <Link
-                key={lang.code}
-                href={`/${lang.code}${pathWithoutLocale}`}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "block w-full px-4 py-3 text-left text-base transition-colors",
-                  lang.code === locale
-                    ? "bg-borgogna/10 font-semibold text-borgogna"
-                    : "text-marrone-scuro/80 hover:bg-bianco-caldo hover:text-borgogna"
-                )}
-              >
+              <Link key={lang.code} href={`/${lang.code}${pathWithoutLocale}`} onClick={() => setOpen(false)} className={itemCls(lang.code)}>
                 {lang.label}
               </Link>
             ))}
@@ -104,36 +84,22 @@ const LanguageSwitcher = ({
     );
   }
 
-  // Desktop variant
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 rounded-full border border-borgogna px-4 py-2 text-sm font-semibold text-borgogna hover:bg-borgogna hover:text-bianco-caldo transition-colors whitespace-nowrap"
-        aria-label="Seleziona lingua"
+        className="flex items-center gap-1.5 rounded-[2px] border border-borgogna px-3 py-1.5 text-xs font-semibold tracking-widest text-borgogna hover:bg-borgogna hover:text-bianco-caldo transition-colors"
         aria-expanded={open}
+        aria-label="Seleziona lingua"
       >
         {current.label}
-        <ChevronDown
-          className={cn("h-4 w-4 transition-transform duration-200", open && "rotate-180")}
-        />
+        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
       </button>
-
       {open && (
-        <div className="absolute right-0 mt-2 w-32 rounded-xl border border-marrone-scuro/10 bg-white shadow-xl z-[60] overflow-hidden">
+        <div className={cn(dropdownCls, "right-0 w-28")}>
           {languages.map((lang) => (
-            <Link
-              key={lang.code}
-              href={`/${lang.code}${pathWithoutLocale}`}
-              onClick={() => setOpen(false)}
-              className={cn(
-                "block w-full px-4 py-2.5 text-left text-sm transition-colors",
-                lang.code === locale
-                  ? "bg-borgogna/10 font-semibold text-borgogna"
-                  : "text-marrone-scuro/80 hover:bg-bianco-caldo hover:text-borgogna"
-              )}
-            >
+            <Link key={lang.code} href={`/${lang.code}${pathWithoutLocale}`} onClick={() => setOpen(false)} className={itemCls(lang.code)}>
               {lang.label}
             </Link>
           ))}
@@ -143,120 +109,289 @@ const LanguageSwitcher = ({
   );
 };
 
+// ── User Menu (desktop) ───────────────────────────────────────────────────────
+
+const UserMenu = ({
+  member,
+  onLogout,
+  logoutLabel,
+}: {
+  member: AuthMember;
+  onLogout: () => void;
+  logoutLabel: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent | TouchEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleOutside);
+      document.addEventListener("touchstart", handleOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
+  }, [open]);
+
+  const initials =
+    (member.firstName.charAt(0) + member.lastName.charAt(0)).toUpperCase() || "?";
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 rounded-[2px] border border-borgogna/30 bg-borgogna/5 px-3 py-1.5 text-xs font-semibold text-borgogna hover:bg-borgogna/10 transition-colors"
+        aria-expanded={open}
+      >
+        <span className="flex items-center justify-center h-5 w-5 rounded-sm bg-borgogna text-bianco-caldo text-[10px] font-bold">
+          {initials}
+        </span>
+        <span className="max-w-[80px] truncate">{member.firstName}</span>
+        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-1 w-48 rounded-[2px] border border-borgogna/20 bg-bianco-caldo shadow-lg z-[60] overflow-hidden">
+          <div className="px-4 py-3 border-b border-borgogna/10">
+            <p className="text-xs font-semibold text-borgogna truncate">
+              {member.firstName} {member.lastName}
+            </p>
+            <p className="text-[11px] text-marrone-scuro/50 truncate mt-0.5">{member.email}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setOpen(false); onLogout(); }}
+            className="flex w-full items-center gap-2 px-4 py-3 text-sm text-marrone-scuro/70 hover:bg-borgogna/5 hover:text-borgogna transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            {logoutLabel}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
 export default function Header() {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [auth, setAuth] = useState<AuthState>({ status: "loading" });
+
+  // Fetch auth state once on mount
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.hasIdentity && data.member) {
+          setAuth({ status: "logged-in", member: data.member });
+        } else {
+          setAuth({ status: "logged-out" });
+        }
+      })
+      .catch(() => setAuth({ status: "logged-out" }));
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      setAuth({ status: "logged-out" });
+      // Full reload so any server components re-render without the session
+      window.location.href = `/${locale}`;
+    }
+  }, [locale]);
 
   const navLinks = [
-    { href: `/${locale}`, label: t("home") },
     { href: `/${locale}/cene`, label: t("dinners") },
-    { href: `/${locale}/gallery`, label: t("gallery") },
-    { href: `/${locale}/partners`, label: t("partners") },
     { href: `/${locale}/chefs`, label: t("chefs") },
+    { href: `/${locale}/partners`, label: t("partners") },
+    { href: `/${locale}/gallery`, label: t("gallery") },
+    { href: `/${locale}/social`, label: t("instagram") },
     { href: `/${locale}/contact`, label: t("contact") },
-    // { href: `/${locale}/formazione`, label: t("formazione") },
   ];
 
-  const closeMobileMenu = () => setIsOpen(false);
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
-  // Blocca lo scroll del body quando il menu è aperto
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-marrone-scuro/10 bg-white/80 backdrop-blur">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:h-20 min-w-0">
+      {/* ── Desktop / tablet header ─────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-bianco-caldo border-b border-borgogna/10">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:h-20">
+          {/* Logo */}
           <Link
             href={`/${locale}`}
-            className="shrink-0 flex items-center gap-2 hover:opacity-80 transition-opacity whitespace-nowrap"
+            className="shrink-0 hover:opacity-80 transition-opacity"
+            aria-label="Enotempo — home"
           >
             <Image
-              src={LOGO_URL}
-              alt="Enotempo Logo"
-              width={36}
-              height={36}
-              className="object-contain"
+              src="/brand/enotempo-logo.svg"
+              alt="Enotempo"
+              width={180}
+              height={40}
+              className="h-8 md:h-9 w-auto"
               priority
             />
-            <span className="font-serif text-xl md:text-2xl font-bold text-borgogna tracking-widest">
-              ENOTEMPO
-            </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-7 xl:gap-9" aria-label="Navigazione principale">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-marrone-scuro hover:text-borgogna transition-colors font-medium text-sm lg:text-base whitespace-nowrap"
+                className={cn(
+                  "text-sm font-medium transition-colors whitespace-nowrap relative group",
+                  isActive(link.href)
+                    ? "text-borgogna font-semibold"
+                    : "text-marrone-scuro/70 hover:text-borgogna"
+                )}
               >
                 {link.label}
+                <span
+                  className={cn(
+                    "absolute -bottom-1 left-0 h-px bg-borgogna transition-all duration-200",
+                    isActive(link.href) ? "w-full" : "w-0 group-hover:w-full"
+                  )}
+                />
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3 md:gap-4 shrink-0 min-w-0">
-            <div className="hidden lg:block">
+          {/* Desktop right: locale switcher + auth + hamburger (mobile) */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="hidden lg:flex items-center gap-3">
               <LanguageSwitcher variant="desktop" />
+
+              {/* Auth section */}
+              {auth.status === "logged-out" && (
+                <Link
+                  href={`/${locale}/accedi-fenam`}
+                  className="inline-flex items-center gap-1.5 rounded-[2px] border-2 border-borgogna bg-transparent px-3 py-1.5 text-xs font-semibold text-borgogna hover:bg-borgogna/5 transition-colors whitespace-nowrap"
+                >
+                  <User className="h-3.5 w-3.5" />
+                  {t("login")}
+                </Link>
+              )}
+              {auth.status === "logged-in" && (
+                <UserMenu
+                  member={auth.member}
+                  onLogout={handleLogout}
+                  logoutLabel={t("logout")}
+                />
+              )}
+              {/* loading → niente (evita flash) */}
             </div>
 
             <button
               type="button"
-              onClick={() => setIsOpen((v) => !v)}
-              className="inline-flex items-center justify-center rounded-full border border-marrone-scuro/20 p-2 text-marrone-scuro hover:bg-bianco-caldo/70 lg:hidden transition-colors shrink-0"
-              aria-label="Toggle navigation"
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden inline-flex items-center justify-center rounded-[2px] border border-borgogna/25 p-2 text-marrone-scuro hover:bg-borgogna/5 transition-colors"
+              aria-label="Apri menu"
+              aria-expanded={mobileOpen}
             >
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Menu className="h-5 w-5" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/25 backdrop-blur-sm lg:hidden"
-          onClick={closeMobileMenu}
-        />
-      )}
-
-      {/* Panel */}
+      {/* ── Mobile full-screen menu ─────────────────────────────────────── */}
       <div
         className={cn(
-          "fixed inset-x-0 top-16 md:top-20 z-50 lg:hidden bg-white shadow-xl border-b border-marrone-scuro/10",
-          "transition-transform duration-200 ease-out",
-          isOpen ? "translate-y-0" : "-translate-y-3 pointer-events-none opacity-0"
+          "fixed inset-0 z-[200] bg-borgogna flex flex-col lg:hidden",
+          "transition-all duration-300 ease-in-out",
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
+        aria-hidden={!mobileOpen}
       >
-        <nav className="flex flex-col gap-1 px-4 py-4 pb-6 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-crema/15">
+          <Link href={`/${locale}`} onClick={() => setMobileOpen(false)} aria-label="Enotempo — home">
+            <Image
+              src="/brand/enotempo-icon.svg"
+              alt="Enotempo"
+              width={36}
+              height={36}
+              className="h-9 w-9"
+            />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="rounded-[2px] border border-crema/30 p-2 text-crema hover:bg-crema/10 transition-colors"
+            aria-label="Chiudi menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Nav links — large, centered */}
+        <nav className="flex flex-col items-center justify-center flex-1 gap-2 px-8 overflow-y-auto" aria-label="Navigazione mobile">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              onClick={closeMobileMenu}
-              className="text-marrone-scuro hover:text-borgogna hover:bg-bianco-caldo/50 transition-colors font-medium py-3 px-3 rounded-lg"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "font-serif text-3xl sm:text-4xl font-medium py-3 transition-opacity",
+                isActive(link.href) ? "text-crema" : "text-crema/60 hover:text-crema"
+              )}
             >
               {link.label}
             </Link>
           ))}
-
-          <div className="mt-6 pt-4 border-t border-marrone-scuro/10">
-            <LanguageSwitcher variant="mobile" />
-          </div>
         </nav>
+
+        {/* Bottom: auth + locale switcher */}
+        <div className="px-6 py-6 border-t border-crema/15 space-y-4">
+          {/* Auth row */}
+          {auth.status === "logged-out" && (
+            <Link
+              href={`/${locale}/accedi-fenam`}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center gap-2 w-full rounded-[2px] border-2 border-crema/50 bg-transparent px-4 py-3 text-sm font-semibold text-crema hover:bg-crema/10 transition-colors"
+            >
+              <User className="h-4 w-4" />
+              {t("login")}
+            </Link>
+          )}
+          {auth.status === "logged-in" && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center justify-center h-8 w-8 rounded-sm bg-crema text-borgogna text-xs font-bold">
+                  {(auth.member.firstName.charAt(0) + auth.member.lastName.charAt(0)).toUpperCase()}
+                </span>
+                <span className="text-sm text-crema/80">{auth.member.firstName} {auth.member.lastName}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setMobileOpen(false); handleLogout(); }}
+                className="flex items-center gap-1.5 text-sm text-crema/50 hover:text-crema transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                {t("logout")}
+              </button>
+            </div>
+          )}
+
+          {/* Locale switcher */}
+          <LanguageSwitcher variant="mobile" />
+        </div>
       </div>
     </>
   );
 }
-

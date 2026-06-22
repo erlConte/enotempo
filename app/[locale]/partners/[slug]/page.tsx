@@ -1,18 +1,15 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Section } from "@/components/ui/Section";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getPartnerBySlug, getPartners } from "@/lib/partners";
 import { locales } from "@/lib/i18n/config";
 
 export function generateStaticParams() {
   const partners = getPartners();
   const slugs = partners.map((partner) => partner.slug);
-  // Produci combinazioni di parametri { locale, slug } per ogni lingua e partner
-  return locales.flatMap((locale) =>
-    slugs.map((slug) => ({ locale, slug }))
-  );
+  return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export default async function PartnerDetailPage({
@@ -24,98 +21,58 @@ export default async function PartnerDetailPage({
   const t = await getTranslations("partners");
   const partner = getPartnerBySlug(slug);
 
-  if (!partner) {
-    notFound();
-  }
+  if (!partner) notFound();
+
+  const sections = [
+    { key: "whyEnotempo", titleKey: "detail.whyTitle", content: partner.whyEnotempo },
+    { key: "about", titleKey: "detail.aboutTitle", content: partner.about },
+    { key: "expectations", titleKey: "detail.expectationsTitle", content: partner.expectations },
+  ].filter((s) => s.content);
 
   return (
-    <div className="min-h-screen bg-bianco-caldo py-12 md:py-16 px-4">
-      <div className="container mx-auto max-w-4xl">
-        {/* Header con nome, tipo, città */}
-        <div className="bg-white border-b border-border rounded-2xl shadow-sm mb-8 p-8">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="flex-1">
-              <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-borgogna mb-4">
-                {partner.name}
-              </h1>
-              <div className="flex flex-wrap items-center gap-4">
-                <p className="text-base md:text-lg text-marrone-scuro/80">
-                  {t(`type.${partner.type}`)}
-                </p>
-                <span className="text-marrone-scuro/40">·</span>
-                <p className="text-base md:text-lg text-marrone-scuro/80">
-                  {partner.city}, {partner.country}
-                </p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-bianco-caldo">
+      {/* Hero borgogna */}
+      <section className="bg-borgogna px-4 py-14 md:py-20">
+        <div className="container mx-auto max-w-4xl">
+          <p className="text-verde/80 text-[11px] font-semibold uppercase tracking-[.22em] mb-4">
+            {t("pageTitle")}
+          </p>
+          <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-crema mb-4">
+            {partner.name}
+          </h1>
+          <div className="flex flex-wrap items-center gap-3 text-crema/60 text-sm">
+            <span>{t(`type.${partner.type}`)}</span>
+            <span className="text-crema/30">·</span>
+            <span>{partner.city}, {partner.country}</span>
           </div>
         </div>
+      </section>
 
-        {/* Sezioni testuali */}
-        <div className="space-y-6">
-          {/* Perché hai scelto Enotempo */}
-          {partner.whyEnotempo ? (
-            <Card className="border-0 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">
-                  {t("detail.whyTitle")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-marrone-scuro/90 leading-relaxed text-base">
-                  {partner.whyEnotempo}
-                </p>
-              </CardContent>
-            </Card>
-          ) : null}
+      {/* Sezioni contenuto alternate */}
+      {sections.map(({ key, titleKey, content }, idx) => (
+        <Section key={key} bg={idx % 2 === 0 ? "bianco-caldo" : "crema"} py="sm">
+          <div className="max-w-3xl">
+            <h2 className="font-serif text-xl md:text-2xl font-medium text-borgogna mb-4">
+              {t(titleKey as Parameters<typeof t>[0])}
+            </h2>
+            <p className="text-marrone-scuro/85 leading-relaxed text-base">
+              {content}
+            </p>
+          </div>
+        </Section>
+      ))}
 
-          {/* Chi sei / descrizione attività */}
-          {partner.about ? (
-            <Card className="border-0 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">
-                  {t("detail.aboutTitle")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-marrone-scuro/90 leading-relaxed text-base">
-                  {partner.about}
-                </p>
-              </CardContent>
-            </Card>
-          ) : null}
-
-          {/* Cosa ti aspetti da Enotempo */}
-          {partner.expectations ? (
-            <Card className="border-0 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl text-borgogna">
-                  {t("detail.expectationsTitle")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-marrone-scuro/90 leading-relaxed text-base">
-                  {partner.expectations}
-                </p>
-              </CardContent>
-            </Card>
-          ) : null}
-        </div>
-
-        {/* Link torna ai partner */}
-        <div className="mt-12 text-center">
-          <Button
-            asChild
-            variant="outline"
-            className="rounded-xl border-borgogna text-borgogna hover:bg-borgogna hover:text-bianco-caldo"
+      {/* Back link */}
+      <Section bg={sections.length % 2 === 0 ? "bianco-caldo" : "crema"} py="sm">
+        <div className="flex justify-start">
+          <Link
+            href={`/${locale}/partners`}
+            className="inline-flex items-center gap-2 rounded-[2px] border-2 border-borgogna bg-transparent px-5 py-2.5 text-sm font-medium text-borgogna hover:bg-borgogna/5 transition-colors"
           >
-            <Link href={`/${locale}/partners`}>
-              ← {t("detail.backToList")}
-            </Link>
-          </Button>
+            ← {t("detail.backToList")}
+          </Link>
         </div>
-      </div>
+      </Section>
     </div>
   );
 }
-

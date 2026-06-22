@@ -2,20 +2,15 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Eyebrow } from "@/components/ui/Eyebrow";
 
 export default function ContactPage() {
   const t = useTranslations("contact");
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -36,23 +31,16 @@ export default function ContactPage() {
     }
 
     setIsLoading(true);
-
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
-      if (!response.ok) {
-        throw new Error("Errore durante l&rsquo;invio del messaggio.");
-      }
-
+      if (!response.ok) throw new Error();
       setSuccess(true);
       setFormData({ name: "", email: "", message: "" });
-    } catch (err) {
+    } catch {
       setError(t("form.error"));
     } finally {
       setIsLoading(false);
@@ -60,105 +48,101 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bianco-caldo py-16 md:py-24 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-16">
-          <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-borgogna mb-6">
+    <div className="min-h-screen bg-bianco-caldo">
+      {/* Hero borgogna */}
+      <section className="bg-borgogna px-4 py-14 md:py-20">
+        <div className="container mx-auto max-w-4xl text-center">
+          <Eyebrow className="text-verde/70 mb-4">Scrivici</Eyebrow>
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-medium text-crema mb-4">
             {t("title")}
           </h1>
-          <p className="text-lg md:text-xl text-marrone-scuro/70 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-crema/60 text-base md:text-lg max-w-xl mx-auto">
             {t("description")}
           </p>
         </div>
+      </section>
 
-        {/* Testo introduttivo */}
-        <Card className="border-0 shadow-sm rounded-xl bg-white mb-8">
-          <CardContent className="pt-6">
-            <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed text-center">
-              Enotempo crea esperienze enogastronomiche che uniscono l&apos;Italia e l&apos;America Latina attraverso eventi multisensoriali dove vino, gastronomia e cultura si intrecciano.
-            </p>
-            <p className="text-lg md:text-xl text-marrone-scuro/80 leading-relaxed text-center mt-4">
-              Utilizza il form qui sotto per collaborazioni, domande sulle cene, proposte di eventi o qualsiasi altra richiesta. Siamo qui per ascoltarti.
-            </p>
-          </CardContent>
-        </Card>
+      {/* Form */}
+      <section className="px-4 py-16 md:py-24">
+        <div className="container mx-auto max-w-2xl">
+          {/* Intro text */}
+          <p className="text-base md:text-lg text-marrone-scuro/70 leading-relaxed text-center mb-12">
+            Enotempo crea esperienze enogastronomiche che uniscono l&apos;Italia e l&apos;America Latina attraverso
+            eventi multisensoriali dove vino, gastronomia e cultura si intrecciano. Utilizza il form qui sotto
+            per collaborazioni, domande sulle cene, proposte di eventi o qualsiasi altra richiesta.
+          </p>
 
-        <Card className="border-0 shadow-sm rounded-2xl bg-white">
-          <CardHeader>
-            <CardTitle className="font-serif text-3xl text-borgogna">
+          <div className="border border-borgogna/15 rounded-[2px] p-6 md:p-10 bg-white/60">
+            <h2 className="font-serif text-2xl md:text-3xl font-medium text-borgogna mb-8">
               Invia un messaggio
-            </CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              {error && (
-                <Alert variant="destructive" className="rounded-xl">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+            </h2>
 
-              {success && (
-                <Alert className="bg-verde/10 border-verde rounded-xl">
-                  <AlertDescription className="text-verde font-semibold">
-                    {t("form.success")}
-                  </AlertDescription>
-                </Alert>
-              )}
+            {error && (
+              <Alert variant="destructive" className="rounded-[2px] mb-6">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {success && (
+              <Alert className="bg-verde/8 border-verde/30 rounded-[2px] mb-6">
+                <AlertDescription className="text-verde font-medium">
+                  {t("form.success")}
+                </AlertDescription>
+              </Alert>
+            )}
 
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">{t("form.name")} *</Label>
+                <Label htmlFor="name" className="text-marrone-scuro/80 text-sm">
+                  {t("form.name")} *
+                </Label>
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="rounded-xl"
+                  className="rounded-[2px] border-borgogna/20 focus:border-borgogna"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">{t("form.email")} *</Label>
+                <Label htmlFor="email" className="text-marrone-scuro/80 text-sm">
+                  {t("form.email")} *
+                </Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="rounded-xl"
+                  className="rounded-[2px] border-borgogna/20 focus:border-borgogna"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message">{t("form.message")} *</Label>
+                <Label htmlFor="message" className="text-marrone-scuro/80 text-sm">
+                  {t("form.message")} *
+                </Label>
                 <Textarea
                   id="message"
                   value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={6}
                   required
-                  className="rounded-xl"
+                  className="rounded-[2px] border-borgogna/20 focus:border-borgogna"
                 />
               </div>
-            </CardContent>
-            <CardFooter>
-              <Button
+
+              <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-borgogna text-bianco-caldo hover:bg-borgogna/90 rounded-xl py-6 text-lg"
+                className="w-full inline-flex items-center justify-center rounded-[2px] bg-verde text-bianco-caldo px-6 py-3 text-sm font-medium hover:bg-verde/90 transition-colors disabled:opacity-50"
               >
-                {isLoading ? "Invio in corso..." : t("form.submit")}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
+                {isLoading ? "Invio in corso…" : t("form.submit")}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
-

@@ -7,6 +7,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "../globals.css";
 
+export const metadata = {
+  icons: {
+    icon: "/brand/enotempo-icon.svg",
+    apple: "/brand/enotempo-icon.svg",
+  },
+};
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
