@@ -9,6 +9,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { getEventsSplit } from "@/lib/events";
 import type { EventWithRemaining } from "@/lib/events";
 import { getGallerySlice } from "@/lib/gallery";
+import { MAKO_EVENT } from "@/lib/mako-event";
 
 // ISR: rigenera ogni 60 secondi
 export const revalidate = 60;
@@ -141,6 +142,64 @@ export default async function CenePage({
     );
   }
 
+  function renderMakoCard() {
+    return (
+      <Link
+        key={MAKO_EVENT.slug}
+        href={`/${locale}/cene/${MAKO_EVENT.slug}`}
+        className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-borgogna focus-visible:ring-offset-2 rounded-[2px]"
+      >
+        <Card className="flex flex-col h-full bg-white border-0 shadow-md hover:shadow-2xl transition-all duration-500 rounded-[2px] overflow-hidden group-hover:-translate-y-1">
+          <div className="h-52 relative overflow-hidden">
+            <Image
+              src={MAKO_EVENT.image}
+              alt={MAKO_EVENT.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-borgogna/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          </div>
+
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <CardTitle className="font-serif text-xl md:text-2xl text-borgogna flex-1 font-medium">
+                {MAKO_EVENT.title}
+              </CardTitle>
+              <Badge className="bg-verde text-bianco-caldo shrink-0 rounded-[2px]">
+                {MAKO_EVENT.seatsAvailable} {t("availableSeats")}
+              </Badge>
+            </div>
+            <CardDescription className="text-marrone-scuro/70 text-sm font-medium">
+              {formatDateWithTime(MAKO_EVENT.date, locale)}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="flex-grow space-y-2">
+            <p className="text-sm text-marrone-scuro/70 flex items-start gap-2">
+              <span className="shrink-0 mt-0.5">📍</span>
+              <span className="line-clamp-2">
+                {MAKO_EVENT.locationName}, {MAKO_EVENT.locationAddress}
+              </span>
+            </p>
+            <p className="text-sm text-marrone-scuro/70 leading-relaxed line-clamp-2 pt-1">
+              {MAKO_EVENT.subtitle}
+            </p>
+          </CardContent>
+
+          <CardFooter className="pt-4">
+            <span className="inline-flex items-center justify-center w-full rounded-[2px] py-2.5 text-borgogna text-sm font-medium border-2 border-borgogna/25 group-hover:border-borgogna group-hover:bg-borgogna/5 transition-all duration-200">
+              {t("details")}
+              <span className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200">
+                →
+              </span>
+            </span>
+          </CardFooter>
+        </Card>
+      </Link>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero borgogna */}
@@ -169,58 +228,7 @@ export default async function CenePage({
             />
           )}
           <div className={`grid grid-cols-1 ${gridCols(Math.max(1, upcoming.length))} gap-8`}>
-            {/* Card statica Mako */}
-            <Link
-              href={`/${locale}/cene/cena-mako-luglio`}
-              className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-borgogna focus-visible:ring-offset-2 rounded-[2px]"
-            >
-              <Card className="flex flex-col h-full bg-white border-0 shadow-md hover:shadow-2xl transition-all duration-500 rounded-[2px] overflow-hidden group-hover:-translate-y-1">
-                <div className="h-52 relative overflow-hidden">
-                  <Image
-                    src="/makodish"
-                    alt="Cena latinoamericana da Mako"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-borgogna/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                </div>
-
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <CardTitle className="font-serif text-xl md:text-2xl text-borgogna flex-1 font-medium">
-                      Cena latinoamericana da Mako
-                    </CardTitle>
-                    <Badge className="bg-verde text-bianco-caldo shrink-0 rounded-[2px]">
-                      30 {t("availableSeats")}
-                    </Badge>
-                  </div>
-                  <CardDescription className="text-marrone-scuro/70 text-sm font-medium">
-                    {formatDateWithTime(new Date("2026-07-22T20:00:00"), locale)}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="flex-grow space-y-2">
-                  <p className="text-sm text-marrone-scuro/70 flex items-start gap-2">
-                    <span className="shrink-0 mt-0.5">📍</span>
-                    <span className="line-clamp-2">Mako, Via Francesco D'Ovidio 11, Roma</span>
-                  </p>
-                  <p className="text-sm text-marrone-scuro/70 leading-relaxed line-clamp-2 pt-1">
-                    Cucina latinoamericana e vini italiani
-                  </p>
-                </CardContent>
-
-                <CardFooter className="pt-4">
-                  <span className="inline-flex items-center justify-center w-full rounded-[2px] py-2.5 text-borgogna text-sm font-medium border-2 border-borgogna/25 group-hover:border-borgogna group-hover:bg-borgogna/5 transition-all duration-200">
-                    {t("details")}
-                    <span className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200">
-                      →
-                    </span>
-                  </span>
-                </CardFooter>
-              </Card>
-            </Link>
-
+            {renderMakoCard()}
             {upcoming.map((event) => renderCard(event, false))}
           </div>
         </Section>
@@ -230,56 +238,7 @@ export default async function CenePage({
         <Section bg="bianco-caldo" py="md">
           {/* Card statica Mako anche quando nessun evento da DB */}
           <div className={`grid grid-cols-1 ${gridCols(1)} gap-8 mb-10`}>
-            <Link
-              href={`/${locale}/cene/cena-mako-luglio`}
-              className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-borgogna focus-visible:ring-offset-2 rounded-[2px]"
-            >
-              <Card className="flex flex-col h-full bg-white border-0 shadow-md hover:shadow-2xl transition-all duration-500 rounded-[2px] overflow-hidden group-hover:-translate-y-1">
-                <div className="h-52 relative overflow-hidden">
-                  <Image
-                    src="/makodish"
-                    alt="Cena latinoamericana da Mako"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-borgogna/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                </div>
-
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <CardTitle className="font-serif text-xl md:text-2xl text-borgogna flex-1 font-medium">
-                      Cena latinoamericana da Mako
-                    </CardTitle>
-                    <Badge className="bg-verde text-bianco-caldo shrink-0 rounded-[2px]">
-                      30 {t("availableSeats")}
-                    </Badge>
-                  </div>
-                  <CardDescription className="text-marrone-scuro/70 text-sm font-medium">
-                    {formatDateWithTime(new Date("2026-07-22T20:00:00"), locale)}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="flex-grow space-y-2">
-                  <p className="text-sm text-marrone-scuro/70 flex items-start gap-2">
-                    <span className="shrink-0 mt-0.5">📍</span>
-                    <span className="line-clamp-2">Mako, Via Francesco D'Ovidio 11, Roma</span>
-                  </p>
-                  <p className="text-sm text-marrone-scuro/70 leading-relaxed line-clamp-2 pt-1">
-                    Cucina latinoamericana e vini italiani
-                  </p>
-                </CardContent>
-
-                <CardFooter className="pt-4">
-                  <span className="inline-flex items-center justify-center w-full rounded-[2px] py-2.5 text-borgogna text-sm font-medium border-2 border-borgogna/25 group-hover:border-borgogna group-hover:bg-borgogna/5 transition-all duration-200">
-                    {t("details")}
-                    <span className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200">
-                      →
-                    </span>
-                  </span>
-                </CardFooter>
-              </Card>
-            </Link>
+            {renderMakoCard()}
           </div>
           <p className="text-center text-marrone-scuro/50 py-16">{t("noUpcoming")}</p>
         </Section>

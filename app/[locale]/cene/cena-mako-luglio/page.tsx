@@ -6,22 +6,7 @@ import { Clock, MapPin, MessageCircle } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import EventMap from "@/components/events/EventMap";
-
-const MAKO_EVENT = {
-  slug: "cena-mako-luglio",
-  title: "Cena latinoamericana da Mako",
-  subtitle: "Cucina latinoamericana e vini italiani",
-  date: new Date("2026-07-22T20:00:00"),
-  locationName: "Mako",
-  locationAddress: "Via Francesco D'Ovidio 11, Roma",
-  image: "/makodish",
-  whatsapp: "+39 327 449 4282",
-  description: `Siamo lieti di invitarLa a una serata dedicata ai sapori autentici della cucina latinoamericana, accompagnata da una selezione di vini italiani d'eccellenza. Condivideremo la tavola in un ambiente accogliente e raffinato, creando un percorso di gusto che unisce tradizione, energia e armonia.
-
-I posti sono limitati: si consiglia di prenotare in anticipo via WhatsApp al numero 327 449 4282.
-
-Con stima,`,
-};
+import { MAKO_EVENT } from "@/lib/mako-event";
 
 function formatDateShort(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES", {
@@ -82,7 +67,7 @@ export async function generateMetadata({
   const baseUrl = buildBaseUrl();
   const pathname = `/${locale}/cene/cena-mako-luglio`;
   const canonicalUrl = baseUrl ? `${baseUrl}${pathname}` : pathname;
-  const ogImageUrl = `${buildBaseUrl()}/makodish`;
+  const ogImageUrl = `${buildBaseUrl()}/makodish.jpg`;
 
   return {
     title,

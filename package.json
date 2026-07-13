@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/clean-next.js",
     "dev": "next dev",
+    "prebuild": "node scripts/clean-next.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,6 +14,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "db:pull": "prisma db pull",
+    "prevercel-build": "node scripts/clean-next.js",
     "vercel-build": "next build",
     "prisma:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
