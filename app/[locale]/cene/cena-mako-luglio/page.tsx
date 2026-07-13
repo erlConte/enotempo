@@ -7,6 +7,7 @@ import { Section } from "@/components/ui/Section";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import EventMap from "@/components/events/EventMap";
 import { MAKO_EVENT } from "@/lib/mako-event";
+import { getGallerySlice } from "@/lib/gallery";
 
 function formatDateShort(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale === "it" ? "it-IT" : locale === "en" ? "en-US" : "es-ES", {
@@ -133,6 +134,7 @@ export default async function MakoCenaPage({
   const { locale } = await params;
   const t = await getTranslations("events");
   const tRegole = await getTranslations("regole");
+  const galleryImages = getGallerySlice(4);
 
   return (
     <div className="min-h-screen bg-bianco-caldo">
@@ -186,6 +188,28 @@ export default async function MakoCenaPage({
 
         {/* ── Mappa + Prenotazione WhatsApp ──────────────────────────── */}
         <section className="video-map-reservation-container">
+          {galleryImages.length > 0 && (
+            <div className="gallery-section">
+              <div className="grid grid-cols-2 grid-rows-2 gap-2 h-full min-h-[280px]">
+                {galleryImages.map((image, idx) => (
+                  <div
+                    key={image.src}
+                    className="relative overflow-hidden rounded-[2px] bg-borgogna/5"
+                  >
+                    <Image
+                      src={image.src}
+                      alt={`ENOTEMPO — ${image.name}`}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      priority={idx === 0}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {MAKO_EVENT.locationAddress && (
             <div className="map-container">
               <div className="rounded-[2px] overflow-hidden shadow-md h-full">

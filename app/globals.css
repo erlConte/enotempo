@@ -232,6 +232,10 @@
     cursor: pointer;
   }
 
+  .gallery-section {
+    width: 100%;
+  }
+
   .map-container {
     width: 100%;
   }
@@ -280,6 +284,15 @@
       height: 100%;
       width: 100%;
       object-fit: contain;
+    }
+
+    /* Griglia immagini nella colonna sinistra (2 righe) - 50% larghezza, 100% altezza */
+    .gallery-section {
+      grid-column: 1;
+      grid-row: span 2;
+      height: 100%;
+      width: 100%;
+      position: relative;
     }
 
     /* Mappa nella colonna destra, riga superiore - 50% larghezza, 50% altezza */

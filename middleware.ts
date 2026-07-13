@@ -8,9 +8,13 @@ export default createMiddleware({
 });
 
 export const config = {
-  // Definisce le rotte da internationalizzare, escludendo asset e API
+  // Definisce le rotte da internationalizzare, escludendo asset e API.
+  // ".*\\..*" esclude qualunque path con un'estensione (immagini in /public,
+  // font, ecc.): senza questo, il middleware li reindirizzava aggiungendo il
+  // prefisso locale (es. /makodish.jpg -> /it/makodish.jpg), rompendo tutte
+  // le immagini statiche referenziate con path assoluto.
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)'
+    '/((?!api|_next|favicon.ico|.*\\..*).*)'
   ]
 };
 
